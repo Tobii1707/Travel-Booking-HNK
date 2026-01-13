@@ -1,0 +1,513 @@
+/* Scoped: chỉ áp dụng cho trang có <body class="hust-profile-page"> */
+body.hust-profile-page {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --white: #fff;
+  --glass: rgba(255, 255, 255, 0.95);
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --radius: 12px;
+
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+body.hust-profile-page *,
+body.hust-profile-page *::before,
+body.hust-profile-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  transition: all .2s linear;
+}
+
+/* --- BACKGROUND VIDEO --- */
+body.hust-profile-page .video-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+body.hust-profile-page .video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.hust-profile-page .video-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 0;
+}
+
+/* --- HEADER & NAVBAR --- */
+body.hust-profile-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-profile-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-profile-page header .logo span { color: var(--primary); }
+
+body.hust-profile-page header .bar {
+  display: flex;
+  gap: 15px;
+}
+
+body.hust-profile-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-profile-page header .bar a:hover { color: var(--primary); }
+
+body.hust-profile-page header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-profile-page header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+body.hust-profile-page header .icons i:hover { color: var(--primary); }
+
+/* --- USER DROPDOWN --- */
+body.hust-profile-page .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px; right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-profile-page .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-profile-page .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* --- PROFILE CARD --- */
+body.hust-profile-page .profile-container {
+  position: relative;
+  z-index: 10;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  padding: 3rem;
+  border-radius: 20px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: var(--shadow);
+  text-align: center;
+  margin-top: 60px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+body.hust-profile-page .profile-header {
+  margin-bottom: 2rem;
+}
+
+body.hust-profile-page .avatar-circle {
+  width: 100px;
+  height: 100px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 3.5rem;
+  color: var(--white);
+  border: 4px solid rgba(255,255,255,0.8);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+body.hust-profile-page .profile-header h2 {
+  font-size: 1.8rem;
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+body.hust-profile-page .form-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+body.hust-profile-page .form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+body.hust-profile-page .form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  background: #f9f9f9;
+}
+
+body.hust-profile-page .form-group input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(41, 184, 98, 0.1);
+}
+
+/* Buttons */
+body.hust-profile-page .btn-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 2rem;
+}
+
+body.hust-profile-page .btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+body.hust-profile-page .btn-update {
+  background: var(--primary);
+  color: var(--white);
+}
+
+body.hust-profile-page .btn-update:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.3);
+}
+
+body.hust-profile-page .btn-password {
+  background: transparent;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  width: 100%;
+}
+
+body.hust-profile-page .btn-password:hover {
+  background: var(--primary);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+/* Link bọc button cho đẹp, không style inline */
+body.hust-profile-page .btn-link {
+  flex: 1;
+  display: block;
+}
+
+/* --- BOOKING HISTORY SECTION --- */
+body.hust-profile-page .booking-history-container {
+  position: relative;
+  z-index: 10;
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  padding: 2rem 3rem;
+  border-radius: 20px;
+  width: 900px;
+  max-width: 90%;
+  box-shadow: var(--shadow);
+  margin: 2rem auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+body.hust-profile-page .booking-history-container h2 {
+  font-size: 1.8rem;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+body.hust-profile-page .bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+body.hust-profile-page .booking-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #eee;
+  transition: 0.3s;
+}
+
+body.hust-profile-page .booking-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+body.hust-profile-page .booking-info h3 {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+}
+
+body.hust-profile-page .booking-info p {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0.3rem 0;
+}
+
+body.hust-profile-page .booking-info .status-paid {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+body.hust-profile-page .booking-info .status-pending {
+  color: #ff9800;
+  font-weight: 600;
+}
+
+body.hust-profile-page .booking-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+body.hust-profile-page .booking-actions .btn-review,
+body.hust-profile-page .booking-actions .btn-mark-paid {
+  background: var(--primary);
+  color: var(--white);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+body.hust-profile-page .booking-actions .btn-mark-paid {
+  background: #ff9800;
+}
+
+body.hust-profile-page .booking-actions .btn-review:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.3);
+}
+
+body.hust-profile-page .booking-actions .btn-mark-paid:hover {
+  background: #e68900;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+}
+
+/* --- REVIEW MODAL --- */
+body.hust-profile-page .modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+}
+
+body.hust-profile-page .modal-content {
+  background-color: var(--white);
+  margin: 5% auto;
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+body.hust-profile-page .modal-content h2 {
+  font-size: 1.8rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+body.hust-profile-page .hotel-name-display {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+body.hust-profile-page .close {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  color: #999;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+body.hust-profile-page .close:hover,
+body.hust-profile-page .close:focus {
+  color: var(--text-dark);
+  transform: rotate(90deg);
+}
+
+body.hust-profile-page .rating-input,
+body.hust-profile-page .comment-input {
+  margin-bottom: 1.5rem;
+}
+
+body.hust-profile-page .rating-input label,
+body.hust-profile-page .comment-input label {
+  display: block;
+  font-size: 1rem;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+body.hust-profile-page .star-rating {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  font-size: 2.5rem;
+  margin-top: 0.5rem;
+}
+
+body.hust-profile-page .star-rating i {
+  color: #ffa500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+body.hust-profile-page .star-rating i:hover {
+  transform: scale(1.2);
+}
+
+body.hust-profile-page .comment-input textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  background: #f9f9f9;
+  resize: vertical;
+  min-height: 100px;
+}
+
+body.hust-profile-page .comment-input textarea:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(41, 184, 98, 0.1);
+}
+
+body.hust-profile-page .btn-submit-review {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+body.hust-profile-page .btn-submit-review:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  body.hust-profile-page header { padding: 1rem 2rem; }
+}
+
+@media (max-width: 768px) {
+  body.hust-profile-page .booking-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  body.hust-profile-page .booking-actions {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  body.hust-profile-page .booking-actions .btn-review {
+    width: 100%;
+  }
+}

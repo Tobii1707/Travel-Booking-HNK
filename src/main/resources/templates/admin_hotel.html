@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khách sạn | VIVU TRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/admin_hotel.css">
+</head>
+
+<body class="hust-admin-hotel">
+
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="admin_booking">Quản lý Chuyến đi</a>
+        <a href="admin_account">Quản lý Tài khoản</a>
+        <a href="admin_flights">Quản lý Chuyến bay</a>
+        <a href="admin_hotel" class="indam">Quản lý Khách sạn</a>
+        <a href="admin_room">Quản lý Phòng</a>
+        <a href="admin_contact">Quản lý Liên hệ</a>
+        <a href="admin_seats">Quản lý Chỗ ngồi</a>
+    </nav>
+    <div class="icons">
+        <i class="fas fa-search" id="search-btn"></i>
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container-info">
+    <div class="left">
+        <p><b>Quản lý Khách sạn</b></p>
+    </div>
+    <div class="right">
+        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
+        <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
+    </div>
+</div>
+
+<div class="action-bar">
+    <button class="btn btn-create" onclick="openAddModal()">
+        <i class="fas fa-plus"></i> Thêm khách sạn mới
+    </button>
+</div>
+
+<div class="table-wrapper">
+    <table id="hotelTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Tên khách sạn</th>
+            <th>Giá từ</th>
+            <th>Địa chỉ</th>
+            <th>Số tầng</th>
+            <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody id="hotelTableBody">
+        </tbody>
+    </table>
+
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<div id="hotelModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm khách sạn</h3>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="hotelId">
+            <div class="form-group">
+                <label>Tên khách sạn</label>
+                <input type="text" id="hotelName" class="form-control" placeholder="Nhập tên khách sạn">
+            </div>
+            <div class="form-group">
+                <label>Giá từ (VNĐ)</label>
+                <input type="number" id="priceFrom" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Địa chỉ</label>
+                <input type="text" id="address" class="form-control" placeholder="Nhập địa chỉ">
+            </div>
+            <div class="form-group">
+                <label>Số tầng</label>
+                <input type="number" id="numberFloor" class="form-control" placeholder="0">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-create" id="saveHotelBtn">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin_hotel.js"></script>
+</body>
+</html>

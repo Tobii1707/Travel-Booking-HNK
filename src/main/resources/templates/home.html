@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ | VIVUTRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/home.css">
+</head>
+
+<body class="hust-home-page">
+
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+
+    <nav class="bar">
+        <a href="home" class="indam">Trang chủ</a>
+        <a href="booking">Đặt chỗ</a>
+        <a href="hotel">Khách sạn</a>
+        <a href="flight">Chuyến bay</a>
+        <a href="trending">Xu hướng</a>
+        <a href="news">Tin tức</a>
+        <a href="package">Gói tour</a>
+        <a href="services">Dịch vụ</a>
+        <a href="gallery">Thư viện ảnh</a>
+        <a href="review">Đánh giá</a>
+        <a href="contact">Liên hệ</a>
+        <a href="plan-trip">Thanh toán</a>
+        <a href="chatbot" class="ai-assistant-link"><i class="fas fa-robot"></i> Trợ lý AI</a>
+    </nav>
+
+    <div class="icons">
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<section class="hero" id="home">
+    <div class="video-container">
+        <video src="/images/ocean.mp4" id="video-slider" loop autoplay muted></video>
+    </div>
+
+    <div class="hero-content">
+        <h3>Khám Phá Thế Giới</h3>
+        <p>Những hành trình mới đang chờ đón bạn</p>
+    </div>
+
+    <div class="booking-cta">
+        <button type="button" class="btn-start-booking" id="go-booking-btn">
+            Bắt đầu đặt vé <i class="fas fa-arrow-right"></i>
+        </button>
+        <p class="booking-cta__hint">Tiếp tục đến trang Đặt chỗ để hoàn tất chi tiết chuyến đi của bạn.</p>
+    </div>
+
+    <div class="controls">
+        <span class="vid-btn active" data-src="/images/ocean.mp4"></span>
+        <span class="vid-btn" data-src="/images/waves.mp4"></span>
+        <span class="vid-btn" data-src="/images/vid-4.mp4"></span>
+        <span class="vid-btn" data-src="/images/seoul.mp4"></span>
+        <span class="vid-btn" data-src="/images/vid-3.mp4"></span>
+    </div>
+</section>
+
+<section class="trending" id="trending">
+    <div class="section-heading">
+        <h1>Xu hướng <span>Hàng đầu</span></h1>
+    </div>
+
+    <div class="grid-container">
+        <div class="card js-booking-card" data-destination="Wakehurst Forest, UK">
+            <a href="booking" class="js-booking-link">
+                <img src="/images/dia-diem-hampshire-anh.jpg" alt="">
+            </a>
+            <div class="card-content">
+                <h3>Rừng Wakehurst, Anh</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> 15/01/2024</span>
+                    <span><i class="fas fa-map-marker-alt"></i> Anh Quốc</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card js-booking-card" data-destination="Pyramids">
+            <a href="booking" class="js-booking-link">
+                <img src="/images/g-9.jpg" alt="">
+            </a>
+            <div class="card-content">
+                <h3>Kim Tự Tháp</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> 15/12/2023</span>
+                    <span><i class="fas fa-map-marker-alt"></i> Ai Cập</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card js-booking-card" data-destination="Neuschwanstein Castle">
+            <a href="booking" class="js-booking-link">
+                <img src="/images/neuschwanstein-đức.jpg" alt="">
+            </a>
+            <div class="card-content">
+                <h3>Lâu đài Neuschwanstein</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> 17/01/2024</span>
+                    <span><i class="fas fa-map-marker-alt"></i> Đức</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="packages" id="packages">
+    <div class="section-heading">
+        <h1>Gói tour <span>Phổ biến</span></h1>
+    </div>
+
+    <div class="grid-container">
+        <div class="card package-card">
+            <video controls loop poster="">
+                <source src="/images/vương quốc anh.mp4" type="video/mp4">
+            </video>
+            <div class="card-content">
+                <h3><i class="fas fa-map-marker-alt"></i> Vương Quốc Anh</h3>
+                <p>Trải nghiệm di sản hoàng gia và phong cảnh tuyệt đẹp của xứ sở sương mù.</p>
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                </div>
+                <div class="price">$78.00 <span>$120.00</span></div>
+
+                <a href="booking" class="btn-book js-package-book" data-destination="The United Kingdom">Đặt ngay</a>
+            </div>
+        </div>
+
+        <div class="card package-card">
+            <video controls loop>
+                <source src="/images/Hawaii.mp4" type="video/mp4">
+            </video>
+            <div class="card-content">
+                <h3><i class="fas fa-map-marker-alt"></i> Hawaii</h3>
+                <p>Thiên đường nhiệt đới với tinh thần aloha nồng ấm và những cuộc phiêu lưu.</p>
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <div class="price">$86.00 <span>$140.00</span></div>
+
+                <a href="booking" class="btn-book js-package-book" data-destination="Hawaii">Đặt ngay</a>
+            </div>
+        </div>
+
+        <div class="card package-card">
+            <video controls loop>
+                <source src="/images/paris_-_16619 (540p).mp4" type="video/mp4">
+            </video>
+            <div class="card-content">
+                <h3><i class="fas fa-map-marker-alt"></i> Paris</h3>
+                <p>Thành phố của tình yêu, nghệ thuật, thời trang và ẩm thực tinh tế.</p>
+                <div class="stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <div class="price">$56.00 <span>$126.00</span></div>
+
+                <a href="booking" class="btn-book js-package-book" data-destination="Paris">Đặt ngay</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="services" id="services">
+    <div class="section-heading">
+        <h1>Dịch vụ <span>Của chúng tôi</span></h1>
+    </div>
+
+    <div class="services-container">
+        <div class="service-box">
+            <i class="fas fa-hotel"></i>
+            <h3>Khách sạn giá tốt</h3>
+            <p>Lưu trú chất lượng với ngân sách tiết kiệm. Bắt đầu hành trình ngay!</p>
+        </div>
+        <div class="service-box">
+            <i class="fas fa-plane"></i>
+            <h3>Di chuyển nhanh nhất</h3>
+            <p>Hàng không thương mại là phương thức vận chuyển nhanh nhất cho khoảng cách xa.</p>
+        </div>
+        <div class="service-box">
+            <i class="fas fa-hiking"></i>
+            <h3>Những cuộc phiêu lưu</h3>
+            <p>Những hành trình thú vị vượt qua giới hạn và tạo nên kỷ niệm khó quên.</p>
+        </div>
+        <div class="service-box">
+            <i class="fas fa-utensils"></i>
+            <h3>Ẩm thực & Đồ uống</h3>
+            <p>Khám phá hương vị toàn cầu và làm phong phú khẩu vị văn hóa của bạn.</p>
+        </div>
+    </div>
+</section>
+
+<section class="news" id="news">
+    <div class="section-heading">
+        <h1>Tin tức <span>Du lịch</span></h1>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <img src="/images/costa-rica.jpg" alt="">
+            <div class="card-content">
+                <h3>Động vật hoang dã Costa Rica</h3>
+                <p>Hành trình xuyên qua những khu rừng nhiệt đới và những bãi biển tuyệt đẹp.</p>
+                <a href="https://luhanhvietnam.com.vn" target="_blank" class="btn-link">Xem thêm <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="card">
+            <img src="/images/p-1.jpg" alt="">
+            <div class="card-content">
+                <h3>Hành trình Ấn Độ</h3>
+                <p>Văn hóa phong phú, lịch sử lâu đời và ẩm thực biến Ấn Độ thành điểm đến hoàn hảo.</p>
+                <a href="https://www.traveloka.com" target="_blank" class="btn-link">Xem thêm <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+        <div class="card">
+            <img src="/images/Lapland.jpg" alt="">
+            <div class="card-content">
+                <h3>Mùa đông ở Lapland</h3>
+                <p>Trải nghiệm phép màu của mùa đông tại vùng phía bắc Phần Lan.</p>
+                <a href="https://tatinta.com" target="_blank" class="btn-link">Xem thêm <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h2>Thông tin liên hệ</h2>
+            <p><strong>Hà Nam Khánh</strong></p>
+            <p><i class="fas fa-phone"></i> 0795129626</p>
+            <p><i class="fas fa-envelope"></i> hanamkhanh2004@gmail.com</p>
+        </div>
+    </div>
+</section>
+
+<a href="/chatbot" class="chatbot-floating-btn" title="Trợ lý du lịch AI">
+    <i class="fas fa-robot"></i>
+    <span class="chat-tooltip">Cần giúp đỡ? Hỏi AI ngay!</span>
+</a>
+
+<style>
+    .chatbot-floating-btn {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        z-index: 9999;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        animation: pulse 2s infinite;
+    }
+
+    .chatbot-floating-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 30px rgba(59, 130, 246, 0.6);
+    }
+
+    .chatbot-floating-btn:hover .chat-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-10px);
+    }
+
+    .chat-tooltip {
+        position: absolute;
+        right: 70px;
+        background: #1e293b;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .chat-tooltip::after {
+        content: '';
+        position: absolute;
+        right: -6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 6px solid transparent;
+        border-left-color: #1e293b;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+        50% {
+            box-shadow: 0 4px 30px rgba(59, 130, 246, 0.7);
+        }
+    }
+</style>
+
+<script src="/js/home.js"></script>
+
+</body>
+</html>

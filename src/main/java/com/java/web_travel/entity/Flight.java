@@ -1,0 +1,70 @@
+package com.java.web_travel.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.java.web_travel.enums.TicketClass;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
+import java.util.List;
+
+@Entity
+@Table(
+        name = "flight",
+        indexes = {
+                @Index(name = "idx_flight_check_in", columnList = "check_in_date"),
+                @Index(name = "idx_flight_check_out", columnList = "check_out_date"),
+                @Index(name = "idx_flight_ticket_class", columnList = "ticket_class"),
+                @Index(name = "idx_flight_airline", columnList = "airline_name")
+        }
+)
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Flight {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ticket_class", nullable = false, length = 30)
+    private TicketClass ticketClass;
+
+    @Column(name = "airline_name", nullable = false, length = 200)
+    private String airlineName;
+
+    @Column(name = "price", nullable = false)
+    private double price;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "check_in_date", nullable = false)
+    @DateTimeFormat
+    private Date checkInDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "check_out_date", nullable = false)
+    @DateTimeFormat
+    private Date checkOutDate;
+
+    @Column(name = "number_of_chairs", nullable = false)
+    private int numberOfChairs;
+
+    @Column(name = "seats_available", nullable = false)
+    private int seatAvailable;
+
+    @Version
+    @JsonIgnore
+    private Long version;
+
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.PERSIST)
+    @JsonIgnore
+    private List<Order> orders;
+
+    @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<FlightSeat> seats;
+}

@@ -1,0 +1,464 @@
+/* Scoped styles: chỉ áp dụng cho trang có <body class="hust-gallery-page"> */
+body.hust-gallery-page {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
+
+  margin: 0;
+  background-color: var(--bg-light);
+  font-family: 'Poppins', sans-serif;
+}
+
+body.hust-gallery-page *,
+body.hust-gallery-page *::before,
+body.hust-gallery-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-gallery-page a { text-decoration: none; }
+
+/* --- HEADER & NAVBAR --- */
+body.hust-gallery-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-gallery-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-gallery-page header .logo span { color: var(--primary); }
+
+body.hust-gallery-page header .bar {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+body.hust-gallery-page header .bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+body.hust-gallery-page header .bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.hust-gallery-page header .bar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+body.hust-gallery-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-gallery-page header .bar a:hover,
+body.hust-gallery-page header .bar a.indam {
+  color: var(--primary);
+}
+
+/* AI Assistant Link in navbar */
+body.hust-gallery-page header .bar a.ai-assistant-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.hust-gallery-page header .bar a.ai-assistant-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: scale(1.05);
+}
+
+body.hust-gallery-page header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-gallery-page header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+body.hust-gallery-page header .icons i:hover { color: var(--primary); }
+
+/* --- DROPDOWN --- */
+body.hust-gallery-page .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-gallery-page .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-gallery-page .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* --- GALLERY CONTENT --- */
+body.hust-gallery-page .gallery-section {
+  padding: 8rem 7% 4rem;
+  text-align: center;
+}
+
+body.hust-gallery-page .heading {
+  text-align: center;
+  padding-bottom: 2rem;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  font-size: 3.5rem;
+}
+
+body.hust-gallery-page .heading span {
+  letter-spacing: 5px;
+  display: inline-block;
+  color: var(--primary);
+  text-shadow: 0 5px 10px rgba(0,0,0,.1);
+  transition: .3s;
+}
+
+body.hust-gallery-page .heading span:hover {
+  transform: translateY(-10px);
+}
+
+body.hust-gallery-page .gallery-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+body.hust-gallery-page .gallery-item {
+  overflow: hidden;
+  box-shadow: 0 1rem 2rem rgba(0,0,0,.1);
+  border: 1rem solid #fff;
+  border-radius: .5rem;
+  position: relative;
+  height: 250px;
+}
+
+body.hust-gallery-page .gallery-item img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: .3s linear;
+  display: block;
+}
+
+/* Overlay: Ẩn hoàn toàn khi chưa hover */
+body.hust-gallery-page .gallery-item .content {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  padding: 22px 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity .25s ease, transform .25s ease, visibility .25s ease;
+}
+
+body.hust-gallery-page .gallery-item:hover .content {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+body.hust-gallery-page .gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+body.hust-gallery-page .gallery-item .content h3 {
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 8px;
+
+  font-size: 1.5rem;
+  color: var(--primary);
+
+  line-height: 1.2;
+  min-height: calc(1.2em * 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.hust-gallery-page .gallery-item .content p {
+  width: 100%;
+  margin: 0;
+
+  font-size: 0.95rem;
+  color: #eee;
+
+  line-height: 1.3;
+  min-height: calc(1.3em * 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.hust-gallery-page .gallery-item .btn-see-more {
+  margin-top: auto;
+  margin-bottom: 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 160px;
+  height: 44px;
+
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  border-radius: 999px;
+
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body.hust-gallery-page .gallery-item .btn-see-more:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* --- FOOTER --- */
+body.hust-gallery-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+}
+
+body.hust-gallery-page .footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-gallery-page .footer-col h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+body.hust-gallery-page .footer-col p {
+  color: #bbb;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1200px) {
+  body.hust-gallery-page header { padding: 1rem 2rem; }
+}
+
+/* =========================================================
+   PLACE MODAL (DETAIL FORM) - scoped
+   ========================================================= */
+body.hust-gallery-page.modal-open {
+  overflow: hidden;
+}
+
+body.hust-gallery-page .place-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  align-items: center;
+  justify-content: center;
+}
+
+body.hust-gallery-page .place-modal.is-open {
+  display: flex;
+}
+
+body.hust-gallery-page .place-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+}
+
+body.hust-gallery-page .place-modal__dialog {
+  position: relative;
+  width: min(980px, 92vw);
+  height: min(86vh, 900px);
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+body.hust-gallery-page .place-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+body.hust-gallery-page .place-modal__close:hover {
+  background: rgba(0,0,0,0.65);
+}
+
+/* ✅ OUTER media: full width + nền đen
+   ✅ INNER media: sẽ được JS set width/height theo tỉ lệ thumbnail */
+body.hust-gallery-page .place-modal__media {
+  width: 100%;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+body.hust-gallery-page .place-modal__media-inner {
+  /* fallback khi JS chưa set kịp */
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+}
+
+body.hust-gallery-page .place-modal__media-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* giữ kiểu cắt ảnh giống thumbnail */
+  display: block;
+  transform: none;     /* bỏ scale 1.01 để tránh cảm giác “lệ” */
+}
+
+body.hust-gallery-page .place-modal__body {
+  padding: 22px 22px 26px;
+  overflow-y: auto;
+}
+
+body.hust-gallery-page .place-modal__body h2 {
+  font-size: 1.9rem;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+body.hust-gallery-page .place-modal__subtitle {
+  color: var(--text-light);
+  font-size: 1rem;
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+
+body.hust-gallery-page .place-modal__content h3 {
+  margin-top: 18px;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+  font-size: 1.15rem;
+}
+
+body.hust-gallery-page .place-modal__content p {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  font-size: 0.98rem;
+}
+
+body.hust-gallery-page .place-modal__content ul {
+  padding-left: 18px;
+  margin-bottom: 10px;
+}
+
+body.hust-gallery-page .place-modal__content li {
+  color: var(--text-light);
+  line-height: 1.55;
+  margin-bottom: 6px;
+  font-size: 0.98rem;
+}
+
+body.hust-gallery-page .place-modal__cta {
+  margin-top: 26px;
+  padding-top: 18px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: center;
+}
+
+body.hust-gallery-page .place-modal__book-btn {
+  width: min(320px, 90%);
+  height: 50px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: var(--primary);
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+body.hust-gallery-page .place-modal__book-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+body.hust-gallery-page .place-modal__media {
+  display: none !important;
+}

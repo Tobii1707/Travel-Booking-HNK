@@ -1,0 +1,574 @@
+/* Scoped: chỉ áp dụng cho trang có <body class="hust-home-page"> */
+body.hust-home-page {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
+
+  background-color: var(--bg-light);
+  overflow-x: hidden;
+  margin: 0;
+  font-family: 'Poppins', sans-serif; /* không đè FontAwesome */
+}
+
+body.hust-home-page *,
+body.hust-home-page *::before,
+body.hust-home-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-home-page a { text-decoration: none; }
+
+/* ----- HEADER ----- */
+body.hust-home-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-home-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-home-page header .logo span { color: var(--primary); }
+
+/* Menu bar */
+body.hust-home-page header .bar {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+body.hust-home-page header .bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+body.hust-home-page header .bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.hust-home-page header .bar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+body.hust-home-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-home-page header .bar a:hover,
+body.hust-home-page header .bar a.indam {
+  color: var(--primary);
+}
+
+/* AI Assistant Link in navbar */
+body.hust-home-page header .bar a.ai-assistant-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.hust-home-page header .bar a.ai-assistant-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: scale(1.05);
+}
+
+body.hust-home-page header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+body.hust-home-page header .icons i:hover { color: var(--primary); }
+
+/* Dropdown */
+body.hust-home-page .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+body.hust-home-page .dropdown-menu a {
+  display: block;
+  padding: 12px 20px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-home-page .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* ----- HERO ----- */
+body.hust-home-page .hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+body.hust-home-page .video-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+body.hust-home-page .video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.hust-home-page .hero-content {
+  z-index: 1;
+  margin-top: -50px;
+}
+
+body.hust-home-page .hero-content h3 {
+  font-size: 3.5rem;
+  color: var(--white);
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin-bottom: 10px;
+}
+
+body.hust-home-page .hero-content p {
+  font-size: 1.5rem;
+  color: var(--white);
+  font-weight: 300;
+  margin-bottom: 30px;
+}
+
+/* Booking bar */
+body.hust-home-page .booking-bar {
+  background: var(--white);
+  padding: 10px 10px 10px 30px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  margin: 30px auto 0 auto;
+  max-width: 900px;
+  width: 90%;
+}
+
+body.hust-home-page .booking-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #ddd;
+  padding-right: 20px;
+  text-align: left;
+}
+
+body.hust-home-page .booking-item:last-child,
+body.hust-home-page .booking-item.booking-item-btn {
+  border: none;
+  flex: 0;
+  padding-right: 0;
+}
+
+body.hust-home-page .booking-item label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+body.hust-home-page .booking-item input {
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--text-light);
+  background: transparent;
+  width: 100%;
+  padding: 5px 0;
+}
+
+body.hust-home-page .booking-item input[type=number]::-webkit-inner-spin-button,
+body.hust-home-page .booking-item input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+body.hust-home-page .btn-search {
+  background: var(--primary);
+  color: var(--white);
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.3s;
+  flex-shrink: 0;
+}
+
+body.hust-home-page .btn-search:hover {
+  background: var(--primary-dark);
+  transform: scale(1.05);
+}
+
+/* Video controls */
+body.hust-home-page .controls {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  gap: 10px;
+}
+
+body.hust-home-page .vid-btn {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+body.hust-home-page .vid-btn.active {
+  background: var(--primary);
+  border-color: var(--white);
+  transform: scale(1.2);
+}
+
+/* ----- SECTIONS ----- */
+body.hust-home-page section { padding: 4rem 7%; }
+
+body.hust-home-page .section-heading {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+body.hust-home-page .section-heading h1 {
+  font-size: 2.5rem;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+body.hust-home-page .section-heading span { color: var(--primary); }
+
+body.hust-home-page .grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-home-page .card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+  position: relative;
+}
+
+body.hust-home-page .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+body.hust-home-page .card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+body.hust-home-page .card-content { padding: 1.5rem; }
+
+body.hust-home-page .card-content h3,
+body.hust-home-page .card-content h2 {
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+body.hust-home-page .card-content p {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+body.hust-home-page .card-meta {
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+body.hust-home-page .btn-link {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Packages */
+body.hust-home-page .package-card video {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+body.hust-home-page .stars i {
+  color: #ffa500;
+  font-size: 0.8rem;
+}
+
+body.hust-home-page .price {
+  font-size: 1.2rem;
+  color: var(--text-dark);
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+body.hust-home-page .price span {
+  font-size: 0.9rem;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
+body.hust-home-page .btn-book {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--primary);
+  color: var(--white);
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+body.hust-home-page .btn-book:hover { background: var(--primary-dark); }
+
+/* Services */
+body.hust-home-page .services-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+body.hust-home-page .service-box {
+  background: var(--white);
+  padding: 2rem;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1px solid #eee;
+  transition: 0.3s;
+}
+
+body.hust-home-page .service-box:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+body.hust-home-page .service-box i {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+body.hust-home-page .service-box h3 {
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+body.hust-home-page .service-box p {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* Footer */
+body.hust-home-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+}
+
+body.hust-home-page .footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-home-page .footer-col h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+body.hust-home-page .footer-col ul li {
+  list-style: none;
+  margin-bottom: 10px;
+}
+
+body.hust-home-page .footer-col ul li a,
+body.hust-home-page .footer-col p,
+body.hust-home-page .footer-col a {
+  color: #bbb;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+body.hust-home-page .footer-col ul li a:hover,
+body.hust-home-page .footer-col a:hover {
+  color: var(--primary);
+  padding-left: 5px;
+}
+
+body.hust-home-page .credit {
+  text-align: center;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid #333;
+  font-size: 1rem;
+}
+
+body.hust-home-page .credit span { color: var(--primary); }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  body.hust-home-page header { padding: 1rem 2rem; }
+}
+
+@media (max-width: 768px) {
+  body.hust-home-page .hero-content h3 { font-size: 2.5rem; }
+
+  body.hust-home-page .booking-bar {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 15px;
+    padding: 20px;
+  }
+
+  body.hust-home-page .booking-item {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    padding-right: 0;
+  }
+
+  body.hust-home-page .booking-item.booking-item-btn {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  body.hust-home-page .btn-search {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+    height: 50px;
+  }
+}
+
+/* =========================================================
+   HOME - Replace booking form with CTA (scoped)
+   ========================================================= */
+body.hust-home-page .booking-cta {
+  z-index: 1;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+body.hust-home-page .btn-start-booking {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  width: min(420px, 92vw);
+  height: 56px;
+
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  background: var(--primary);
+  color: var(--white);
+
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
+body.hust-home-page .btn-start-booking:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+body.hust-home-page .booking-cta__hint {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.95rem;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  text-align: center;
+  max-width: 520px;
+}
+
+/* Make trending cards feel clickable */
+body.hust-home-page .trending .card.js-booking-card {
+  cursor: pointer;
+}

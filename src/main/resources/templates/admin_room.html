@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Phòng | VIVU TRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/admin_room.css">
+</head>
+
+<body class="hust-admin-room">
+
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="admin_booking">Quản lý Chuyến đi</a>
+        <a href="admin_account">Quản lý Tài khoản</a>
+        <a href="admin_flights">Quản lý Chuyến bay</a>
+        <a href="admin_hotel">Quản lý Khách sạn</a>
+        <a href="admin_room" class="indam">Quản lý Phòng</a>
+        <a href="admin_contact">Quản lý Liên hệ</a>
+        <a href="admin_seats">Quản lý Chỗ ngồi</a>
+    </nav>
+    <div class="icons">
+        <i class="fas fa-search" id="search-btn"></i>
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container-info">
+    <div class="left">
+        <p><b>Quản lý Phòng</b></p>
+    </div>
+    <div class="right">
+        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
+        <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <label for="hotelSelect">Chọn khách sạn:</label>
+        <select id="hotelSelect" class="form-control" onchange="fetchRooms()">
+            <option value="">-- Chọn khách sạn --</option>
+        </select>
+    </div>
+
+    <button class="btn btn-create" onclick="openAddModal()" id="addRoomBtn" disabled>
+        <i class="fas fa-plus"></i> Thêm phòng mới
+    </button>
+</div>
+
+<div class="table-wrapper">
+    <table id="roomTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Số phòng</th>
+            <th>Loại phòng</th>
+            <th>Giá</th>
+            <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody id="roomTableBody">
+        <tr>
+            <td colspan="5" class="empty-message">Vui lòng chọn khách sạn để xem danh sách phòng</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<div id="roomModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm phòng</h3>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="roomId">
+            <div class="form-group">
+                <label>Số phòng</label>
+                <input type="number" id="roomNumber" class="form-control" placeholder="VD: 101">
+            </div>
+            <div class="form-group">
+                <label>Loại phòng</label>
+                <select id="roomType" class="form-control">
+                    <option value="Normal Room">Phòng thường (Normal)</option>
+                    <option value="Vip Room">Phòng VIP</option>
+                    <option value="Deluxe Room">Phòng Deluxe</option>
+                    <option value="Suite">Phòng Suite</option>
+                    <option value="Presidential Suite">Phòng Tổng thống</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Giá (VNĐ)</label>
+                <input type="number" id="roomPrice" class="form-control" placeholder="0">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
+            <button class="btn btn-create" id="saveRoomBtn">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin_room.js"></script>
+</body>
+</html>

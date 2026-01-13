@@ -1,0 +1,501 @@
+/* Scoped styles: chỉ áp dụng cho trang có <body class="hust-admin-contact"> */
+body.hust-admin-contact {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --danger: #e74c3c;
+  --info: #3498db;
+  --warning: #f39c12;
+
+  margin: 0;
+  background-color: var(--bg-light);
+  padding-top: 80px;
+  font-family: 'Poppins', sans-serif;
+}
+
+body.hust-admin-contact *,
+body.hust-admin-contact *::before,
+body.hust-admin-contact *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-admin-contact a { text-decoration: none; }
+
+/* --- HEADER & NAVBAR --- */
+body.hust-admin-contact header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-admin-contact header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-admin-contact header .logo span { color: var(--primary); }
+
+body.hust-admin-contact header .bar {
+  display: flex;
+  gap: 20px;
+}
+
+body.hust-admin-contact header .bar a {
+  font-size: 0.9rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-admin-contact header .bar a:hover,
+body.hust-admin-contact header .bar a.indam {
+  color: var(--primary);
+}
+
+body.hust-admin-contact header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-admin-contact header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+body.hust-admin-contact header .icons i:hover { color: var(--primary); }
+
+/* --- DROPDOWN --- */
+body.hust-admin-contact .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px; right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-admin-contact .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-admin-contact .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* --- MAIN CONTAINER --- */
+body.hust-admin-contact .container {
+  padding: 2rem 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+body.hust-admin-contact .container .left p {
+  font-size: 1.5rem;
+  color: var(--text-dark);
+}
+
+body.hust-admin-contact .container .right {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* --- BUTTON GROUPS --- */
+body.hust-admin-contact .btn-group {
+  padding: 0 5%;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+body.hust-admin-contact .btn {
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: none;
+  color: var(--white);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+body.hust-admin-contact .btn-filter { background-color: var(--info); }
+body.hust-admin-contact .btn:hover { opacity: 0.9; }
+
+/* --- SEARCH --- */
+body.hust-admin-contact .filter-container {
+  padding: 0 5%;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+body.hust-admin-contact .search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+body.hust-admin-contact .search-box input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+  flex: 1;
+  max-width: 500px;
+}
+
+body.hust-admin-contact .search-box button {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+body.hust-admin-contact .search-box button:hover {
+  background: var(--primary-dark);
+}
+
+/* --- TABLE --- */
+body.hust-admin-contact h2 {
+  padding: 0 5%;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+body.hust-admin-contact table {
+  width: 90%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+body.hust-admin-contact th,
+body.hust-admin-contact td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-admin-contact th {
+  background-color: var(--primary);
+  color: var(--white);
+  font-weight: 500;
+}
+
+body.hust-admin-contact tr:hover { background-color: #f1f1f1; }
+
+body.hust-admin-contact .status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* --- [UPDATED] TABLE ACTION BUTTONS --- */
+/* Style chung cho nút trong bảng */
+body.hust-admin-contact .table-action-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  text-transform: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Nút Xem: Màu xám sang trọng */
+body.hust-admin-contact .btn-view {
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #e9ecef;
+}
+
+body.hust-admin-contact .btn-view:hover {
+  background-color: #e2e6ea;
+  color: var(--text-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Nút Trả lời: Viền xanh, nền trong suốt (hoặc xanh nhạt) */
+body.hust-admin-contact .btn-reply {
+  background-color: rgba(41, 184, 98, 0.08); /* Xanh rất nhạt */
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+body.hust-admin-contact .btn-reply:hover {
+  background-color: var(--primary);
+  color: white; /* Di chuột vào thì full xanh */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(41, 184, 98, 0.3);
+}
+
+/* Icon bên trong nút */
+body.hust-admin-contact .table-action-btn i {
+  font-size: 0.8rem;
+}
+
+/* --- PAGINATION --- */
+body.hust-admin-contact .pagination {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.hust-admin-contact .pagination button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+body.hust-admin-contact .pagination button.active,
+body.hust-admin-contact .pagination button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+body.hust-admin-contact .pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- MODAL --- */
+body.hust-admin-contact .modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+}
+
+body.hust-admin-contact .modal-content {
+  background: var(--white);
+  margin: 5% auto;
+  padding: 0;
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+body.hust-admin-contact .modal-large {
+  max-width: 800px;
+}
+
+body.hust-admin-contact .modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+body.hust-admin-contact .modal-title {
+  font-size: 1.3rem;
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+body.hust-admin-contact .close {
+  font-size: 28px;
+  font-weight: bold;
+  color: #aaa;
+  cursor: pointer;
+}
+
+body.hust-admin-contact .close:hover { color: #000; }
+
+body.hust-admin-contact .modal-body {
+  padding: 20px;
+}
+
+body.hust-admin-contact .message-details {
+  margin-bottom: 20px;
+}
+
+body.hust-admin-contact .detail-row {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+body.hust-admin-contact .detail-row strong {
+  min-width: 100px;
+  color: var(--text-dark);
+}
+
+body.hust-admin-contact .detail-row span {
+  color: var(--text-light);
+}
+
+body.hust-admin-contact .message-content {
+  flex-direction: column;
+}
+
+body.hust-admin-contact .message-content p {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-top: 5px;
+  white-space: pre-wrap;
+}
+
+body.hust-admin-contact .modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+body.hust-admin-contact .btn-primary {
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+body.hust-admin-contact .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+body.hust-admin-contact .btn-danger {
+  background-color: var(--danger);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+body.hust-admin-contact .btn-primary:hover,
+body.hust-admin-contact .btn-secondary:hover,
+body.hust-admin-contact .btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 991px) {
+  body.hust-admin-contact table {
+    width: 95%;
+    font-size: 0.85rem;
+  }
+
+  body.hust-admin-contact th,
+  body.hust-admin-contact td {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  body.hust-admin-contact header .bar {
+    display: none;
+  }
+
+  body.hust-admin-contact .container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  /* Style cho khung textarea khi focus */
+  body.hust-admin-contact textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(41, 184, 98, 0.1);
+  }
+
+  /* Cải thiện giao diện phần hiển thị câu trả lời cũ trong Modal Xem Chi Tiết */
+  body.hust-admin-contact #adminReplySection {
+    background-color: #f1fdf3; /* Nền xanh rất nhạt */
+    border: 1px solid #c3e6cb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    position: relative;
+  }
+
+  body.hust-admin-contact #adminReplySection::before {
+    content: '\f3e0'; /* Icon reply */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  body.hust-admin-contact #modalReplyContent {
+    color: #155724;
+    font-style: italic;
+    background: transparent !important;
+    border: none !important;
+    padding: 5px 0 !important;
+  }
+}

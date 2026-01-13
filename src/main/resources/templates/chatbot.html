@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý AI | VIVU TRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="/css/chatbot.css">
+</head>
+
+<body class="hust-chatbot-page">
+
+<header>
+    <a href="/home" class="logo"><span>VIVU</span>TRAVEL</a>
+
+    <nav class="bar">
+        <a href="/home">Trang chủ</a>
+        <a href="/booking">Đặt chỗ</a>
+        <a href="/hotel">Khách sạn</a>
+        <a href="/flight">Chuyến bay</a>
+        <a href="/trending">Xu hướng</a>
+        <a href="/news">Tin tức</a>
+        <a href="/package">Combo</a>
+        <a href="/services">Dịch vụ</a>
+        <a href="/gallery">Thư viện</a>
+        <a href="/review">Đánh giá</a>
+        <a href="/contact">Liên hệ</a>
+        <a href="/chatbot" class="indam">Trợ lý AI</a>
+    </nav>
+
+    <div class="icons">
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<main class="chatbot-main">
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <div class="chatbot-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="chatbot-info">
+                <h2>Trợ lý Du lịch AI</h2>
+                <span class="status online">● Trực tuyến</span>
+            </div>
+            <button id="clear-chat" class="btn-clear" title="Xóa đoạn chat">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+
+        <div class="chatbot-messages" id="chatMessages">
+        </div>
+
+        <div class="chatbot-input-area">
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <form id="chatForm" class="chat-form">
+                <input type="text"
+                       id="userInput"
+                       placeholder="Hỏi tôi bất cứ điều gì về đặt chuyến du lịch..."
+                       autocomplete="off"
+                       required>
+                <button type="submit" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn" data-message="Bạn có những điểm đến nào?">
+                <i class="fas fa-map-marker-alt"></i> Điểm đến
+            </button>
+            <button class="quick-btn" data-message="Làm sao để đặt vé máy bay?">
+                <i class="fas fa-plane"></i> Đặt vé máy bay
+            </button>
+            <button class="quick-btn" data-message="Cho tôi biết về chương trình khách hàng thân thiết">
+                <i class="fas fa-gift"></i> Khách hàng thân thiết
+            </button>
+            <button class="quick-btn" data-message="Có khuyến mãi gì hiện tại không?">
+                <i class="fas fa-tags"></i> Khuyến mãi
+            </button>
+        </div>
+    </div>
+</main>
+
+<footer class="chatbot-footer">
+    <p>Được vận hành bởi Mistral AI với Tools & RAG • Hệ thống Đặt chỗ Du lịch © 2024</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const clearChatBtn = document.getElementById('clear-chat');
+        const quickBtns = document.querySelectorAll('.quick-btn');
+
+        // Tải tin nhắn chào mừng khi mở trang
+        loadWelcomeMessage();
+
+        // Xử lý gửi form
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                userInput.value = '';
+            }
+        });
+
+        // Xử lý các nút tác vụ nhanh
+        quickBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const message = this.getAttribute('data-message');
+                sendMessage(message);
+            });
+        });
+
+        // Xóa chat
+        clearChatBtn.addEventListener('click', function() {
+            chatMessages.innerHTML = '';
+            loadWelcomeMessage();
+        });
+
+        // Hàm tải tin nhắn chào mừng
+        async function loadWelcomeMessage() {
+            try {
+                const response = await fetch('/api/chatbot/welcome');
+                const data = await response.json();
+                if (data.success) {
+                    addMessage(data.message, 'bot', data.actions);
+                }
+            } catch (error) {
+                console.error('Error loading welcome message:', error);
+                addMessage('Xin chào! Tôi có thể giúp gì cho kế hoạch du lịch của bạn hôm nay?', 'bot');
+            }
+        }
+
+        // Gửi tin nhắn đến API
+        async function sendMessage(message) {
+            // Thêm tin nhắn người dùng vào khung chat
+            addMessage(message, 'user');
+
+            // Hiển thị chỉ báo đang nhập
+            typingIndicator.style.display = 'flex';
+            scrollToBottom();
+
+            try {
+                const response = await fetch('/api/chatbot/message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // Ẩn chỉ báo đang nhập
+                typingIndicator.style.display = 'none';
+
+                if (data.success) {
+                    addMessage(data.message, 'bot', data.actions);
+                } else {
+                    addMessage(data.message || 'Xin lỗi, tôi gặp lỗi. Vui lòng thử lại.', 'bot', data.actions);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                typingIndicator.style.display = 'none';
+                addMessage('Xin lỗi, tôi gặp sự cố kết nối. Vui lòng thử lại sau.', 'bot');
+            }
+        }
+
+        // Thêm tin nhắn vào khung chat
+        function addMessage(text, sender, actions) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+
+            const avatar = document.createElement('div');
+            avatar.classList.add('avatar');
+            avatar.innerHTML = sender === 'bot'
+                ? '<i class="fas fa-robot"></i>'
+                : '<i class="fas fa-user"></i>';
+
+            const content = document.createElement('div');
+            content.classList.add('content');
+
+            // Định dạng tin nhắn (xử lý xuống dòng và markdown cơ bản)
+            const formattedText = formatMessage(text);
+            content.innerHTML = formattedText;
+
+            const time = document.createElement('span');
+            time.classList.add('time');
+            time.textContent = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+            if (sender === 'user') {
+                messageDiv.appendChild(content);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+            }
+            content.appendChild(time);
+
+            // Thêm các nút hành động nếu có (chỉ cho bot)
+            if (actions && actions.length > 0 && sender === 'bot') {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('message-actions');
+
+                actions.forEach(action => {
+                    const actionBtn = document.createElement('a');
+                    actionBtn.href = action.url;
+                    actionBtn.classList.add('action-btn', `action-${action.type}`);
+                    actionBtn.innerHTML = `<i class="fas ${action.icon}"></i> ${action.label}`;
+                    actionBtn.title = action.label;
+                    actionsDiv.appendChild(actionBtn);
+                });
+
+                content.appendChild(actionsDiv);
+            }
+
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Định dạng nội dung tin nhắn
+        function formatMessage(text) {
+            // Chuyển đổi xuống dòng thành <br>
+            let formatted = text.replace(/\n/g, '<br>');
+            // Chuyển đổi **in đậm** thành <strong>
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Chuyển đổi *in nghiêng* thành <em>
+            formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            // Chuyển đổi gạch đầu dòng
+            formatted = formatted.replace(/• /g, '&bull; ');
+            return formatted;
+        }
+
+        // Cuộn xuống cuối khung chat
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Toggle dropdown menu người dùng
+        const userIcon = document.getElementById('user-icon');
+        const userMenu = document.getElementById('user-menu');
+
+        if (userIcon && userMenu) {
+            userIcon.addEventListener('click', function() {
+                userMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!userIcon.contains(e.target) && !userMenu.contains(e.target)) {
+                    userMenu.classList.remove('show');
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

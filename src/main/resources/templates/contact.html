@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liên hệ | VIVU TRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+    <link rel="stylesheet" href="/css/contact.css" />
+</head>
+
+<body class="hust-contact-page">
+
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="home">Trang chủ</a>
+        <a href="booking">Đặt chỗ</a>
+        <a href="hotel">Khách sạn</a>
+        <a href="flight">Chuyến bay</a>
+        <a href="trending">Xu hướng</a>
+        <a href="news">Tin tức</a>
+        <a href="package">Gói tour</a>
+        <a href="services">Dịch vụ</a>
+        <a href="gallery">Thư viện ảnh</a>
+        <a href="review">Đánh giá</a>
+        <a href="contact" class="indam">Liên hệ</a>
+        <a href="plan-trip">Thanh toán</a>
+        <a href="chatbot" class="ai-assistant-link"><i class="fas fa-robot"></i> Trợ lý AI</a>
+    </nav>
+    <div class="icons">
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="contact-container">
+    <div class="contact-info">
+        <h1>Liên hệ <span>Ngay</span></h1>
+        <p>Chúng tôi sẵn sàng hỗ trợ bạn lên kế hoạch cho chuyến phiêu lưu tiếp theo. Hãy liên hệ với chúng tôi bất cứ lúc nào!</p>
+
+        <div class="info-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <div>
+                <h3>Địa chỉ</h3>
+                <span>Hà Nội, Việt Nam</span>
+            </div>
+        </div>
+
+        <div class="info-item">
+            <i class="fas fa-envelope"></i>
+            <div>
+                <h3>Email</h3>
+                <span>hanamkhanh2004@gmail.com</span>
+            </div>
+        </div>
+
+        <div class="info-item">
+            <i class="fas fa-phone"></i>
+            <div>
+                <h3>Điện thoại</h3>
+                <span>0795129626</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-form">
+        <h2>Gửi tin nhắn</h2>
+        <form id="contact-form" autocomplete="off">
+            <div class="input-box">
+                <input type="text" id="fullName" name="fullName" required class="input-field" />
+                <label>Họ và tên</label>
+            </div>
+
+            <div class="input-box">
+                <input type="email" id="email" name="email" required class="input-field" />
+                <label>Địa chỉ Email</label>
+            </div>
+
+            <div class="input-box">
+                <input type="text" id="subject" name="subject" required />
+                <label>Tiêu đề</label>
+            </div>
+
+            <div class="input-box">
+                <textarea id="message" name="message" required></textarea>
+                <label>Nội dung</label>
+            </div>
+
+            <button type="submit" class="btn-send">Gửi ngay</button>
+        </form>
+    </div>
+</div>
+
+<section class="history-container" id="history-section" style="display: none;">
+    <div class="history-header">
+        <h2><i class="fas fa-history"></i> Lịch sử hỗ trợ</h2>
+        <p>Theo dõi các yêu cầu bạn đã gửi và trạng thái xử lý.</p>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="history-table">
+            <thead>
+            <tr>
+                <th style="width: 15%;">Thời gian</th>
+                <th style="width: 40%;">Nội dung liên hệ</th>
+                <th style="width: 45%;">VIVU Travel phản hồi</th>
+            </tr>
+            </thead>
+            <tbody id="history-list">
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <h2>Về chúng tôi</h2>
+            <p>Website được phát triển bởi <b>Hà Nam Khánh</b>. Chúng tôi kết nối bạn với những điểm đến đẹp nhất thế giới.</p>
+        </div>
+    </div>
+</section>
+
+<div id="contact-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div class="modal-body">
+            <i id="modal-icon" class="fas fa-check-circle"></i>
+            <p id="modal-message">Gửi tin nhắn thành công!</p>
+            <button class="modal-button">OK</button>
+        </div>
+    </div>
+</div>
+
+<a href="/chatbot" class="chatbot-float" title="Trợ lý du lịch AI">
+    <i class="fas fa-robot"></i>
+</a>
+
+<script src="/js/contact.js"></script>
+</body>
+</html>

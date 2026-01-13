@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào mừng | VIVUTRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/user.css">
+</head>
+
+<body class="hust-auth-page">
+
+<div class="video-container">
+    <div class="video-overlay"></div>
+    <video src="images/waves.mp4" id="video-slider" loop autoplay muted></video>
+</div>
+
+<header>
+    <a href="home" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="home">Trang chủ</a>
+        <a href="booking">Đặt chỗ</a>
+        <a href="hotel">Khách sạn</a>
+        <a href="flight">Vé máy bay</a>
+        <a href="trending">Xu hướng</a>
+        <a href="news">Tin tức</a>
+        <a href="package">Gói tour</a>
+        <a href="services">Dịch vụ</a>
+        <a href="gallery">Thư viện ảnh</a>
+        <a href="review">Đánh giá</a>
+        <a href="contact">Liên hệ</a>
+        <a href="plan-trip">Thanh toán</a>
+    </nav>
+</header>
+
+<div class="auth-container">
+
+    <form id="sign-in-form" class="animate-in">
+        <div class="form-toggle">
+            <button type="button" id="sign-in-button" class="active">Đăng nhập</button>
+            <button type="button" id="sign-up-button">Đăng ký</button>
+        </div>
+
+        <div class="input-group">
+            <input type="tel" placeholder="Số điện thoại" id="login-phone" required>
+        </div>
+        <div class="input-group">
+            <input type="password" placeholder="Mật khẩu" id="login-password" required>
+        </div>
+
+        <div class="forgot-password-link">
+            <a href="/forgot-password">Quên mật khẩu?</a>
+        </div>
+
+        <input type="submit" value="Đăng nhập ngay">
+    </form>
+
+    <form id="sign-up-form" class="hidden">
+        <div class="form-toggle">
+            <button type="button" id="sign-in-button1">Đăng nhập</button>
+            <button type="button" id="sign-up-button1" class="active">Đăng ký</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" placeholder="Họ và tên" id="signup-name" required>
+        </div>
+        <div class="input-group">
+            <input type="email" placeholder="Email" id="signup-email" required>
+        </div>
+        <div class="input-group">
+            <input type="tel" placeholder="Số điện thoại" id="signup-phone" required>
+        </div>
+        <div class="input-group">
+            <input type="text" onfocus="(this.type='date')" placeholder="Ngày sinh" id="birthday" required>
+        </div>
+        <div class="input-group">
+            <input type="password" placeholder="Mật khẩu" id="signup-password" required>
+        </div>
+        <div class="input-group">
+            <input type="password" placeholder="Nhập lại mật khẩu" id="signup-confirm-password" required>
+        </div>
+
+        <input type="submit" value="Đăng ký ngay">
+    </form>
+
+</div>
+
+<div id="error-modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-modal" style="display:none;">&times;</span>
+        <h2>Thông báo</h2>
+        <p id="error-message"></p>
+        <button id="close-modal-button">Đóng</button>
+    </div>
+</div>
+
+<a href="/chatbot" class="chatbot-float" title="Trợ lý du lịch AI">
+    <i class="fas fa-robot"></i>
+</a>
+<style>
+    .chatbot-float {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        text-decoration: none;
+    }
+    .chatbot-float:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+</style>
+
+<script src="/js/user.js"></script>
+
+</body>
+</html>

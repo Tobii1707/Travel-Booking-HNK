@@ -1,0 +1,559 @@
+/* Scoped styles: chỉ áp dụng cho trang có <body class="hust-contact-page"> */
+body.hust-contact-page {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --radius: 12px;
+
+  margin: 0;
+  background-color: var(--bg-light);
+  font-family: 'Poppins', sans-serif;
+}
+
+/* reset nhẹ */
+body.hust-contact-page *,
+body.hust-contact-page *::before,
+body.hust-contact-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-contact-page a { text-decoration: none; }
+
+/* --- HEADER & NAVBAR --- */
+body.hust-contact-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-contact-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-contact-page header .logo span { color: var(--primary); }
+
+body.hust-contact-page header .bar {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+body.hust-contact-page header .bar::-webkit-scrollbar { height: 4px; }
+body.hust-contact-page header .bar::-webkit-scrollbar-track { background: transparent; }
+body.hust-contact-page header .bar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+
+body.hust-contact-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-contact-page header .bar a:hover,
+body.hust-contact-page header .bar a.indam {
+  color: var(--primary);
+}
+
+body.hust-contact-page header .bar a.ai-assistant-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.hust-contact-page header .bar a.ai-assistant-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: scale(1.05);
+}
+
+body.hust-contact-page header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-contact-page header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+body.hust-contact-page header .icons i:hover { color: var(--primary); }
+
+/* --- DROPDOWN --- */
+body.hust-contact-page .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-contact-page .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-contact-page .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* --- CONTACT CONTENT --- */
+body.hust-contact-page .contact-container {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 80px;
+  background: var(--white);
+}
+
+/* Left Side: Info */
+body.hust-contact-page .contact-info {
+  flex: 1;
+  background: #222;
+  color: var(--white);
+  padding: 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+body.hust-contact-page .contact-info::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.1;
+}
+
+body.hust-contact-page .contact-info h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  z-index: 1;
+}
+
+body.hust-contact-page .contact-info h1 span { color: var(--primary); }
+
+body.hust-contact-page .contact-info p {
+  margin-bottom: 3rem;
+  font-weight: 300;
+  opacity: 0.8;
+  z-index: 1;
+}
+
+body.hust-contact-page .info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  z-index: 1;
+}
+
+body.hust-contact-page .info-item i {
+  width: 50px;
+  height: 50px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 1.2rem;
+  margin-right: 20px;
+}
+
+body.hust-contact-page .info-item div h3 {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+body.hust-contact-page .info-item div span {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* Right Side: Form */
+body.hust-contact-page .contact-form {
+  flex: 1.2;
+  padding: 5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body.hust-contact-page .contact-form h2 {
+  font-size: 2rem;
+  color: var(--text-dark);
+  margin-bottom: 2rem;
+}
+
+body.hust-contact-page .input-box {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+body.hust-contact-page .input-box input,
+body.hust-contact-page .input-box textarea {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 1rem;
+  color: var(--text-dark);
+  border: none;
+  border-bottom: 1px solid #ddd;
+  outline: none;
+  background: transparent;
+}
+
+body.hust-contact-page input.auto-filled {
+  background-color: #f1f3f5;
+  border-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  padding-left: 5px;
+}
+
+body.hust-contact-page .input-box textarea {
+  height: 100px;
+  resize: none;
+}
+
+body.hust-contact-page .input-box label {
+  position: absolute;
+  top: 0; left: 0;
+  padding: 10px 0;
+  font-size: 1rem;
+  color: var(--text-light);
+  pointer-events: none;
+  transition: 0.3s;
+}
+
+body.hust-contact-page .input-box input:focus ~ label,
+body.hust-contact-page .input-box input:valid ~ label,
+body.hust-contact-page .input-box textarea:focus ~ label,
+body.hust-contact-page .input-box textarea:valid ~ label,
+body.hust-contact-page .input-box input.auto-filled ~ label {
+  top: -20px;
+  left: 0;
+  color: var(--primary);
+  font-size: 0.8rem;
+}
+
+body.hust-contact-page .input-box input:focus,
+body.hust-contact-page .input-box textarea:focus {
+  border-bottom: 2px solid var(--primary);
+}
+
+body.hust-contact-page .btn-send {
+  background: var(--primary);
+  color: var(--white);
+  padding: 15px 40px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.3);
+}
+
+body.hust-contact-page .btn-send:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+body.hust-contact-page .btn-send:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* --- FOOTER --- */
+body.hust-contact-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+}
+
+body.hust-contact-page .footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-contact-page .footer-col h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+body.hust-contact-page .footer-col p {
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+/* --- MODAL --- */
+body.hust-contact-page .modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  overflow: auto;
+}
+
+body.hust-contact-page .modal-content {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: fadeInModal 0.3s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: translate(-50%, -60%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+body.hust-contact-page .modal .close {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+body.hust-contact-page .modal .close:hover { color: #000; }
+
+body.hust-contact-page .modal-body i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+body.hust-contact-page .modal-body p {
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+}
+
+body.hust-contact-page .modal-button {
+  background: var(--primary);
+  color: var(--white);
+  padding: 10px 40px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(41, 184, 98, 0.3);
+}
+
+body.hust-contact-page .modal-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* --- CHATBOT FLOATING --- */
+body.hust-contact-page .chatbot-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+body.hust-contact-page .chatbot-float:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 991px) {
+  body.hust-contact-page .contact-container { flex-direction: column; }
+  body.hust-contact-page .contact-info,
+  body.hust-contact-page .contact-form { padding: 3rem; }
+}
+
+@media (max-width: 1200px) {
+  body.hust-contact-page header { padding: 1rem 2rem; }
+}
+
+/* ============================================================ */
+/* [MỚI] CSS CHO BẢNG LỊCH SỬ LIÊN HỆ                           */
+/* ============================================================ */
+
+body.hust-contact-page .history-container {
+  padding: 4rem 7%;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  min-height: 400px;
+}
+
+body.hust-contact-page .history-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+body.hust-contact-page .history-header h2 {
+  color: #1d1d1d;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+body.hust-contact-page .history-header h2 i {
+  color: var(--primary);
+  margin-right: 10px;
+}
+
+/* Wrapper để bảng có thể cuộn ngang trên điện thoại */
+body.hust-contact-page .table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+body.hust-contact-page .history-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px; /* Đảm bảo bảng không bị co dúm trên màn hình nhỏ */
+}
+
+/* Header của bảng */
+body.hust-contact-page .history-table thead th {
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 18px 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+body.hust-contact-page .history-table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+body.hust-contact-page .history-table thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* Các dòng dữ liệu (Rows) */
+body.hust-contact-page .history-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+body.hust-contact-page .history-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+body.hust-contact-page .history-table tbody tr:hover {
+  background-color: #f9fffb; /* Màu xanh lá rất nhạt khi hover */
+}
+
+body.hust-contact-page .history-table td {
+  padding: 20px 15px;
+  vertical-align: top; /* Căn lề trên cùng */
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Style cho cột Ngày tháng */
+body.hust-contact-page .date-col {
+  color: #888;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Style cho cột User (Nội dung) */
+body.hust-contact-page .msg-subject {
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 5px;
+  display: block;
+}
+
+body.hust-contact-page .msg-body {
+  color: #555;
+  word-wrap: break-word;
+}
+
+/* Style cho cột Admin (Phản hồi) */
+body.hust-contact-page .admin-col {
+  background-color: #fafafa;
+}
+
+body.hust-contact-page .admin-col.has-reply {
+  background-color: #f1f8ff; /* Nền xanh dương nhạt nếu đã trả lời */
+  color: #004085;
+}
+
+/* Nhãn trạng thái "Đang chờ xử lý" */
+body.hust-contact-page .status-badge.pending {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #fff3cd; /* Vàng nhạt */
+  color: #856404;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #ffeeba;
+  white-space: nowrap;
+}

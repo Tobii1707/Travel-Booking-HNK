@@ -1,0 +1,355 @@
+body.hust-booking-page {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
+
+  margin: 0;
+  background-color: var(--bg-light);
+  font-family: 'Poppins', sans-serif;
+}
+
+body.hust-booking-page *,
+body.hust-booking-page *::before,
+body.hust-booking-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-booking-page a { text-decoration: none; }
+
+/* --- HEADER --- */
+body.hust-booking-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-booking-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-booking-page header .logo span { color: var(--primary); }
+
+body.hust-booking-page header .bar {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+body.hust-booking-page header .bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+body.hust-booking-page header .bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.hust-booking-page header .bar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+body.hust-booking-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-booking-page header .bar a:hover,
+body.hust-booking-page header .bar a.indam {
+  color: var(--primary);
+}
+
+/* AI Assistant Link in navbar */
+body.hust-booking-page header .bar a.ai-assistant-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.hust-booking-page header .bar a.ai-assistant-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: scale(1.05);
+}
+
+body.hust-booking-page header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-booking-page header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+body.hust-booking-page header .icons i:hover { color: var(--primary); }
+
+/* --- DROPDOWN --- */
+body.hust-booking-page .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-booking-page .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-booking-page .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* --- BOOKING SECTION --- */
+body.hust-booking-page .booking-section {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 80px;
+  background: var(--white);
+}
+
+body.hust-booking-page .booking-image {
+  flex: 1;
+  background: url('/images/igeat.jpg') no-repeat center center / cover;
+  position: relative;
+  min-height: 500px;
+}
+
+body.hust-booking-page .booking-image::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
+}
+
+body.hust-booking-page .booking-image-content {
+  position: absolute;
+  bottom: 50px;
+  left: 50px;
+  color: var(--white);
+  z-index: 2;
+}
+
+body.hust-booking-page .booking-image-content h2 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+body.hust-booking-page .booking-image-content p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+body.hust-booking-page .booking-form-container {
+  flex: 1;
+  padding: 4rem 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body.hust-booking-page .form-header { margin-bottom: 2rem; }
+
+body.hust-booking-page .form-header h1 {
+  font-size: 2.5rem;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+}
+
+body.hust-booking-page .form-header h1 span { color: var(--primary); }
+
+body.hust-booking-page .form-header p { color: var(--text-light); }
+
+body.hust-booking-page .input-group { margin-bottom: 1.5rem; }
+
+body.hust-booking-page .input-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+body.hust-booking-page .input-group input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  color: var(--text-dark);
+  background: #f8f9fa;
+}
+
+body.hust-booking-page .input-group input:focus {
+  border-color: var(--primary);
+  background: var(--white);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(41, 184, 98, 0.1);
+}
+
+body.hust-booking-page .input-row {
+  display: flex;
+  gap: 20px;
+}
+
+body.hust-booking-page .input-row .input-group { flex: 1; }
+
+body.hust-booking-page .btn-submit {
+  width: 100%;
+  background: var(--primary);
+  color: var(--white);
+  padding: 15px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+body.hust-booking-page .btn-submit:hover { background: var(--primary-dark); }
+
+body.hust-booking-page .booking-message {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: var(--text-dark);
+  text-align: center;
+}
+
+/* --- FOOTER --- */
+body.hust-booking-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+}
+
+body.hust-booking-page .footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-booking-page .footer-col h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+body.hust-booking-page .footer-col ul li { list-style: none; margin-bottom: 10px; }
+
+body.hust-booking-page .footer-col ul li a,
+body.hust-booking-page .footer-col p {
+  color: #bbb;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+body.hust-booking-page .footer-col ul li a:hover {
+  color: var(--primary);
+  padding-left: 5px;
+}
+
+/* --- MODAL --- */
+body.hust-booking-page .modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  align-items: center;
+  justify-content: center;
+}
+
+body.hust-booking-page .modal-content {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: hustBookingSlideIn 0.3s ease-out;
+}
+
+@keyframes hustBookingSlideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+body.hust-booking-page .close {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+}
+
+body.hust-booking-page .close:hover { color: #f44336; }
+
+body.hust-booking-page .modal-button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  font-size: 1rem;
+  border-radius: 50px;
+  cursor: pointer;
+}
+
+body.hust-booking-page .modal-button:hover { background-color: var(--primary-dark); }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1200px) {
+  body.hust-booking-page header { padding: 1rem 2rem; }
+}
+
+@media (max-width: 768px) {
+  body.hust-booking-page .booking-section { flex-direction: column; }
+  body.hust-booking-page .booking-image { height: 300px; min-height: auto; }
+  body.hust-booking-page .input-row { flex-direction: column; gap: 0; }
+}

@@ -1,0 +1,276 @@
+/* FIX nền trắng + đảm bảo full màn */
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body.hust-auth-page {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+
+  /* Variables scoped để không ảnh hưởng project tổng thể */
+  --primary: #29b862;
+  --primary-hover: #1e8544;
+  --text-dark: #1d1d1d;
+  --white: #fff;
+  --glass: rgba(255, 255, 255, 0.95);
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --radius: 12px;
+
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Reset chỉ trong trang này để không đụng CSS khác */
+body.hust-auth-page * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  text-decoration: none;
+  transition: all .2s linear;
+}
+
+/* Background video FIX: dùng fixed để phủ full viewport */
+body.hust-auth-page .video-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+body.hust-auth-page .video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.hust-auth-page .video-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 0;
+}
+
+/* Header */
+body.hust-auth-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-auth-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-auth-page header .logo span {
+  color: var(--primary);
+}
+
+body.hust-auth-page header .bar {
+  display: flex;
+  gap: 15px;
+}
+
+body.hust-auth-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-auth-page header .bar a:hover {
+  color: var(--primary);
+}
+
+/* Auth Card */
+body.hust-auth-page .auth-container {
+  position: relative;
+  z-index: 10;
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  width: 450px;
+  max-width: 90%;
+  padding: 2.5rem 2rem;
+  margin-top: 60px; /* bù header */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Toggle */
+body.hust-auth-page .form-toggle {
+  display: flex;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #eee;
+}
+
+body.hust-auth-page .form-toggle button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  position: relative;
+}
+
+body.hust-auth-page .form-toggle button.active {
+  color: var(--primary);
+}
+
+body.hust-auth-page .form-toggle button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--primary);
+}
+
+/* Inputs */
+body.hust-auth-page .input-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+body.hust-auth-page .input-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background: #f9f9f9;
+  outline: none;
+}
+
+body.hust-auth-page .input-group input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(41, 184, 98, 0.1);
+}
+
+/* Forgot Password Link */
+body.hust-auth-page .forgot-password-link {
+  text-align: right;
+  margin-bottom: 1rem;
+  margin-top: -0.5rem;
+}
+
+body.hust-auth-page .forgot-password-link a {
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+body.hust-auth-page .forgot-password-link a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Submit */
+body.hust-auth-page input[type="submit"] {
+  width: 100%;
+  background: var(--primary);
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+body.hust-auth-page input[type="submit"]:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.3);
+}
+
+/* Helpers */
+body.hust-auth-page .hidden {
+  display: none;
+}
+
+body.hust-auth-page .animate-in {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal */
+body.hust-auth-page .modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  justify-content: center;
+  align-items: center;
+}
+
+body.hust-auth-page .modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  width: 350px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+body.hust-auth-page .modal-content h2 {
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+body.hust-auth-page .modal-content p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+body.hust-auth-page .modal-content button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+body.hust-auth-page .modal-content button:hover {
+  background: var(--primary-hover);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  body.hust-auth-page header { padding: 1rem 2rem; }
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Chuyến đi | VIVU TRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/admin_booking.css">
+</head>
+
+<body class="hust-admin-trip">
+
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="admin_booking" class="indam">Quản lý Chuyến đi</a>
+        <a href="admin_account">Quản lý Tài khoản</a>
+        <a href="admin_flights">Quản lý Chuyến bay</a>
+        <a href="admin_hotel">Quản lý Khách sạn</a>
+        <a href="admin_room">Quản lý Phòng</a>
+        <a href="admin_contact">Quản lý Liên hệ</a>
+        <a href="admin_seats">Quản lý Chỗ ngồi</a>
+    </nav>
+    <div class="icons">
+        <i class="fas fa-search" id="search-btn"></i>
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="left">
+        <p><b>Quản lý Chuyến đi</b></p>
+    </div>
+    <div class="right">
+        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
+        <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
+    </div>
+</div>
+
+<div class="search-container">
+    <input
+            type="text"
+            id="bookingInput"
+            onkeyup="if(event.key === 'Enter') fetchOrdersWithSearch()"
+            placeholder="Nhập từ khóa tìm kiếm..."
+    >
+    <button onclick="fetchOrdersWithSearch()" class="search-btn">
+        <i class="fas fa-search"></i> Tìm kiếm
+    </button>
+</div>
+
+<div class="table-wrapper">
+    <table id="bookingTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Ngày đặt</th>
+            <th>Khách hàng</th>
+            <th>Điểm đến</th>
+            <th>Nhận phòng</th>
+            <th>Trả phòng</th>
+            <th>Hãng bay</th>
+            <th>Khách sạn</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<div id="payment-modal" class="modal">
+    <div class="modal-content">
+        <h2>Xác nhận Thanh toán</h2>
+        <p>Bạn có muốn xác nhận hay từ chối khoản thanh toán này không?</p>
+        <div class="modal-btn-group">
+            <button id="confirm-success-btn" class="modal-btn btn-success">Xác nhận</button>
+            <button id="confirm-failed-btn" class="modal-btn btn-fail">Từ chối</button>
+            <button id="close-modal-btn" class="modal-btn btn-close">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin_booking.js"></script>
+</body>
+</html>

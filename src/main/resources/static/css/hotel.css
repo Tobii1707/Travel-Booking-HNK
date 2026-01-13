@@ -1,0 +1,462 @@
+/* Scoped: chỉ áp dụng cho trang có <body class="hust-hotel-page"> */
+body.hust-hotel-page {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
+
+  background-color: var(--bg-light);
+  color: var(--text-dark);
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+body.hust-hotel-page *,
+body.hust-hotel-page *::before,
+body.hust-hotel-page *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-hotel-page a { text-decoration: none; }
+
+/* ----- HEADER ----- */
+body.hust-hotel-page header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-hotel-page header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-hotel-page header .logo span { color: var(--primary); }
+
+body.hust-hotel-page header .bar {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+body.hust-hotel-page header .bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+body.hust-hotel-page header .bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.hust-hotel-page header .bar::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+body.hust-hotel-page header .bar a {
+  font-size: 0.85rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-hotel-page header .bar a:hover,
+body.hust-hotel-page header .bar a.indam {
+  color: var(--primary);
+}
+
+/* AI Assistant Link in navbar */
+body.hust-hotel-page header .bar a.ai-assistant-link {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.hust-hotel-page header .bar a.ai-assistant-link:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: scale(1.05);
+}
+
+body.hust-hotel-page header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-hotel-page header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+body.hust-hotel-page header .icons i:hover { color: var(--primary); }
+
+/* Dropdown */
+body.hust-hotel-page .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-hotel-page .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-hotel-page .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* ----- HERO ----- */
+body.hust-hotel-page .page-header {
+  position: relative;
+  height: 50vh;
+  background-color: #1a2e1a;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url('/images/boooking.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--white);
+  margin-bottom: 30px;
+
+  /* tránh bị header fixed che */
+  padding-top: 60px;
+}
+
+body.hust-hotel-page .hero-content h1 {
+  font-size: 3.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  margin-bottom: 10px;
+}
+
+body.hust-hotel-page .hero-content p {
+  font-size: 1.2rem;
+  font-weight: 300;
+  opacity: 0.9;
+}
+
+/* ----- CONTENT ----- */
+body.hust-hotel-page .container {
+  padding: 2rem 7% 4rem;
+}
+
+body.hust-hotel-page .section-heading {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+body.hust-hotel-page .section-heading h1 {
+  font-size: 2.5rem;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+body.hust-hotel-page .section-heading span { color: var(--primary); }
+
+/* Hotel list */
+body.hust-hotel-page .hotel-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2.5rem;
+}
+
+body.hust-hotel-page .hotel-list > div {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid #eee;
+}
+
+body.hust-hotel-page .hotel-list > div:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+body.hust-hotel-page .hotel-list > div img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+/* Fallback icon nếu không có ảnh */
+body.hust-hotel-page .hotel-list > div:not(:has(img))::before {
+  content: '\f594';
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 220px;
+  background-color: #e0e0e0;
+  color: #fff;
+  font-size: 4rem;
+}
+
+body.hust-hotel-page .hotel-list > div h3,
+body.hust-hotel-page .hotel-list > div strong {
+  display: block;
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin: 1.5rem 1.5rem 0.5rem 1.5rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+body.hust-hotel-page .hotel-list > div p,
+body.hust-hotel-page .hotel-list > div div {
+  padding: 0 1.5rem 5px;
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+body.hust-hotel-page .hotel-list > div button {
+  margin: 1.5rem;
+  padding: 12px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  text-align: center;
+  margin-top: auto;
+  box-shadow: 0 4px 10px rgba(41, 184, 98, 0.3);
+}
+
+body.hust-hotel-page .hotel-list > div button:hover {
+  background: var(--primary-dark);
+  letter-spacing: 1px;
+}
+
+/* ----- MODAL ----- */
+body.hust-hotel-page .modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+  justify-content: center;
+  align-items: center;
+}
+
+body.hust-hotel-page .modal-content {
+  background-color: var(--white);
+  width: 90%;
+  max-width: 450px;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  position: relative;
+  animation: hotelFadeIn 0.3s ease;
+}
+
+@keyframes hotelFadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+body.hust-hotel-page .close-modal {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+  font-size: 28px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+body.hust-hotel-page .close-modal:hover { color: #f44336; }
+
+body.hust-hotel-page .modal-content h2 {
+  margin-bottom: 25px;
+  text-align: center;
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+body.hust-hotel-page .modal-content label {
+  font-weight: 600;
+  color: var(--text-dark);
+  display: block;
+  margin-bottom: 5px;
+  margin-top: 15px;
+}
+
+body.hust-hotel-page .modal-content input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  background: #f9f9f9;
+}
+
+body.hust-hotel-page .modal-content input:focus {
+  border-color: var(--primary);
+  background: var(--white);
+}
+
+body.hust-hotel-page .room-selection {
+  text-align: center;
+  margin: 25px 0;
+}
+
+body.hust-hotel-page #choose-room-btn {
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  padding: 10px 25px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+body.hust-hotel-page #choose-room-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+body.hust-hotel-page #room-list {
+  margin-top: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  text-align: left;
+  padding: 5px;
+}
+
+body.hust-hotel-page #room-list div {
+  padding: 10px;
+  border-bottom: 1px solid #f1f1f1;
+  cursor: pointer;
+}
+
+body.hust-hotel-page #room-list div:hover {
+  background: #f0f9f4;
+  color: var(--primary);
+}
+
+body.hust-hotel-page button[type="submit"] {
+  width: 100%;
+  padding: 15px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+body.hust-hotel-page button[type="submit"]:hover {
+  background: var(--primary-dark);
+}
+
+/* ----- FOOTER ----- */
+body.hust-hotel-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+  margin-top: auto;
+}
+
+body.hust-hotel-page .footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-hotel-page .footer-col h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+}
+
+body.hust-hotel-page .footer-col ul li {
+  list-style: none;
+  margin-bottom: 10px;
+}
+
+body.hust-hotel-page .footer-col ul li a,
+body.hust-hotel-page .footer-col p {
+  color: #bbb;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+body.hust-hotel-page .footer-col ul li a:hover {
+  color: var(--primary);
+  padding-left: 5px;
+}
+
+body.hust-hotel-page .credit {
+  text-align: center;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid #333;
+  font-size: 1rem;
+}
+
+body.hust-hotel-page .credit span { color: var(--primary); }
+
+/* Responsive */
+@media (max-width: 1200px) {
+  body.hust-hotel-page header { padding: 1rem 2rem; }
+}

@@ -1,0 +1,334 @@
+/* Scoped styles: only apply to pages with <body class="hust-admin-room"> */
+body.hust-admin-room {
+  --primary: #29b862;
+  --primary-dark: #1e8544;
+  --text-dark: #1d1d1d;
+  --text-light: #666;
+  --white: #fff;
+  --bg-light: #f9f9f9;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
+  --danger: #e74c3c;
+  --info: #3498db;
+  --warning: #f39c12;
+
+  margin: 0;
+  background-color: var(--bg-light);
+  padding-top: 80px;
+  font-family: 'Poppins', sans-serif;
+}
+
+body.hust-admin-room *,
+body.hust-admin-room *::before,
+body.hust-admin-room *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all .2s linear;
+}
+
+body.hust-admin-room a { text-decoration: none; }
+
+/* --- HEADER & NAVBAR --- */
+body.hust-admin-room header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 5%;
+}
+
+body.hust-admin-room header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+body.hust-admin-room header .logo span { color: var(--primary); }
+
+body.hust-admin-room header .bar {
+  display: flex;
+  gap: 20px;
+}
+
+body.hust-admin-room header .bar a {
+  font-size: 0.9rem;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-admin-room header .bar a:hover,
+body.hust-admin-room header .bar a.indam {
+  color: var(--primary);
+}
+
+body.hust-admin-room header .icons {
+  display: flex;
+  align-items: center;
+}
+
+body.hust-admin-room header .icons i {
+  font-size: 1.1rem;
+  color: var(--white);
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+body.hust-admin-room header .icons i:hover { color: var(--primary); }
+
+/* --- DROPDOWN --- */
+body.hust-admin-room .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 60px; right: 5%;
+  background-color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  width: 150px;
+  overflow: hidden;
+  flex-direction: column;
+  z-index: 1001;
+}
+
+body.hust-admin-room .dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-admin-room .dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: var(--primary);
+}
+
+/* --- INFO BAR --- */
+body.hust-admin-room .container-info {
+  padding: 2rem 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+body.hust-admin-room .container-info .left p {
+  font-size: 1.5rem;
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+body.hust-admin-room .container-info .right {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+/* --- FILTER BAR --- */
+body.hust-admin-room .filter-bar {
+  padding: 0 5%;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+body.hust-admin-room .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.hust-admin-room .filter-group label {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+body.hust-admin-room .filter-group select {
+  min-width: 300px;
+}
+
+/* --- BUTTONS --- */
+body.hust-admin-room .btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+body.hust-admin-room .btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+body.hust-admin-room .btn-create { background-color: var(--primary); }
+body.hust-admin-room .btn-create:hover:not(:disabled) { background-color: var(--primary-dark); }
+
+body.hust-admin-room .btn-edit {
+  background-color: var(--warning);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+body.hust-admin-room .btn-edit:hover { background-color: #d35400; }
+
+body.hust-admin-room .btn-delete {
+  background-color: var(--danger);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+body.hust-admin-room .btn-delete:hover { background-color: #c0392b; }
+
+body.hust-admin-room .btn-cancel { background-color: #95a5a6; }
+
+/* --- TABLE --- */
+body.hust-admin-room .table-wrapper {
+  padding: 0 5%;
+  margin-bottom: 10px;
+}
+
+body.hust-admin-room table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+body.hust-admin-room th,
+body.hust-admin-room td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+body.hust-admin-room th {
+  background-color: var(--primary);
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hust-admin-room tr:hover { background-color: #f1f1f1; }
+
+body.hust-admin-room .empty-message {
+  text-align: center;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* --- PAGINATION giống admin_account/booking --- */
+body.hust-admin-room .pagination {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0 30px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.hust-admin-room .pagination button {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+body.hust-admin-room .pagination button.active,
+body.hust-admin-room .pagination button:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+body.hust-admin-room .pagination button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* --- MODAL --- */
+body.hust-admin-room .modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+body.hust-admin-room .modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 500px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  animation: hustRoomFadeIn 0.3s ease-in-out;
+}
+
+@keyframes hustRoomFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+body.hust-admin-room .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+body.hust-admin-room .modal-header h3 { color: var(--text-dark); }
+
+body.hust-admin-room .close-btn {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #999;
+}
+
+body.hust-admin-room .close-btn:hover { color: var(--danger); }
+
+body.hust-admin-room .form-group { margin-bottom: 15px; }
+
+body.hust-admin-room .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+body.hust-admin-room .form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+}
+
+body.hust-admin-room .form-control:focus { border-color: var(--primary); }
+
+body.hust-admin-room .modal-footer {
+  margin-top: 20px;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

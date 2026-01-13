@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Chỗ ngồi | VIVU TRAVEL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin_seats.css">
+</head>
+
+<body class="hust-admin-seats">
+
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="admin_booking">Quản lý Chuyến đi</a>
+        <a href="admin_account">Quản lý Tài khoản</a>
+        <a href="admin_flights">Quản lý Chuyến bay</a>
+        <a href="admin_hotel">Quản lý Khách sạn</a>
+        <a href="admin_room">Quản lý Phòng</a>
+        <a href="admin_contact">Quản lý Liên hệ</a>
+        <a href="admin_seats" class="indam">Quản lý Chỗ ngồi</a>
+    </nav>
+    <div class="icons">
+        <i class="fas fa-search" id="search-btn"></i>
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container-info">
+    <div class="left">
+        <p><b>Quản lý Chỗ ngồi</b></p>
+    </div>
+    <div class="right">
+        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
+        <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
+    </div>
+</div>
+
+<div class="action-bar">
+    <div class="flight-select-group">
+        <label for="flightSelect">Chọn chuyến bay:</label>
+        <select id="flightSelect" class="form-control">
+            <option value="">-- Chọn chuyến bay --</option>
+        </select>
+        <button class="btn btn-initialize" onclick="initializeSeats()">
+            <i class="fas fa-cog"></i> Khởi tạo ghế
+        </button>
+    </div>
+</div>
+
+<div class="seat-info" id="seatInfo" style="display: none;">
+    <div class="info-card">
+        <h3>Thông tin chuyến bay</h3>
+        <div id="flightDetails"></div>
+    </div>
+    <div class="seat-legend">
+        <div class="legend-item">
+            <div class="seat available"></div>
+            <span>Còn trống</span>
+        </div>
+        <div class="legend-item">
+            <div class="seat booked"></div>
+            <span>Đã đặt</span>
+        </div>
+    </div>
+</div>
+
+<div class="seat-map-container" id="seatMapContainer">
+    <div id="seatMap" class="seat-map"></div>
+</div>
+
+<script src="/js/admin_seats.js"></script>
+</body>
+</html>

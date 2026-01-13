@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý Tài khoản | VIVU TRAVEL</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+    <link rel="stylesheet" href="/css/admin_account.css" />
+</head>
+
+<body class="hust-admin-account">
+<header>
+    <a href="#" class="logo"><span>VIVU</span>TRAVEL</a>
+    <nav class="bar">
+        <a href="admin_booking">Quản lý Chuyến đi</a>
+        <a href="admin_account" class="indam">Quản lý Tài khoản</a>
+        <a href="admin_flights">Quản lý Chuyến bay</a>
+        <a href="admin_hotel">Quản lý Khách sạn</a>
+        <a href="admin_room">Quản lý Phòng</a>
+        <a href="admin_contact">Quản lý Liên hệ</a>
+        <a href="admin_seats">Quản lý Chỗ ngồi</a>
+    </nav>
+    <div class="icons">
+        <i class="fas fa-search" id="search-btn"></i>
+        <i class="fas fa-user" id="user-icon"></i>
+        <div id="user-menu" class="dropdown-menu">
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="left">
+        <p><b>Quản lý Tài khoản</b></p>
+    </div>
+    <div class="right">
+        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
+        <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
+    </div>
+</div>
+
+<div class="btn-group">
+    <a href="#" class="btn btn-create" onclick="openModal()">
+        <i class="fa fa-plus"></i> Tạo nhân viên mới
+    </a>
+</div>
+
+<div class="filter-container" id="filterContainer">
+    <div class="search-box">
+        <input type="text" id="search" name="search" placeholder="Nhập từ khóa tìm kiếm..." />
+        <button onclick="searchUsers()">Tìm kiếm</button>
+    </div>
+</div>
+
+<h2>Bảng Thông tin Tài khoản</h2>
+
+<table id="userTable">
+    <thead>
+    <tr>
+        <th>Họ và tên</th>
+        <th>Số điện thoại</th>
+        <th>Ngày sinh</th>
+        <th>Email</th>
+        <th>Trạng thái</th>
+        <th>Thao tác</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<div class="pagination"></div>
+
+<div id="createStaffModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Thêm nhân viên mới</h5>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="createStaffForm">
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="text" id="phone" placeholder="Nhập số điện thoại" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" placeholder="Nhập mật khẩu" required />
+                </div>
+                <div class="form-group">
+                    <label for="passwordConfirm">Xác nhận mật khẩu</label>
+                    <input type="password" id="passwordConfirm" placeholder="Nhập lại mật khẩu" required />
+                </div>
+                <div class="form-group">
+                    <label for="fullName">Họ và tên</label>
+                    <input type="text" id="fullName" placeholder="Nhập họ và tên đầy đủ" required />
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Nhập địa chỉ email" required />
+                </div>
+                <div class="form-group">
+                    <label for="birthday">Ngày sinh</label>
+                    <input type="date" id="birthday" required />
+                </div>
+                <button type="submit" class="btn-primary">Thêm nhân viên</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/js/admin_account.js"></script>
+</body>
+</html>
