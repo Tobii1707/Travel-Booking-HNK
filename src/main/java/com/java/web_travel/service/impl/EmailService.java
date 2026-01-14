@@ -238,6 +238,7 @@ public class EmailService {
                 "<br>" +
                 "<b>FUTURE WONDER TEAM</b>";
 
+
         emailDTO.setBody(body);
         sendEmail(emailDTO);
     }
