@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
  * Chữ 'T' là đại diện cho "Bất kỳ kiểu dữ liệu nào".
  * Vì 'data' có thể là Flight, User, hoặc List<Flight>... nên ta để là T để tái sử dụng class này cho mọi nơi.
  */
-public class ApiReponse<T> {
+public class ApiResponse<T> {
 
     // Mã code quy định riêng của dự án (khác với HTTP Status 200, 404, 500...).
     // Ví dụ: 1000 là Thành công, 1001 là Lỗi validation, 9999 là Lỗi server...
@@ -31,16 +31,16 @@ public class ApiReponse<T> {
     private T data;
 
     // Constructor rỗng (Bắt buộc phải có để các thư viện JSON hoạt động)
-    public ApiReponse() {}
+    public ApiResponse() {}
 
     // Constructor dùng khi chỉ muốn trả về thông báo lỗi (không có data)
-    public ApiReponse(int code, String message) {
+    public ApiResponse(int code, String message) {
         this.code = code;
         this.message = message;
     }
 
     // Constructor đầy đủ
-    public ApiReponse(int code, String message, T data) {
+    public ApiResponse(int code, String message, T data) {
         this.code = code;
         this.message = message;
         this.data = data;

@@ -3,7 +3,7 @@ package com.java.web_travel.controller.admin;
 import com.java.web_travel.entity.Hotel;
 import com.java.web_travel.entity.Order;
 import com.java.web_travel.model.request.HotelDTO;
-import com.java.web_travel.model.response.ApiReponse;
+import com.java.web_travel.model.response.ApiResponse;
 import com.java.web_travel.repository.OrderRepository;
 import com.java.web_travel.service.HotelService;
 import jakarta.validation.Valid;
@@ -31,40 +31,40 @@ public class HotelController {
 
     // --- 1. API TẠO KHÁCH SẠN MỚI ---
     @PostMapping("/createHotel")
-    public ApiReponse<Hotel> createHotel(@Valid @RequestBody HotelDTO hotelDTO) {
+    public ApiResponse<Hotel> createHotel(@Valid @RequestBody HotelDTO hotelDTO) {
         // @Valid: Kiểm tra dữ liệu đầu vào (VD: giá tiền không được âm).
         // @RequestBody: Hứng cục JSON từ Frontend ép vào object HotelDTO.
 
         log.info("Create hotelDTO: {}", hotelDTO); // Ghi log dữ liệu nhận được
 
-        ApiReponse<Hotel> apiReponse = new ApiReponse<>();
+        ApiResponse<Hotel> apiResponse = new ApiResponse<>();
 
         // Gọi Service tạo khách sạn và gán kết quả vào response
-        apiReponse.setData(hotelService.createHotel(hotelDTO));
+        apiResponse.setData(hotelService.createHotel(hotelDTO));
 
-        log.info("Created hotel successfully: {}", apiReponse.getData()); // Ghi log thành công
-        return apiReponse;
+        log.info("Created hotel successfully: {}", apiResponse.getData()); // Ghi log thành công
+        return apiResponse;
     }
 
     // --- 2. API LẤY DANH SÁCH TẤT CẢ KHÁCH SẠN ---
     @GetMapping("/getAllHotels")
-    public ApiReponse<List<Hotel>> getAllHotels() {
+    public ApiResponse<List<Hotel>> getAllHotels() {
         log.info(("Get all hotels "));
 
-        ApiReponse<List<Hotel>> apiReponse = new ApiReponse<>();
+        ApiResponse<List<Hotel>> apiResponse = new ApiResponse<>();
 
         // Gọi Service lấy toàn bộ danh sách
-        apiReponse.setData(hotelService.getAllHotels());
-        apiReponse.setMessage("Success");
+        apiResponse.setData(hotelService.getAllHotels());
+        apiResponse.setMessage("Success");
 
-        log.info("Get all hotels successfully: {}", apiReponse.getData());
-        return apiReponse;
+        log.info("Get all hotels successfully: {}", apiResponse.getData());
+        return apiResponse;
     }
 
     // --- 3. API GỢI Ý KHÁCH SẠN THEO ĐỊA ĐIỂM ĐƠN HÀNG ---
     // Logic: Khách đặt vé máy bay đi Hà Nội (orderId=10) -> Hệ thống tự gợi ý các khách sạn ở Hà Nội.
     @GetMapping("/hotel-in-destination")
-    public ApiReponse<List<Hotel>> getHotelInDestination(@RequestParam Long orderId) {
+    public ApiResponse<List<Hotel>> getHotelInDestination(@RequestParam Long orderId) {
         // @RequestParam: Lấy tham số sau dấu ? trên URL (query param).
 
         // Bước 1: Tìm đơn hàng xem khách đi đâu.
@@ -75,42 +75,42 @@ public class HotelController {
         String destination = order.getDestination();
 
         // Bước 3: Tìm các khách sạn ở địa điểm đó.
-        ApiReponse<List<Hotel>> apiReponse = new ApiReponse<>();
-        apiReponse.setData(hotelService.getHotelsByDestination(destination));
-        apiReponse.setMessage("Success");
+        ApiResponse<List<Hotel>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(hotelService.getHotelsByDestination(destination));
+        apiResponse.setMessage("Success");
 
-        log.info("Get hotels successfully: {}", apiReponse.getData());
-        return apiReponse;
+        log.info("Get hotels successfully: {}", apiResponse.getData());
+        return apiResponse;
     }
 
     // --- 4. API CẬP NHẬT KHÁCH SẠN ---
     @PutMapping("/updateHotel/{id}")
-    public  ApiReponse<Hotel> updateHotel(@Valid @RequestBody HotelDTO hotelDTO, @PathVariable Long id) {
+    public ApiResponse<Hotel> updateHotel(@Valid @RequestBody HotelDTO hotelDTO, @PathVariable Long id) {
         // @PathVariable: Lấy ID từ trên đường dẫn URL ({id}) gán vào biến Long id.
 
         log.info("Update hotelDTO id =  : {}", id);
 
-        ApiReponse<Hotel> apiReponse = new ApiReponse<>();
+        ApiResponse<Hotel> apiResponse = new ApiResponse<>();
 
         // Gọi Service cập nhật
-        apiReponse.setData(hotelService.updateHotel(hotelDTO, id));
+        apiResponse.setData(hotelService.updateHotel(hotelDTO, id));
 
         log.info("Update hotel successfully id = : {}", id);
-        return apiReponse;
+        return apiResponse;
     }
 
     // --- 5. API XÓA KHÁCH SẠN ---
     @DeleteMapping("/{id}")
-    public ApiReponse<Hotel> deleteHotel(@PathVariable Long id) {
+    public ApiResponse<Hotel> deleteHotel(@PathVariable Long id) {
         log.info("Delete hotel id =  : {}", id);
 
-        ApiReponse<Hotel> apiReponse = new ApiReponse<>();
+        ApiResponse<Hotel> apiResponse = new ApiResponse<>();
 
         // Gọi Service xóa
         hotelService.deleteHotel(id);
 
-        apiReponse.setMessage("Delete Success");
+        apiResponse.setMessage("Delete Success");
         log.info("Delete hotel successfully id = : {}", id);
-        return apiReponse;
+        return apiResponse;
     }
 }

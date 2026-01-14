@@ -7,37 +7,33 @@ import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.ResetPasswordDTO;
 import com.java.web_travel.repository.PasswordResetTokenRepository;
 import com.java.web_travel.repository.UserRepository;
+import com.java.web_travel.service.EmailService; // Import Interface
 import com.java.web_travel.service.PasswordResetService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor // Sử dụng Constructor Injection thay cho @Autowired field
 public class PasswordResetServiceImpl implements PasswordResetService {
 
     private static final int EXPIRATION_HOURS = 1;
 
-    @Autowired
-    private PasswordResetTokenRepository tokenRepository;
+    // Các dependency được khai báo final để dùng Constructor Injection
+    private final PasswordResetTokenRepository tokenRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService; // Sửa từ EmailServiceImpl thành EmailService (Interface)
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailService emailService;
-
+    // @Value không dùng được với @RequiredArgsConstructor mặc định, nên để nguyên hoặc dùng setter
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
@@ -47,25 +43,30 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.EMAIL_NOT_FOUND));
 
-        // Invalidate any existing tokens for this user
+        // Vô hiệu hóa các token cũ chưa sử dụng của user này (nếu có)
         tokenRepository.findByUserAndUsedFalse(user).ifPresent(token -> {
             token.setUsed(true);
             tokenRepository.save(token);
         });
 
-        // Generate new token
+        // Tạo token mới
         String token = UUID.randomUUID().toString();
 
-        // Calculate expiry date (1 hour from now)
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR, EXPIRATION_HOURS);
-        Date expiryDate = calendar.getTime();
+        // Tính thời gian hết hạn (Dùng mili-giây thay vì Calendar cho nhẹ)
+        Date expiryDate = new Date(System.currentTimeMillis() + (EXPIRATION_HOURS * 60 * 60 * 1000));
 
-        // Save token
-        PasswordResetToken resetToken = new PasswordResetToken(token, user, expiryDate);
+        // Lưu token
+        // Đảm bảo entity PasswordResetToken có constructor này hoặc dùng builder
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        resetToken.setExpiryDate(expiryDate);
+        resetToken.setUsed(false);
+
         tokenRepository.save(resetToken);
 
-        // Send email
+        // Gửi email qua Interface
+        // Lưu ý: baseUrl nên là URL của Frontend (React/Vue) chứ không phải Backend
         String resetLink = baseUrl + "/reset-password?token=" + token;
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
 
@@ -74,33 +75,24 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     public boolean validateToken(String token) {
-        PasswordResetToken resetToken = tokenRepository.findByToken(token).orElse(null);
-
-        if (resetToken == null) {
-            return false;
-        }
-
-        if (resetToken.isUsed()) {
-            return false;
-        }
-
-        if (resetToken.isExpired()) {
-            return false;
-        }
-
-        return true;
+        return tokenRepository.findByToken(token)
+                .map(resetToken -> !resetToken.isUsed() && !resetToken.isExpired())
+                .orElse(false);
     }
 
     @Override
     @Transactional
     public void resetPassword(ResetPasswordDTO dto) {
+        // Kiểm tra khớp mật khẩu
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_MISMATCH);
         }
 
+        // Tìm token
         PasswordResetToken resetToken = tokenRepository.findByToken(dto.getToken())
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_RESET_TOKEN));
 
+        // Validate các trường hợp lỗi
         if (resetToken.isUsed()) {
             throw new AppException(ErrorCode.TOKEN_ALREADY_USED);
         }
@@ -109,12 +101,12 @@ public class PasswordResetServiceImpl implements PasswordResetService {
             throw new AppException(ErrorCode.INVALID_RESET_TOKEN);
         }
 
-        // Update user password
+        // Cập nhật mật khẩu user
         User user = resetToken.getUser();
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);
 
-        // Mark token as used
+        // Đánh dấu token đã dùng
         resetToken.setUsed(true);
         tokenRepository.save(resetToken);
 
@@ -123,10 +115,10 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     @Override
     @Transactional
-    @Scheduled(cron = "0 0 */6 * * *") // Run every 6 hours
+    @Scheduled(cron = "0 0 */6 * * *") // Chạy mỗi 6 tiếng
     public void cleanupExpiredTokens() {
+        // Lưu ý: Hàm deleteByExpiryDateBefore cần được khai báo trong Repository
         tokenRepository.deleteByExpiryDateBefore(new Date());
         log.info("Expired password reset tokens cleaned up");
     }
 }
-

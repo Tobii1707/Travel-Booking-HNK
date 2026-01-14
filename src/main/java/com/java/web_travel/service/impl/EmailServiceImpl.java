@@ -5,10 +5,10 @@ import com.java.web_travel.enums.ErrorCode;
 import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.EmailDTO;
 import com.java.web_travel.repository.OrderRepository;
+import com.java.web_travel.service.EmailService; // Import Interface vừa tạo
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -20,17 +20,19 @@ import java.util.Date;
 
 @Service
 @Slf4j
-public class EmailService {
+public class EmailServiceImpl implements EmailService {
+
     @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
     private OrderRepository orderRepository;
 
+    @Override
     public String sendEmail(EmailDTO emailDTO) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
-        try{
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,true);
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8"); // Thêm UTF-8 để tránh lỗi font
             helper.setFrom("hanamkhanh2004@gmail.com");
             helper.setTo(emailDTO.getToEmail());
             helper.setSubject(emailDTO.getSubject());
@@ -38,191 +40,84 @@ public class EmailService {
             mailSender.send(mimeMessage);
             return "Email Sent";
         } catch (Exception e) {
-            log.error(e.getMessage());
-            return "Lỗi khi gửi email" ;
+            log.error("Error sending email: {}", e.getMessage());
+            return "Lỗi khi gửi email";
         }
     }
 
+    @Override
     public Object sendAnnounceEmail(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(()->new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order = getOrderById(orderId);
         EmailDTO emailDTO = new EmailDTO();
 
-        String userName = order.getUser().getFullName();
-        String email = order.getUser().getEmail();
-        String destination = order.getDestination();
-        int numberOfPeople = order.getNumberOfPeople();
-
-        Date checkinDate = order.getCheckinDate();
-        LocalDate localDate = checkinDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String datecheckInFormat = localDate.format(formatter);
-
-        Date checkOutDate = order.getCheckoutDate();
-        LocalDate localDate1 = checkOutDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String dateCheckOutFormat= localDate1.format(formatter1);
-
-        String hotelName = order.getHotel().getHotelName();
-        String flightName = order.getFlight().getAirlineName() ;
-        String flightTicketClass   = order.getFlight().getTicketClass().toString() ;
-        String totalPrice = String.valueOf(order.getTotalPrice());
-
-        emailDTO.setToEmail(email) ;
-        String subject = "Cảm ơn quý ông/bà " + userName + " đã đặt chuyến đi của FUTURE WONDER" ;
+        emailDTO.setToEmail(order.getUser().getEmail());
+        String subject = "Cảm ơn quý ông/bà " + order.getUser().getFullName() + " đã đặt chuyến đi của FUTURE WONDER";
         emailDTO.setSubject(subject);
 
-        String body = "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
-                "<b>Người đặt:</b> " + userName + "<br>" +
-                "<b>Địa điểm:</b> " + destination + "<br>" +
-                "<b>Số người:</b> " + numberOfPeople + "<br>" +
-                "<b>Thời gian check-in:</b> " + datecheckInFormat + "<br>" +
-                "<b>Thời gian check-out:</b> " + dateCheckOutFormat + "<br>" +
-                "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightTicketClass + "<br>" +
-                "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
-                "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>" +
+        String orderDetails = generateOrderInfoHtml(order);
+        String body = orderDetails +
                 "<i>Vui lòng sớm thanh toán để có một chuyến đi tuyệt vời.</i><br>" +
                 "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
-        emailDTO.setBody(body) ;
 
+        emailDTO.setBody(body);
         return sendEmail(emailDTO);
-
     }
 
+    @Override
     public Object sendAnnouncePaySuccessEmail(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(()->new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order = getOrderById(orderId);
         EmailDTO emailDTO = new EmailDTO();
 
-        String userName = order.getUser().getFullName();
-        String email = order.getUser().getEmail();
-        String destination = order.getDestination();
-        int numberOfPeople = order.getNumberOfPeople();
+        emailDTO.setToEmail(order.getUser().getEmail());
+        emailDTO.setSubject("THANH TOÁN CHUYẾN ĐI THÀNH CÔNG");
 
-        Date checkinDate = order.getCheckinDate();
-        LocalDate localDate = checkinDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String datecheckInFormat = localDate.format(formatter);
-
-        Date checkOutDate = order.getCheckoutDate();
-        LocalDate localDate1 = checkOutDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String dateCheckOutFormat= localDate1.format(formatter1);
-
-        String hotelName = order.getHotel().getHotelName();
-        String flightName = order.getFlight().getAirlineName() ;
-        String flightTicketClass   = order.getFlight().getTicketClass().toString() ;
-        String totalPrice = String.valueOf(order.getTotalPrice());
-
-        emailDTO.setToEmail(email) ;
-        String subject = "THANH TOÁN CHUYẾN ĐI THÀNH CÔNG" ;
-        emailDTO.setSubject(subject);
-
-        String body = "------------------<b>XÁC NHẬN THANH TOÁN THÀNH CÔNG</b>------------------" +"<br>" +
-                "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
-                "<b>Người đặt:</b> " + userName + "<br>" +
-                "<b>Địa điểm:</b> " + destination + "<br>" +
-                "<b>Số người:</b> " + numberOfPeople + "<br>" +
-                "<b>Thời gian check-in:</b> " + datecheckInFormat + "<br>" +
-                "<b>Thời gian check-out:</b> " + dateCheckOutFormat + "<br>" +
-                "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightTicketClass + "<br>" +
-                "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
-                "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>" +
+        String orderDetails = generateOrderInfoHtml(order);
+        String body = "------------------<b>XÁC NHẬN THANH TOÁN THÀNH CÔNG</b>------------------<br>" +
+                orderDetails +
                 "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
-        emailDTO.setBody(body) ;
 
+        emailDTO.setBody(body);
         return sendEmail(emailDTO);
-
     }
 
+    @Override
     public Object sendAnnouncePayFalledEmail(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(()->new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order = getOrderById(orderId);
         EmailDTO emailDTO = new EmailDTO();
 
-        String userName = order.getUser().getFullName();
-        String email = order.getUser().getEmail();
-        String destination = order.getDestination();
-        int numberOfPeople = order.getNumberOfPeople();
+        emailDTO.setToEmail(order.getUser().getEmail());
+        emailDTO.setSubject("THANH TOÁN CHUYẾN ĐI THẤT BẠI");
 
-        Date checkinDate = order.getCheckinDate();
-        LocalDate localDate = checkinDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String datecheckInFormat = localDate.format(formatter);
-
-        Date checkOutDate = order.getCheckoutDate();
-        LocalDate localDate1 = checkOutDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String dateCheckOutFormat= localDate1.format(formatter1);
-
-        String hotelName = order.getHotel().getHotelName();
-        String flightName = order.getFlight().getAirlineName() ;
-        String flightTicketClass   = order.getFlight().getTicketClass().toString() ;
-        String totalPrice = String.valueOf(order.getTotalPrice());
-
-        emailDTO.setToEmail(email) ;
-        String subject = "THANH TOÁN CHUYẾN ĐI THẤT BẠI" ;
-        emailDTO.setSubject(subject);
-
-        String body = "------------------<b>THANH TOÁN THẤT BẠI</b>------------------" +"<br>" +
-                "---------------<b>FUTURE WONDER rất tiếc khi phải thông báo rằng bạn đã thanh toán không thành công , vui lòng kiểm tra lại</b>"+"<br>"+
-                "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
-                "<b>Người đặt:</b> " + userName + "<br>" +
-                "<b>Địa điểm:</b> " + destination + "<br>" +
-                "<b>Số người:</b> " + numberOfPeople + "<br>" +
-                "<b>Thời gian check-in:</b> " + datecheckInFormat + "<br>" +
-                "<b>Thời gian check-out:</b> " + dateCheckOutFormat + "<br>" +
-                "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightTicketClass + "<br>" +
-                "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
-                "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>" +
+        String orderDetails = generateOrderInfoHtml(order);
+        String body = "------------------<b>THANH TOÁN THẤT BẠI</b>------------------<br>" +
+                "---------------<b>FUTURE WONDER rất tiếc khi phải thông báo rằng bạn đã thanh toán không thành công, vui lòng kiểm tra lại</b><br>" +
+                orderDetails +
                 "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
-        emailDTO.setBody(body) ;
 
+        emailDTO.setBody(body);
         return sendEmail(emailDTO);
     }
 
+    @Override
     public Object sendAnnouceCancel(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(()->new AppException(ErrorCode.ORDER_NOT_FOUND));
+        Order order = getOrderById(orderId);
         EmailDTO emailDTO = new EmailDTO();
 
-        String userName = order.getUser().getFullName();
-        String email = order.getUser().getEmail();
-        String destination = order.getDestination();
-        int numberOfPeople = order.getNumberOfPeople();
+        emailDTO.setToEmail(order.getUser().getEmail());
+        emailDTO.setSubject("HỦY CHUYẾN THÀNH CÔNG");
 
-        Date checkinDate = order.getCheckinDate();
-        LocalDate localDate = checkinDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String datecheckInFormat = localDate.format(formatter);
-
-        Date checkOutDate = order.getCheckoutDate();
-        LocalDate localDate1 = checkOutDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        String dateCheckOutFormat= localDate1.format(formatter1);
-
-        String hotelName = order.getHotel().getHotelName();
-        String flightName = order.getFlight().getAirlineName() ;
-        String flightTicketClass   = order.getFlight().getTicketClass().toString() ;
-        String totalPrice = String.valueOf(order.getTotalPrice());
-
-        emailDTO.setToEmail(email) ;
-        String subject = "HỦY CHUYẾN THÀNH CÔNG" ;
-        emailDTO.setSubject(subject);
-
-        String body = "------------------<b>HỦY CHUYẾN THÀNH CÔNG</b>------------------" +"<br>" +
-                "---------------<b>FUTURE WONDER rất tiếc khi không thể đồng hành cùng bạn trong chuyến đi lần này ! </b>"+"<br>"+
-                "Hẹn quý khách trong một tương lai gần nhất" +"<br>"+
-                "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
-                "<b>Người đặt:</b> " + userName + "<br>" +
-                "<b>Địa điểm:</b> " + destination + "<br>" +
-                "<b>Số người:</b> " + numberOfPeople + "<br>" +
-                "<b>Thời gian check-in:</b> " + datecheckInFormat + "<br>" +
-                "<b>Thời gian check-out:</b> " + dateCheckOutFormat + "<br>" +
-                "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightTicketClass + "<br>" +
-                "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
-                "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>" +
+        String orderDetails = generateOrderInfoHtml(order);
+        String body = "------------------<b>HỦY CHUYẾN THÀNH CÔNG</b>------------------<br>" +
+                "---------------<b>FUTURE WONDER rất tiếc khi không thể đồng hành cùng bạn trong chuyến đi lần này!</b><br>" +
+                "Hẹn quý khách trong một tương lai gần nhất<br>" +
+                orderDetails +
                 "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
-        emailDTO.setBody(body) ;
 
+        emailDTO.setBody(body);
         return sendEmail(emailDTO);
     }
+
+    @Override
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setToEmail(toEmail);
@@ -238,8 +133,45 @@ public class EmailService {
                 "<br>" +
                 "<b>FUTURE WONDER TEAM</b>";
 
-
         emailDTO.setBody(body);
         sendEmail(emailDTO);
+    }
+
+    // --- PRIVATE HELPER METHODS (Để tránh lặp code) ---
+
+    private Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+    }
+
+    private String formatDate(Date date) {
+        if (date == null) return "";
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    /**
+     * Hàm này tạo đoạn HTML thông tin chi tiết chuyến đi dùng chung cho cả 4 loại email
+     */
+    private String generateOrderInfoHtml(Order order) {
+        String userName = order.getUser().getFullName();
+        String destination = order.getDestination();
+        int numberOfPeople = order.getNumberOfPeople();
+        String dateCheckIn = formatDate(order.getCheckinDate());
+        String dateCheckOut = formatDate(order.getCheckoutDate());
+        String hotelName = order.getHotel() != null ? order.getHotel().getHotelName() : "N/A";
+        String flightName = order.getFlight() != null ? order.getFlight().getAirlineName() : "N/A";
+        String flightClass = order.getFlight() != null ? order.getFlight().getTicketClass().toString() : "";
+        String totalPrice = String.valueOf(order.getTotalPrice());
+
+        return "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
+                "<b>Người đặt:</b> " + userName + "<br>" +
+                "<b>Địa điểm:</b> " + destination + "<br>" +
+                "<b>Số người:</b> " + numberOfPeople + "<br>" +
+                "<b>Thời gian check-in:</b> " + dateCheckIn + "<br>" +
+                "<b>Thời gian check-out:</b> " + dateCheckOut + "<br>" +
+                "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightClass + "<br>" +
+                "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
+                "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>";
     }
 }
