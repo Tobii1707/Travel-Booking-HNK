@@ -1,6 +1,7 @@
 package com.java.web_travel.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty; // <--- Import cái này
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,11 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "flight_seats",
-        indexes = {
-                @Index(name = "idx_flight_seat_flight_id", columnList = "flight_id"),
-                @Index(name = "idx_flight_seat_order_id", columnList = "order_id"),
-                @Index(name = "idx_flight_seat_is_booked", columnList = "is_booked")
-        },
+        // ... giữ nguyên phần index ...
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"flight_id", "seat_number"})
         })
@@ -29,16 +26,36 @@ public class FlightSeat {
     private Flight flight;
 
     @Column(nullable = false, length = 10)
-    private String seatNumber; // e.g., "1A", "2B", "15C"
+    private String seatNumber;
 
-    @Column(nullable = false)
-    private Boolean isBooked = false;
+    // --- SỬA PHẦN NÀY ---
+    @Column(name = "is_booked", nullable = false)
+    @JsonProperty("isBooked") // <--- Bắt buộc JSON trả về tên là "isBooked"
+    private boolean isBooked = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    @JsonIgnore
+    @JsonIgnore // Giữ nguyên cái này để tránh lỗi vòng lặp
     private Order order;
 
     @Version
-    private Long version; // For optimistic locking to prevent double booking
+    private Long version;
+
+    // --- THÊM HÀM NÀY ĐỂ LẤY ORDER ID ---
+    @JsonProperty("order") // Trả về object nhỏ chỉ chứa ID cho Frontend dùng
+    public OrderInfo getOrderInfo() {
+        if (order == null) return null;
+        return new OrderInfo(order.getId());
+    }
+
+    // Hoặc đơn giản hơn chỉ lấy ID:
+    // @JsonProperty("orderId")
+    // public Long getOrderId() { return order != null ? order.getId() : null; }
+
+    // Class phụ để trả về cấu trúc giống Frontend mong đợi (seat.order.id)
+    @Data
+    @AllArgsConstructor
+    public static class OrderInfo {
+        private Long id;
+    }
 }

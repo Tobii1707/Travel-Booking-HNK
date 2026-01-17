@@ -46,7 +46,13 @@ public enum ErrorCode {
     FLIGHT_NOT_FOUND(1039, "Không tìm thấy chuyến bay", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_FOUND(1040, "Email không tồn tại trong hệ thống", HttpStatus.NOT_FOUND),
     INVALID_RESET_TOKEN(1041, "Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
-    TOKEN_ALREADY_USED(1042, "Link đặt lại mật khẩu này đã được sử dụng", HttpStatus.BAD_REQUEST)
+    TOKEN_ALREADY_USED(1042, "Link đặt lại mật khẩu này đã được sử dụng", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_FOUND(1043, "Không tìm thấy phòng khách sạn", HttpStatus.NOT_FOUND),
+    ROOM_NUMBER_EXISTS(1044, "Số phòng đã tồn tại trong khách sạn này", HttpStatus.BAD_REQUEST),
+    ROOM_TYPE_NOT_VALID(1045, "Loại phòng không hợp lệ", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST(1046, "Yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
+    SEAT_NOT_FOUND(1047, "Không tìm thấy ghế", HttpStatus.BAD_REQUEST),
+    SEAT_ALREADY_BOOKED(1048, "Ghế đã có người đặt", HttpStatus.BAD_REQUEST),
     ;
 
     private int code ;

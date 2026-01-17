@@ -139,11 +139,19 @@
 
     seats.forEach(seat => {
       const seatDiv = document.createElement('div');
-      seatDiv.className = `seat ${seat.isBooked ? 'booked' : 'available'}`;
+
+      // --- SỬA LOGIC TẠI ĐÂY ---
+      // Ghế được tính là đã đặt nếu: isBooked = true HOẶC có thông tin đơn hàng (seat.order khác null)
+      const isBooked = (seat.isBooked === true) || (seat.order && seat.order !== null);
+
+      // Gán class dựa trên logic mới
+      seatDiv.className = `seat ${isBooked ? 'booked' : 'available'}`;
       seatDiv.textContent = seat.seatNumber;
 
-      if (seat.isBooked) {
-        seatDiv.title = `Booked by Order #${seat.order?.id || 'N/A'}`;
+      if (isBooked) {
+        // Lấy ID đơn hàng an toàn hơn
+        const orderId = seat.order ? seat.order.id : 'N/A';
+        seatDiv.title = `Booked by Order #${orderId}`;
       } else {
         seatDiv.title = 'Available';
       }

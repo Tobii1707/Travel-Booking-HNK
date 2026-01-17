@@ -49,3 +49,4 @@ public class Hotel {
         this.hotelPriceFrom = hotelPrice;
     }
 }
+

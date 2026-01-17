@@ -2,7 +2,6 @@ package com.java.web_travel.convert;
 
 import com.java.web_travel.entity.Hotel;
 import com.java.web_travel.entity.HotelBedroom;
-import com.java.web_travel.enums.RoomStatus;
 import com.java.web_travel.model.request.HotelDTO;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,7 @@ public class HotelConverter {
             for(int j = 1 ; j <= 10 ; j++) {
                 HotelBedroom hotelBedroom = new HotelBedroom();
 
-                hotelBedroom.setRoomNumber((long) (i*100 + j)); // room number eg : 101-110
+                hotelBedroom.setRoomNumber((long) (i*100 + j));
                 if(j == 6 || j == 8) {
                     hotelBedroom.setPrice(hotelDto.getPriceFrom() * 1.5);
                     hotelBedroom.setRoomType("Vip Room");
@@ -41,3 +40,4 @@ public class HotelConverter {
         return hotel;
     }
 }
+

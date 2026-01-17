@@ -6,6 +6,8 @@ import com.java.web_travel.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType; // Quan trọng
+import org.springframework.data.jpa.repository.Lock; // Quan trọng
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +31,8 @@ public interface FlightSeatRepository extends JpaRepository<FlightSeat, Long> {
 
     @Query("SELECT fs FROM FlightSeat fs WHERE fs.flight = :flight AND fs.seatNumber IN :seatNumbers AND fs.isBooked = false")
     List<FlightSeat> findAvailableSeats(@Param("flight") Flight flight, @Param("seatNumbers") List<String> seatNumbers);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<FlightSeat> findByFlight_IdAndSeatNumber(Long flightId, String seatNumber);
+
 }

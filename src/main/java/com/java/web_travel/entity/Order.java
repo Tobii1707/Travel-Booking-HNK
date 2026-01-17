@@ -1,5 +1,6 @@
 package com.java.web_travel.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Nhớ import dòng này
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -70,24 +71,32 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties("orders") // Tránh lấy ngược lại danh sách order của User
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    @ManyToOne
+    // --- SỬA QUAN TRỌNG: FLIGHT ---
+    @ManyToOne(fetch = FetchType.EAGER) // Bắt buộc tải thông tin chuyến bay ngay lập tức
     @JoinColumn(name = "flight_id", nullable = true)
+    // Khi lấy Flight, đừng lấy danh sách orders bên trong Flight nữa để tránh vòng lặp
+    @JsonIgnoreProperties({"orders", "flightSeats"})
     private Flight flight;
 
     @ManyToOne
     @JoinColumn(name = "hotel_id")
+    @JsonIgnoreProperties("orders")
     private Hotel hotel;
 
     @Column(name = "bedrooms", length = 2000)
     private String listBedrooms;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    // --- SỬA QUAN TRỌNG: FLIGHT SEATS ---
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // Bắt buộc tải ghế ngay
+    // Khi lấy ghế, đừng lấy ngược lại thông tin Order để tránh vòng lặp
+    @JsonIgnoreProperties("order")
     private List<FlightSeat> flightSeats;
 
     public Order(String destination, int numberOfPeople, Date checkinDate, Date checkoutDate) {

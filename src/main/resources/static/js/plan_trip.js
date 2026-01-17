@@ -1,4 +1,4 @@
-// --- ORDER & PAYMENT + USER MENU + REVIEW LOGIC (extracted) ---
+// --- ORDER & PAYMENT + USER MENU + REVIEW LOGIC (FIXED) ---
 
 let currentPage = 0;
 let totalPages = 1;
@@ -15,12 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Auth check
   if (!userId) {
+    console.error("User ID not found in LocalStorage");
     alert('Please login to view your trips!');
     window.location.href = '/user';
     return;
   }
 
   // Load orders
+  console.log("Page loaded. Fetching orders for User ID:", userId);
   loadOrders(currentPage, 5);
 
   // Pagination
@@ -62,44 +64,68 @@ function initUserMenu() {
 }
 
 function loadOrders(pageNo, pageSize) {
-  fetch(`/order/${userId}?pageNo=${pageNo}&pageSize=${pageSize}`)
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.code === 1000 && result.data) {
-        const { pageNo: currentPageNo, totalPages: totalPagesData, items } = result.data;
+  const url = `/order/${userId}?pageNo=${pageNo}&pageSize=${pageSize}`;
+  console.log("Calling API:", url);
 
-        totalPages =
-          Number.isFinite(Number(totalPagesData)) && Number(totalPagesData) > 0
-            ? Number(totalPagesData)
-            : 1;
+  fetch(url)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log("API Response Data:", result);
 
-        currentPage =
-          Number.isFinite(Number(currentPageNo)) && Number(currentPageNo) >= 0
-            ? Number(currentPageNo)
-            : 0;
+        if (result.code === 1000 && result.data) {
+          // Lấy items từ data
+          let { pageNo: currentPageNo, totalPages: totalPagesData, items } = result.data;
 
-        const list = items || [];
-        renderOrders(list);
+          // --- ĐOẠN FIX QUAN TRỌNG BẮT ĐẦU ---
+          let list = [];
+
+          // Trường hợp 1: items chính là Array (Chuẩn)
+          if (Array.isArray(items)) {
+            list = items;
+          }
+          // Trường hợp 2: items là Object của Spring Page (Lỗi bạn đang gặp) -> Lấy .content
+          else if (items && items.content && Array.isArray(items.content)) {
+            console.log("Phát hiện dữ liệu nằm trong items.content");
+            list = items.content;
+          }
+          // Trường hợp 3: Backend trả về biến tên là 'content' thay vì 'items' ở cấp ngoài
+          else if (result.data.content && Array.isArray(result.data.content)) {
+            list = result.data.content;
+          }
+          // --- ĐOẠN FIX QUAN TRỌNG KẾT THÚC ---
+
+          totalPages =
+              Number.isFinite(Number(totalPagesData)) && Number(totalPagesData) > 0
+                  ? Number(totalPagesData)
+                  : 1;
+
+          currentPage =
+              Number.isFinite(Number(currentPageNo)) && Number(currentPageNo) >= 0
+                  ? Number(currentPageNo)
+                  : 0;
+
+          console.log("List orders cuối cùng để render (phải là Array):", list);
+          renderOrders(list);
+          updatePaginationInfo();
+        } else {
+          console.warn("API returned error or no data:", result);
+          renderOrders([]); // Truyền mảng rỗng để không bị lỗi
+          updatePaginationInfo();
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+        renderOrders([]); // Truyền mảng rỗng khi lỗi mạng
         updatePaginationInfo();
-      } else {
-        renderOrders([]);
-        totalPages = 1;
-        currentPage = 0;
-        updatePaginationInfo();
-      }
-    })
-    .catch((error) => {
-      console.error('Error fetching data:', error);
-      renderOrders([]);
-      totalPages = 1;
-      currentPage = 0;
-      updatePaginationInfo();
-    });
+      });
 }
 
 function renderOrders(orders) {
   const tbody = document.querySelector('#order-table tbody');
-  if (!tbody) return;
+  if (!tbody) {
+    console.error("Table Body (#order-table tbody) not found in HTML");
+    return;
+  }
 
   tbody.innerHTML = '';
 
@@ -124,32 +150,47 @@ function renderOrders(orders) {
     selectCell.appendChild(checkbox);
     row.appendChild(selectCell);
 
+    // Xử lý an toàn để tránh lỗi null
     const canReview = order.hotel && order.payment && order.payment.status === 'PAID';
-    const hotelName = order.hotel ? order.hotel.hotelName : '';
+    const hotelName = order.hotel ? order.hotel.hotelName : 'N/A';
+
+    // SỬA QUAN TRỌNG: checkInDate/checkOutDate viết hoa chữ I và O
+    const checkInDate = order.checkInDate ? new Date(order.checkInDate).toLocaleDateString() : 'N/A';
+    const checkOutDate = order.checkOutDate ? new Date(order.checkOutDate).toLocaleDateString() : 'N/A';
+
+    // Flight check
+    const flightDate = (order.flight && order.flight.checkInDate)
+        ? new Date(order.flight.checkInDate).toLocaleDateString()
+        : 'N/A';
+
+    // Format Price
+    const price = order.totalPrice ? order.totalPrice.toLocaleString() : '0';
+
+    // Status logic
+    const paymentStatus = order.payment ? getPaymentStatus(order.payment.status) : 'Unpaid';
+    const statusColor = (order.payment && order.payment.status === 'PAID') ? 'var(--primary)' : 'var(--danger)';
 
     row.innerHTML += `
       <td>${order.id}</td>
       <td>${order.destination}</td>
       <td>${order.numberOfPeople}</td>
-      <td>${new Date(order.checkinDate).toLocaleDateString()}</td>
-      <td>${new Date(order.checkoutDate).toLocaleDateString()}</td>
-      <td>${order.hotel ? order.hotel.hotelName : 'N/A'}</td>
+      <td>${checkInDate}</td>
+      <td>${checkOutDate}</td>
+      <td>${hotelName}</td>
       <td>${order.hotel && order.listBedrooms ? order.listBedrooms : 'N/A'}</td>
-      <td>${order.flight ? new Date(order.flight.checkInDate).toLocaleDateString() : 'N/A'}</td>
-      <td>${order.totalPrice.toLocaleString()} VND</td>
-      <td style="color: ${
-        order.payment && order.payment.status === 'PAID' ? 'var(--primary)' : 'var(--danger)'
-      }; font-weight: 600;">
-        ${order.payment ? getPaymentStatus(order.payment.status) : 'Unpaid'}
+      <td>${flightDate}</td>
+      <td>${price} VND</td>
+      <td style="color: ${statusColor}; font-weight: 600;">
+        ${paymentStatus}
       </td>
       <td>
         ${
-          canReview
+        canReview
             ? `<button class="btn review-btn" onclick="openReviewModal(${order.id}, '${hotelName.replace(/'/g, "\\'")}')">
                  <i class="fas fa-star"></i> Review
                </button>`
             : '<span style="color:#999;">-</span>'
-        }
+    }
       </td>
     `;
 
@@ -227,20 +268,20 @@ function initActionButtons() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
-        .then((response) => response.json())
-        .then((apiResponse) => {
-          if (apiResponse.code === 1000) {
-            alert('Payment verified successfully!');
-            if (paymentModal) paymentModal.style.display = 'none';
-            window.location.reload();
-          } else {
-            alert('Payment verification failed: ' + apiResponse.message);
-          }
-        })
-        .catch((error) => {
-          console.error('Payment error:', error);
-          alert('Error verifying payment.');
-        });
+          .then((response) => response.json())
+          .then((apiResponse) => {
+            if (apiResponse.code === 1000) {
+              alert('Payment verified successfully!');
+              if (paymentModal) paymentModal.style.display = 'none';
+              window.location.reload();
+            } else {
+              alert('Payment verification failed: ' + apiResponse.message);
+            }
+          })
+          .catch((error) => {
+            console.error('Payment error:', error);
+            alert('Error verifying payment.');
+          });
     });
   }
 
