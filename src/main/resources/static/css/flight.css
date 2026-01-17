@@ -1,4 +1,6 @@
-/* Scoped styles: chỉ áp dụng cho trang có <body class="hust-flight-page"> */
+/* =========================================
+   GLOBAL VARIABLES & RESET
+   ========================================= */
 body.hust-flight-page {
   --primary: #29b862;
   --primary-dark: #1e8544;
@@ -8,17 +10,16 @@ body.hust-flight-page {
   --bg-light: #f9f9f9;
   --shadow: 0 5px 15px rgba(0,0,0,0.1);
   --radius: 12px;
-
-  /* màu riêng cho Flight */
   --secondary: #3498db;
+  --danger: #e74c3c;
+  --danger-dark: #c0392b;
 
   margin: 0;
   background-color: var(--bg-light);
   overflow-x: hidden;
-  font-family: 'Poppins', sans-serif; /* set ở body để không đè icon font */
+  font-family: 'Poppins', sans-serif;
 }
 
-/* reset nhẹ: KHÔNG set font-family ở đây */
 body.hust-flight-page *,
 body.hust-flight-page *::before,
 body.hust-flight-page *::after {
@@ -30,7 +31,9 @@ body.hust-flight-page *::after {
 
 body.hust-flight-page a { text-decoration: none; }
 
-/* --- HEADER & NAVBAR --- */
+/* =========================================
+   HEADER & NAVBAR
+   ========================================= */
 body.hust-flight-page header {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -61,18 +64,9 @@ body.hust-flight-page header .bar {
   scrollbar-color: var(--primary) transparent;
 }
 
-body.hust-flight-page header .bar::-webkit-scrollbar {
-  height: 4px;
-}
-
-body.hust-flight-page header .bar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-body.hust-flight-page header .bar::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
+body.hust-flight-page header .bar::-webkit-scrollbar { height: 4px; }
+body.hust-flight-page header .bar::-webkit-scrollbar-track { background: transparent; }
+body.hust-flight-page header .bar::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
 
 body.hust-flight-page header .bar a {
   font-size: 0.85rem;
@@ -82,11 +76,8 @@ body.hust-flight-page header .bar a {
 }
 
 body.hust-flight-page header .bar a:hover,
-body.hust-flight-page header .bar a.indam {
-  color: var(--primary);
-}
+body.hust-flight-page header .bar a.indam { color: var(--primary); }
 
-/* AI Assistant Link in navbar */
 body.hust-flight-page header .bar a.ai-assistant-link {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: var(--white);
@@ -102,26 +93,20 @@ body.hust-flight-page header .bar a.ai-assistant-link:hover {
   transform: scale(1.05);
 }
 
-body.hust-flight-page header .icons {
-  display: flex;
-  align-items: center;
-}
-
+body.hust-flight-page header .icons { display: flex; align-items: center; }
 body.hust-flight-page header .icons i {
   font-size: 1.1rem;
   color: var(--white);
   cursor: pointer;
   margin-left: 10px;
 }
-
 body.hust-flight-page header .icons i:hover { color: var(--primary); }
 
 /* --- USER DROPDOWN --- */
 body.hust-flight-page .dropdown-menu {
   display: none;
   position: absolute;
-  top: 60px;
-  right: 5%;
+  top: 60px; right: 5%;
   background-color: var(--white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -144,7 +129,9 @@ body.hust-flight-page .dropdown-menu a:hover {
   color: var(--primary);
 }
 
-/* --- PAGE HEADER --- */
+/* =========================================
+   PAGE SECTIONS
+   ========================================= */
 body.hust-flight-page .page-header {
   position: relative;
   height: 50vh;
@@ -155,11 +142,11 @@ body.hust-flight-page .page-header {
   text-align: center;
   color: var(--white);
   margin-bottom: 50px;
-  padding-top: 60px; /* bù header fixed */
+  padding-top: 60px;
 }
 
 body.hust-flight-page .page-header::before {
-  content: '\f5b0'; /* plane icon */
+  content: '\f5b0';
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
   position: absolute;
@@ -170,7 +157,6 @@ body.hust-flight-page .page-header::before {
 }
 
 body.hust-flight-page .hero-content { z-index: 1; }
-
 body.hust-flight-page .hero-content h1 {
   font-size: 3.5rem;
   text-transform: uppercase;
@@ -178,33 +164,22 @@ body.hust-flight-page .hero-content h1 {
   text-shadow: 0 4px 10px rgba(0,0,0,0.2);
   margin-bottom: 10px;
 }
+body.hust-flight-page .hero-content p { font-size: 1.2rem; font-weight: 300; opacity: 0.95; }
 
-body.hust-flight-page .hero-content p {
-  font-size: 1.2rem;
-  font-weight: 300;
-  opacity: 0.95;
-}
+body.hust-flight-page .container { padding: 0 7% 4rem; }
 
-/* --- CONTAINER --- */
-body.hust-flight-page .container {
-  padding: 0 7% 4rem;
-}
-
-body.hust-flight-page .section-heading {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
+body.hust-flight-page .section-heading { text-align: center; margin-bottom: 3rem; }
 body.hust-flight-page .section-heading h1 {
   font-size: 2.5rem;
   color: var(--text-dark);
   text-transform: uppercase;
   letter-spacing: 2px;
 }
-
 body.hust-flight-page .section-heading span { color: var(--secondary); }
 
-/* --- FLIGHT LIST --- */
+/* =========================================
+   FLIGHT LIST
+   ========================================= */
 body.hust-flight-page .flight-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -227,19 +202,6 @@ body.hust-flight-page .flight-list > div {
   scrollbar-color: var(--secondary) transparent;
 }
 
-body.hust-flight-page .flight-list > div::-webkit-scrollbar {
-  width: 6px;
-}
-
-body.hust-flight-page .flight-list > div::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-body.hust-flight-page .flight-list > div::-webkit-scrollbar-thumb {
-  background: var(--secondary);
-  border-radius: 6px;
-}
-
 body.hust-flight-page .flight-list > div:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(52, 152, 219, 0.2);
@@ -253,22 +215,16 @@ body.hust-flight-page .flight-list > div::before {
   height: 80px;
   background: linear-gradient(to right, var(--secondary), #2980b9);
   width: 100%;
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 0;
+  position: sticky; top: 0; left: 0; z-index: 0;
   flex-shrink: 0;
 }
 
-/* Giữ nguyên logic :has(...) như bản gốc
-   (nếu browser không support thì chỉ mất icon phụ, không ảnh hưởng layout) */
 body.hust-flight-page .flight-list > div:not(:has(img))::after {
   content: '\f5af';
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 20px; right: 20px;
   font-size: 2.5rem;
   color: rgba(255,255,255,0.3);
   z-index: 1;
@@ -276,8 +232,7 @@ body.hust-flight-page .flight-list > div:not(:has(img))::after {
 
 body.hust-flight-page .flight-list > div h3,
 body.hust-flight-page .flight-list > div strong {
-  position: relative;
-  z-index: 1;
+  position: relative; z-index: 1;
   color: var(--white);
   margin: -55px 20px 15px 20px;
   font-size: 1.4rem;
@@ -297,7 +252,7 @@ body.hust-flight-page .flight-list > div div {
 }
 
 body.hust-flight-page .flight-list > div p:nth-of-type(1)::before {
-  content: '\f017'; /* clock icon */
+  content: '\f017';
   font-family: "Font Awesome 5 Free";
   font-weight: 900;
   color: var(--secondary);
@@ -311,7 +266,6 @@ body.hust-flight-page .flight-list > div p:nth-last-child(2) {
   margin-top: 10px;
 }
 
-/* button */
 body.hust-flight-page .flight-list > div button {
   margin: 20px;
   padding: 14px;
@@ -332,62 +286,15 @@ body.hust-flight-page .flight-list > div button:hover {
   box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
 }
 
-/* --- FOOTER --- */
-body.hust-flight-page .footer {
-  background: #222;
-  color: #fff;
-  padding: 4rem 7%;
-  margin-top: auto;
-}
-
-body.hust-flight-page .footer-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-}
-
-body.hust-flight-page .footer-col h2 {
-  font-size: 1.2rem;
-  margin-bottom: 1.5rem;
-  color: var(--primary);
-}
-
-body.hust-flight-page .footer-col ul li {
-  list-style: none;
-  margin-bottom: 10px;
-}
-
-body.hust-flight-page .footer-col ul li a,
-body.hust-flight-page .footer-col p {
-  color: #bbb;
-  font-size: 0.9rem;
-  transition: 0.3s;
-}
-
-body.hust-flight-page .footer-col ul li a:hover {
-  color: var(--primary);
-  padding-left: 5px;
-}
-
-body.hust-flight-page .credit {
-  text-align: center;
-  padding-top: 2rem;
-  margin-top: 2rem;
-  border-top: 1px solid #333;
-  font-size: 1rem;
-}
-
-body.hust-flight-page .credit span { color: var(--primary); }
-
-/* --- SEAT SELECTION MODAL --- */
+/* =========================================
+   SEAT SELECTION MODAL
+   ========================================= */
 body.hust-flight-page .seat-modal {
   display: flex;
   position: fixed;
   z-index: 2000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(5px);
   align-items: center;
@@ -396,12 +303,14 @@ body.hust-flight-page .seat-modal {
 
 body.hust-flight-page .seat-modal-content {
   background: var(--white);
-  border-radius: var(--radius);
+  border-radius: 8px;
   width: 90%;
   max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
 }
 
 body.hust-flight-page .seat-modal-header {
@@ -411,7 +320,8 @@ body.hust-flight-page .seat-modal-header {
   justify-content: space-between;
   align-items: center;
   background: var(--primary);
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 15px;
 }
 
 body.hust-flight-page .seat-modal-header h3 {
@@ -428,14 +338,9 @@ body.hust-flight-page .seat-close-btn {
   line-height: 1;
 }
 
-body.hust-flight-page .seat-close-btn:hover {
-  opacity: 0.8;
-}
+body.hust-flight-page .seat-modal-body { padding: 30px; }
 
-body.hust-flight-page .seat-modal-body {
-  padding: 30px;
-}
-
+/* Thông tin chọn ghế */
 body.hust-flight-page .seat-selection-info {
   margin-bottom: 25px;
   padding: 15px;
@@ -455,16 +360,35 @@ body.hust-flight-page .seat-selection-info span {
   color: var(--primary);
 }
 
+/* Chú thích ghế */
+body.hust-flight-page .seat-legend {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  font-size: 12px;
+}
+body.hust-flight-page .seat-legend .dot {
+  width: 12px; height: 12px;
+  display: inline-block;
+  margin-right: 5px;
+  border-radius: 2px;
+}
+body.hust-flight-page .dot.available { background: #4CAF50; border: 1px solid #ccc; }
+body.hust-flight-page .dot.selected { background: #ff9800; }
+body.hust-flight-page .dot.booked { background: var(--danger); }
+
+/* Lưới ghế */
 body.hust-flight-page .seat-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 12px;
   margin-top: 20px;
+  justify-items: center;
 }
 
 body.hust-flight-page .seat-item {
-  aspect-ratio: 1;
-  border-radius: 8px;
+  width: 40px; height: 40px;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -472,12 +396,18 @@ body.hust-flight-page .seat-item {
   font-size: 0.9rem;
   cursor: pointer;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border: 2px solid transparent;
+  border: 1px solid transparent;
 }
 
+/* Trạng thái ghế */
 body.hust-flight-page .seat-item.available {
-  background-color: #4CAF50;
-  color: white;
+  background-color: #f0f0f0;
+  color: #333;
+  border-color: #ccc;
+}
+body.hust-flight-page .seat-item.available:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.05);
 }
 
 body.hust-flight-page .seat-item.selected {
@@ -487,17 +417,22 @@ body.hust-flight-page .seat-item.selected {
   transform: scale(1.05);
 }
 
-body.hust-flight-page .seat-item:hover:not(.selected) {
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+body.hust-flight-page .seat-item.booked {
+  background-color: var(--danger);
+  color: white;
+  border-color: var(--danger-dark);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
+/* Footer Modal */
 body.hust-flight-page .seat-modal-footer {
   padding: 20px;
   border-top: 1px solid #eee;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  margin-top: 15px;
 }
 
 body.hust-flight-page .btn-cancel-seat,
@@ -510,15 +445,8 @@ body.hust-flight-page .btn-confirm-seat {
   cursor: pointer;
 }
 
-body.hust-flight-page .btn-cancel-seat {
-  background-color: #6c757d;
-  color: white;
-}
-
-body.hust-flight-page .btn-confirm-seat {
-  background-color: var(--primary);
-  color: white;
-}
+body.hust-flight-page .btn-cancel-seat { background-color: #6c757d; color: white; }
+body.hust-flight-page .btn-confirm-seat { background-color: var(--primary); color: white; }
 
 body.hust-flight-page .btn-cancel-seat:hover,
 body.hust-flight-page .btn-confirm-seat:hover {
@@ -526,23 +454,47 @@ body.hust-flight-page .btn-confirm-seat:hover {
   transform: translateY(-2px);
 }
 
-/* --- RESPONSIVE --- */
+/* =========================================
+   FOOTER
+   ========================================= */
+body.hust-flight-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+  margin-top: auto;
+}
+
+body.hust-flight-page .footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-flight-page .footer-col h2 { font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--primary); }
+body.hust-flight-page .footer-col ul li { list-style: none; margin-bottom: 10px; }
+body.hust-flight-page .footer-col ul li a,
+body.hust-flight-page .footer-col p { color: #bbb; font-size: 0.9rem; transition: 0.3s; }
+body.hust-flight-page .footer-col ul li a:hover { color: var(--primary); padding-left: 5px; }
+
+body.hust-flight-page .credit {
+  text-align: center;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid #333;
+  font-size: 1rem;
+}
+body.hust-flight-page .credit span { color: var(--primary); }
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
 @media (max-width: 1200px) {
   body.hust-flight-page header { padding: 1rem 2rem; }
 }
-
 @media (max-width: 768px) {
-  body.hust-flight-page .seat-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  body.hust-flight-page .seat-grid { grid-template-columns: repeat(4, 1fr); }
 }
-
 @media (max-width: 480px) {
-  body.hust-flight-page .seat-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  body.hust-flight-page .seat-modal-content {
-    width: 95%;
-  }
+  body.hust-flight-page .seat-grid { grid-template-columns: repeat(3, 1fr); }
+  body.hust-flight-page .seat-modal-content { width: 95%; }
 }
