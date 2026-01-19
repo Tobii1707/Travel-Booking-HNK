@@ -9,6 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
     <link rel="stylesheet" href="/css/admin_booking.css">
+    <style>
+        /* Bổ sung style để căn giữa cột Số lượng và các icon */
+        .text-center { text-align: center; }
+        #bookingTable th { vertical-align: middle; }
+        .price-column { min-width: 140px; }
+        .journey-column { min-width: 180px; }
+    </style>
 </head>
 
 <body class="hust-admin-trip">
@@ -36,7 +43,7 @@
 
 <div class="container">
     <div class="left">
-        <p><b>Quản lý Chuyến đi</b></p>
+        <p><b>Quản lý Chuyến đi (Admin)</b></p>
     </div>
     <div class="right">
         <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
@@ -49,7 +56,7 @@
             type="text"
             id="bookingInput"
             onkeyup="if(event.key === 'Enter') fetchOrdersWithSearch()"
-            placeholder="Nhập từ khóa tìm kiếm..."
+            placeholder="Tìm theo ID, tên khách hàng hoặc điểm đến..."
     >
     <button onclick="fetchOrdersWithSearch()" class="search-btn">
         <i class="fas fa-search"></i> Tìm kiếm
@@ -63,12 +70,14 @@
             <th>ID</th>
             <th>Ngày đặt</th>
             <th>Khách hàng</th>
-            <th>Điểm đến</th>
-            <th>Nhận phòng</th>
-            <th>Trả phòng</th>
-            <th>Hãng bay</th>
-            <th>Khách sạn</th>
-            <th>Tổng tiền</th>
+            <th class="text-center">Số người</th>
+
+            <th class="journey-column">Hành trình</th>
+
+            <th class="text-center">Máy bay</th>
+            <th class="text-center">Khách sạn</th>
+
+            <th class="price-column">Tổng tiền</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
         </tr>
@@ -81,16 +90,18 @@
 </div>
 
 <div id="payment-modal" class="modal">
-    <div class="modal-content">
-        <h2>Xác nhận Thanh toán</h2>
-        <p>Bạn có muốn xác nhận hay từ chối khoản thanh toán này không?</p>
+    <div class="modal-content bounce-in">
+        <h2><i class="fas fa-check-circle"></i> Xác nhận Thanh toán</h2>
+        <p>Vui lòng kiểm tra kỹ hóa đơn trước khi thực hiện xác nhận hoặc từ chối yêu cầu từ khách hàng.</p>
         <div class="modal-btn-group">
-            <button id="confirm-success-btn" class="modal-btn btn-success">Xác nhận</button>
-            <button id="confirm-failed-btn" class="modal-btn btn-fail">Từ chối</button>
-            <button id="close-modal-btn" class="modal-btn btn-close">Đóng</button>
+            <button id="confirm-success-btn" class="modal-btn btn-success">Xác nhận đã thu</button>
+            <button id="confirm-failed-btn" class="modal-btn btn-fail">Từ chối thanh toán</button>
+            <button id="close-modal-btn" class="modal-btn btn-close">Hủy bỏ</button>
         </div>
     </div>
 </div>
+
+<div id="modal-container"></div>
 
 <script src="/js/admin_booking.js"></script>
 </body>

@@ -3,116 +3,160 @@ package com.java.web_travel.service.impl;
 import com.java.web_travel.convert.HotelConverter;
 import com.java.web_travel.entity.Hotel;
 import com.java.web_travel.enums.ErrorCode;
+import com.java.web_travel.enums.OrderStatus; // Nhớ import Enum này
 import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.HotelDTO;
+import com.java.web_travel.model.response.HotelResponse;
 import com.java.web_travel.repository.HotelRepository;
+import com.java.web_travel.repository.OrderRepository; // Nhớ import Repository này
 import com.java.web_travel.service.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Import Transactional
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * @Service: Annotation quan trọng nhất ở đây.
- * Nó báo cho Spring Boot biết: "Class này chứa logic nghiệp vụ, hãy quản lý nó".
- * Nếu thiếu dòng này, Controller sẽ không gọi được Service này (lỗi Bean not found).
- */
 @Service
 public class HotelServiceImpl implements HotelService {
 
-    /**
-     * @Autowired: Tiêm (Inject) Repository vào để dùng.
-     * Service không tự mình kết nối DB, nó phải nhờ thằng Repository làm hộ.
-     */
     @Autowired
     private HotelRepository hotelRepository;
 
-    /**
-     * @Autowired: Tiêm Converter.
-     * Dùng để chuyển đổi qua lại giữa DTO (dữ liệu gửi lên) và Entity (dữ liệu lưu DB).
-     */
     @Autowired
     private HotelConverter hotelConverter;
 
+    @Autowired
+    private OrderRepository orderRepository; // Inject thêm để check đơn hàng
 
     // --- 1. CHỨC NĂNG TẠO KHÁCH SẠN MỚI ---
     @Override
-    public Hotel createHotel(HotelDTO hotelDTO) {
-        // Bước 1: Chuyển đổi dữ liệu từ 'hộp đóng gói' (DTO) sang 'hàng thật' (Entity)
+    @Transactional
+    public HotelResponse createHotel(HotelDTO hotelDTO) {
         Hotel hotel = hotelConverter.convertHotel(hotelDTO);
 
-        // Bước 2: Validate (Kiểm tra logic nghiệp vụ)
-        // Nếu giá phòng nhỏ hơn 0 -> Báo lỗi ngay, không cho lưu.
         if(hotelDTO.getPriceFrom() < 0){
-            // Ném ra ngoại lệ tùy chỉnh (AppException) với mã lỗi PRICE_NOT_VALID
             throw new AppException(ErrorCode.PRICE_NOT_VALID);
         }
 
-        // Bước 3: Gọi Repository để lưu vào Database
-        return hotelRepository.save(hotel);
+        Hotel savedHotel = hotelRepository.save(hotel);
+        return hotelConverter.toHotelResponse(savedHotel);
     }
 
     // --- 2. CHỨC NĂNG LẤY CHI TIẾT 1 KHÁCH SẠN ---
     @Override
-    public Hotel getHotel(Long hotelId) {
-        // Logic: Tìm trong DB xem có ID này không.
-        // .orElseThrow(...): Nếu tìm thấy thì trả về Hotel, nếu KHÔNG thấy thì ném lỗi HOTEL_NOT_FOUND.
+    public HotelResponse getHotel(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
-        return hotel;
+
+        // Nếu khách sạn đã xóa mềm, có thể chặn không cho xem chi tiết (Tùy logic)
+        // if (hotel.isDeleted()) throw new AppException(ErrorCode.HOTEL_NOT_FOUND);
+
+        return hotelConverter.toHotelResponse(hotel);
     }
 
-    // --- 3. CHỨC NĂNG LẤY TẤT CẢ DANH SÁCH ---
+    // --- 3. CHỨC NĂNG LẤY TẤT CẢ (CHỈ LẤY CÁI CHƯA XÓA) ---
     @Override
-    public List<Hotel> getAllHotels() {
-        // Gọi hàm findAll() có sẵn của JpaRepository
-        List<Hotel> hotels = hotelRepository.findAll();
-        return hotels;
+    public List<HotelResponse> getAllHotels() {
+        // QUAN TRỌNG: Gọi hàm findAllByDeletedFalse trong Repository
+        // Thay vì findAll()
+        List<Hotel> hotels = hotelRepository.findAllByDeletedFalse();
+
+        return hotels.stream()
+                .map(hotel -> hotelConverter.toHotelResponse(hotel))
+                .collect(Collectors.toList());
     }
 
-    // --- 4. CHỨC NĂNG CẬP NHẬT (SỬA) KHÁCH SẠN ---
+    // --- 4. CHỨC NĂNG CẬP NHẬT ---
     @Override
-    public Hotel updateHotel(HotelDTO hotelDTO , Long hotelId){
-        // Bước 1: Kiểm tra giá hợp lệ trước (Logic giống hàm tạo mới)
+    @Transactional
+    public HotelResponse updateHotel(HotelDTO hotelDTO , Long hotelId){
         if(hotelDTO.getPriceFrom() < 0){
             throw new AppException(ErrorCode.PRICE_NOT_VALID);
         }
 
-        // Bước 2: Kiểm tra xem khách sạn cần sửa có tồn tại không?
-        // Phải lôi nó từ DB lên trước. Nếu không có thì báo lỗi, khỏi sửa.
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
-        // Bước 3: Cập nhật thông tin mới vào đối tượng cũ (Mapping)
-        // Lấy thông tin từ DTO người dùng gửi lên, gán vào object lấy từ DB.
         hotel.setHotelName(hotelDTO.getHotelName());
         hotel.setHotelPriceFrom(hotelDTO.getPriceFrom());
         hotel.setAddress(hotelDTO.getAddress());
+        hotel.setNumberFloor(hotelDTO.getNumberFloor());
+        hotel.setNumberRoomPerFloor(hotelDTO.getNumberRoomPerFloor());
 
-        // Bước 4: Lưu đè lại vào Database
-        // Hàm save() trong JPA rất thông minh:
-        // - Nếu object chưa có ID -> Tạo mới (Insert).
-        // - Nếu object đã có ID -> Cập nhật (Update).
-        return hotelRepository.save(hotel);
+        Hotel updatedHotel = hotelRepository.save(hotel);
+        return hotelConverter.toHotelResponse(updatedHotel);
     }
 
-    // --- 5. CHỨC NĂNG XÓA KHÁCH SẠN ---
+    // --- 5. CHỨC NĂNG XÓA KHÁCH SẠN (LOGIC MỚI) ---
     @Override
-    public void deleteHotel(Long hotelId) {
-        // Bước 1: Kiểm tra xem khách sạn có tồn tại không đã.
-        // Không thể xóa một thứ không tồn tại -> Nếu không thấy thì báo lỗi.
+    @Transactional
+    public void deleteHotel(Long hotelId, boolean force) { // Thêm biến force
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
-        // Bước 2: Nếu tồn tại rồi thì gọi lệnh xóa theo ID.
-        hotelRepository.deleteById(hotelId);
+        // Định nghĩa các trạng thái đang "Active"
+        List<OrderStatus> activeStatuses = List.of(
+                OrderStatus.PENDING,
+                OrderStatus.PAID,
+                OrderStatus.CONFIRMED
+        );
+
+        long activeOrdersCount = orderRepository.countActiveOrdersByHotel(hotelId, activeStatuses);
+
+        if (activeOrdersCount > 0) {
+            // TRƯỜNG HỢP 1: Không có cờ force (Xóa thường) -> Chặn
+            if (!force) {
+                throw new RuntimeException("CẢNH BÁO: Đang có " + activeOrdersCount + " đơn đặt phòng chưa hoàn thành. Bạn có muốn HỦY HẾT đơn hàng và xóa khách sạn không?");
+            }
+
+            // TRƯỜNG HỢP 2: Có cờ force (Xóa ép buộc) -> Hủy đơn hàng tự động
+            // 1. Tìm các đơn hàng đó ra
+            // (Bạn cần viết thêm hàm findAllActiveOrdersByHotel trong Repo hoặc dùng tạm logic này nếu lười)
+            // Ở đây mình giả định bạn sẽ xử lý hủy đơn.
+            // Cách nhanh nhất: Viết 1 câu Query update trong Repo
+            orderRepository.cancelAllActiveOrdersByHotel(hotelId, activeStatuses, OrderStatus.CANCELLED);
+        }
+
+        // BƯỚC CUỐI: Xóa mềm khách sạn
+        hotel.setDeleted(true);
+        hotelRepository.save(hotel);
     }
 
-    // --- 6. CHỨC NĂNG TÌM KIẾM THEO ĐỊA ĐIỂM ---
+    // --- 6. TÌM KIẾM (Cần lọc bỏ cái đã xóa) ---
     @Override
-    public List<Hotel> getHotelsByDestination(String destination) {
-        // Gọi cái hàm Custom Query (Native Query) mà bạn đã viết ở file HotelRepository
-        // Hàm này xử lý vụ tìm kiếm "Ha Noi" hay "Hanoi" đều ra kết quả.
-        return hotelRepository.findByDestination(destination);
+    public List<HotelResponse> getHotelsByDestination(String destination) {
+        // Cách 1: Sửa Repository query thêm "AND h.deleted = false"
+        // Cách 2: Lọc ở đây (Java Stream) - Dùng tạm cách này nếu chưa sửa Repo
+        List<Hotel> hotels = hotelRepository.findByDestination(destination);
+
+        return hotels.stream()
+                .filter(h -> !h.isDeleted()) // Chỉ lấy cái chưa xóa
+                .map(hotel -> hotelConverter.toHotelResponse(hotel))
+                .collect(Collectors.toList());
+    }
+
+    // --- 7. MỚI: LẤY DANH SÁCH THÙNG RÁC ---
+    @Override
+    public List<HotelResponse> getDeletedHotels() {
+        // Gọi hàm tìm cái đã xóa trong Repository
+        List<Hotel> deletedHotels = hotelRepository.findAllByDeletedTrue();
+
+        return deletedHotels.stream()
+                .map(hotel -> hotelConverter.toHotelResponse(hotel))
+                .collect(Collectors.toList());
+    }
+
+    // --- 8. MỚI: KHÔI PHỤC KHÁCH SẠN ---
+    @Override
+    @Transactional
+    public void restoreHotel(Long hotelId) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
+
+        // Set lại cờ deleted thành false
+        hotel.setDeleted(false);
+
+        hotelRepository.save(hotel);
     }
 }

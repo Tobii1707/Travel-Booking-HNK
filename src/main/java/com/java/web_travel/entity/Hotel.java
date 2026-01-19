@@ -48,5 +48,11 @@ public class Hotel {
         this.hotelName = hotelName;
         this.hotelPriceFrom = hotelPrice;
     }
+
+    @Column(name = "number_room_per_floor")
+    private Integer numberRoomPerFloor;
+
+    @Column(name = "is_deleted", columnDefinition = "boolean default false")
+    private boolean deleted = false;
 }
 

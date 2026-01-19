@@ -168,6 +168,64 @@ body.hust-flight-page .hero-content p { font-size: 1.2rem; font-weight: 300; opa
 
 body.hust-flight-page .container { padding: 0 7% 4rem; }
 
+/* --- THÊM MỚI: SEARCH BOX CSS --- */
+body.hust-flight-page .search-box {
+  background: var(--white);
+  padding: 20px 30px;
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-top: -80px; /* Đẩy lên đè vào hero section */
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+body.hust-flight-page .search-box .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+body.hust-flight-page .search-box label {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+body.hust-flight-page .search-box input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+}
+body.hust-flight-page .search-box input:focus { border-color: var(--primary); }
+
+body.hust-flight-page .search-box button {
+  padding: 12px 30px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  height: 46px; /* Bằng chiều cao input */
+}
+body.hust-flight-page .search-box button:hover { background: var(--primary-dark); }
+
+body.hust-flight-page .search-box .btn-reset {
+  background: #eee; color: #555; padding: 0 15px;
+}
+body.hust-flight-page .search-box .btn-reset:hover { background: #ddd; }
+/* ------------------------------- */
+
 body.hust-flight-page .section-heading { text-align: center; margin-bottom: 3rem; }
 body.hust-flight-page .section-heading h1 {
   font-size: 2.5rem;
@@ -196,7 +254,7 @@ body.hust-flight-page .flight-list > div {
   flex-direction: column;
   position: relative;
   border: 1px solid #e1e8ed;
-  max-height: 450px;
+  max-height: 480px; /* Tăng chiều cao để chứa thêm lộ trình */
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--secondary) transparent;
@@ -230,8 +288,7 @@ body.hust-flight-page .flight-list > div:not(:has(img))::after {
   z-index: 1;
 }
 
-body.hust-flight-page .flight-list > div h3,
-body.hust-flight-page .flight-list > div strong {
+body.hust-flight-page .flight-list > div .airline-name {
   position: relative; z-index: 1;
   color: var(--white);
   margin: -55px 20px 15px 20px;
@@ -242,7 +299,7 @@ body.hust-flight-page .flight-list > div strong {
 }
 
 body.hust-flight-page .flight-list > div p,
-body.hust-flight-page .flight-list > div div {
+body.hust-flight-page .flight-list > div div:not(.airline-name):not(.route-info) {
   padding: 5px 20px;
   color: var(--text-light);
   font-size: 0.95rem;
@@ -251,16 +308,8 @@ body.hust-flight-page .flight-list > div div {
   gap: 10px;
 }
 
-body.hust-flight-page .flight-list > div p:nth-of-type(1)::before {
-  content: '\f017';
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  color: var(--secondary);
-}
-
-body.hust-flight-page .flight-list > div p:last-of-type,
-body.hust-flight-page .flight-list > div p:nth-last-child(2) {
-  color: var(--primary);
+body.hust-flight-page .flight-list > div .price {
+  color: var(--primary) !important;
   font-weight: 700;
   font-size: 1.2rem;
   margin-top: 10px;
@@ -493,6 +542,7 @@ body.hust-flight-page .credit span { color: var(--primary); }
 }
 @media (max-width: 768px) {
   body.hust-flight-page .seat-grid { grid-template-columns: repeat(4, 1fr); }
+  body.hust-flight-page .search-box { margin-top: 20px; }
 }
 @media (max-width: 480px) {
   body.hust-flight-page .seat-grid { grid-template-columns: repeat(3, 1fr); }

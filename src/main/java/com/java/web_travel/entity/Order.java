@@ -1,6 +1,7 @@
 package com.java.web_travel.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Nhớ import dòng này
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.java.web_travel.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -37,6 +38,11 @@ public class Order {
     @Column(name = "destination", nullable = false, length = 255)
     private String destination;
 
+    // --- MỚI THÊM: Nơi ở hiện tại ---
+    @NotNull
+    @Column(name = "current_location", nullable = false, length = 255)
+    private String currentLocation;
+
     @NotNull
     @Column(name = "number_of_people", nullable = false)
     private int numberOfPeople;
@@ -46,16 +52,9 @@ public class Order {
     @Column(name = "order_date")
     private Date orderDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "check_in_date")
-    @DateTimeFormat
-    private Date checkinDate;
+    // --- ĐÃ XÓA: checkinDate và checkoutDate (Theo yêu cầu của bạn) ---
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "check_out_date")
-    @DateTimeFormat
-    private Date checkoutDate;
-
+    // Các trường startHotel, endHotel giữ lại để phục vụ việc chọn khách sạn
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "start_hotel")
     @DateTimeFormat
@@ -71,17 +70,15 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties("orders") // Tránh lấy ngược lại danh sách order của User
+    @JsonIgnoreProperties("orders")
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    // --- SỬA QUAN TRỌNG: FLIGHT ---
-    @ManyToOne(fetch = FetchType.EAGER) // Bắt buộc tải thông tin chuyến bay ngay lập tức
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_id", nullable = true)
-    // Khi lấy Flight, đừng lấy danh sách orders bên trong Flight nữa để tránh vòng lặp
     @JsonIgnoreProperties({"orders", "flightSeats"})
     private Flight flight;
 
@@ -93,16 +90,23 @@ public class Order {
     @Column(name = "bedrooms", length = 2000)
     private String listBedrooms;
 
-    // --- SỬA QUAN TRỌNG: FLIGHT SEATS ---
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER) // Bắt buộc tải ghế ngay
-    // Khi lấy ghế, đừng lấy ngược lại thông tin Order để tránh vòng lặp
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("order")
     private List<FlightSeat> flightSeats;
 
-    public Order(String destination, int numberOfPeople, Date checkinDate, Date checkoutDate) {
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
+
+    // --- CẬP NHẬT CONSTRUCTOR ---
+    // Constructor tùy chỉnh cho việc tạo Order ban đầu (bỏ ngày checkin/out, thêm currentLocation)
+    public Order(String destination, String currentLocation, int numberOfPeople) {
         this.destination = destination;
+        this.currentLocation = currentLocation;
         this.numberOfPeople = numberOfPeople;
-        this.checkinDate = checkinDate;
-        this.checkoutDate = checkoutDate;
     }
+
+    // === THÊM TRƯỜNG NÀY VÀO ===
+    @Column(name = "list_seats")
+    private String listSeats;
+    // ===========================
 }

@@ -8,9 +8,11 @@ body.hust-admin-hotel {
   --bg-light: #f9f9f9;
   --shadow: 0 5px 15px rgba(0,0,0,0.1);
   --radius: 12px;
-  --danger: #e74c3c;
+  --danger: #e74c3c;     /* Màu đỏ cho nút Xóa */
   --info: #3498db;
   --warning: #f39c12;
+  --success: #2ecc71;    /* Màu xanh lá cho nút Restore */
+  --secondary: #6c757d;  /* Màu xám cho nút Thùng rác */
 
   margin: 0;
   background-color: var(--bg-light);
@@ -130,10 +132,12 @@ body.hust-admin-hotel .container-info .right {
   font-size: 0.9rem;
 }
 
-/* --- BUTTONS --- */
+/* --- BUTTONS (ĐÃ CẬP NHẬT THÊM MÀU) --- */
 body.hust-admin-hotel .action-bar {
   padding: 0 5%;
   margin-bottom: 20px;
+  display: flex;
+  gap: 10px; /* Khoảng cách giữa các nút */
 }
 
 body.hust-admin-hotel .btn {
@@ -145,14 +149,17 @@ body.hust-admin-hotel .btn {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-weight: 500;
   transition: 0.3s;
 }
 
+/* Nút Tạo mới (Xanh lá đậm) */
 body.hust-admin-hotel .btn-create { background-color: var(--primary); }
 body.hust-admin-hotel .btn-create:hover { background-color: var(--primary-dark); }
 
+/* Nút Sửa (Vàng cam) */
 body.hust-admin-hotel .btn-edit {
   background-color: var(--warning);
   padding: 6px 12px;
@@ -160,7 +167,31 @@ body.hust-admin-hotel .btn-edit {
 }
 body.hust-admin-hotel .btn-edit:hover { background-color: #d35400; }
 
+/* Nút Xóa (Đỏ) - Mới thêm */
+body.hust-admin-hotel .btn-danger {
+  background-color: var(--danger);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+body.hust-admin-hotel .btn-danger:hover { background-color: #c0392b; }
+
+/* Nút Khôi phục (Xanh lá tươi) - Mới thêm */
+body.hust-admin-hotel .btn-success {
+  background-color: var(--success);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+body.hust-admin-hotel .btn-success:hover { background-color: #27ae60; }
+
+/* Nút Thùng rác (Xám) - Mới thêm */
+body.hust-admin-hotel .btn-secondary {
+  background-color: var(--secondary);
+}
+body.hust-admin-hotel .btn-secondary:hover { background-color: #5a6268; }
+
+/* Nút Hủy trong Modal */
 body.hust-admin-hotel .btn-cancel { background-color: #95a5a6; }
+body.hust-admin-hotel .btn-cancel:hover { background-color: #7f8c8d; }
 
 /* --- TABLE --- */
 body.hust-admin-hotel .table-wrapper {
@@ -194,7 +225,7 @@ body.hust-admin-hotel th {
 
 body.hust-admin-hotel tr:hover { background-color: #f1f1f1; }
 
-/* --- PAGINATION giống admin_account/booking --- */
+/* --- PAGINATION --- */
 body.hust-admin-hotel .pagination {
   display: flex;
   justify-content: center;

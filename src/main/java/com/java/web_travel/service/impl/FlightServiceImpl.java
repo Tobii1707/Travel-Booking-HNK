@@ -19,12 +19,12 @@ import java.util.List;
 public class FlightServiceImpl implements FlightService {
 
     @Autowired
-    private FlightRepository flightRepository; // Để thao tác với bảng Flight
+    private FlightRepository flightRepository;
 
     @Autowired
-    private OrderRepository orderRepository;   // Để thao tác với bảng Order (cần khi xóa chuyến bay)
+    private OrderRepository orderRepository;
 
-    // --- 1. TẠO CHUYẾN BAY MỚI ---
+    // --- 1. TẠO CHUYẾN BAY MỚI (GIỮ NGUYÊN) ---
     @Override
     public Flight createFlight(FlightDTO flightDTO) {
         // Validation 1: Ngày bay không được nằm trong quá khứ
@@ -33,27 +33,29 @@ public class FlightServiceImpl implements FlightService {
         }
         // Validation 2: Ngày bay phải trước ngày hạ cánh
         if(!flightDTO.getCheckInDate().before(flightDTO.getCheckOutDate())){
-            // Chỗ này bạn đang dùng IllegalArgumentException,
-            // nên đồng bộ dùng AppException cho chuẩn format lỗi chung của dự án.
             throw new IllegalArgumentException(String.valueOf(ErrorCode.DATE_TIME_NOT_VALID));
         }
 
-        // Mapping: Chuyển dữ liệu từ DTO sang Entity thủ công
+        // Mapping: Chuyển dữ liệu từ DTO sang Entity
         Flight flight = new Flight();
+
+        flight.setDepartureLocation(flightDTO.getDepartureLocation()); // Thêm điểm đi
+        flight.setArrivalLocation(flightDTO.getArrivalLocation());     // Thêm điểm đến
+
         flight.setTicketClass(flightDTO.getTicketClass());
         flight.setAirlineName(flightDTO.getAirlineName());
         flight.setPrice(flightDTO.getPrice());
         flight.setCheckInDate(flightDTO.getCheckInDate());
         flight.setCheckOutDate(flightDTO.getCheckOutDate());
-        flight.setNumberOfChairs(flightDTO.getNumberOfChairs()); // Tổng số ghế
+        flight.setNumberOfChairs(flightDTO.getNumberOfChairs());
 
-        // Logic quan trọng: Khi mới tạo, chưa ai đặt vé -> Số ghế trống = Tổng số ghế
+        // Logic cũ: Khi mới tạo, chưa ai đặt vé -> Số ghế trống = Tổng số ghế
         flight.setSeatAvailable(flightDTO.getNumberOfChairs());
 
         return flightRepository.save(flight);
     }
 
-    // --- 2. XÓA CHUYẾN BAY ---
+    // --- 2. XÓA CHUYẾN BAY (GIỮ NGUYÊN) ---
     @Override
     @Transactional
     public void deleteFlight(Long id) {
@@ -69,14 +71,12 @@ public class FlightServiceImpl implements FlightService {
         flightRepository.delete(flight);
     }
 
-    // --- 3. CẬP NHẬT CHUYẾN BAY ---
+    // --- 3. CẬP NHẬT CHUYẾN BAY (GIỮ NGUYÊN) ---
     @Override
     public Flight updateFlight(Long id, FlightDTO flightDTO) {
-        // Kiểm tra xem chuyến bay có tồn tại không
         Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTS));
 
-        // Validation ngày tháng (Giống phần Create)
         if(flightDTO.getCheckInDate().before(new Date())){
             throw new AppException(ErrorCode.DATE_NOT_VALID);
         }
@@ -84,29 +84,24 @@ public class FlightServiceImpl implements FlightService {
             throw new IllegalArgumentException(String.valueOf(ErrorCode.DATE_TIME_NOT_VALID));
         }
 
-        // --- LOGIC TÍNH TOÁN LẠI SỐ GHẾ (Phức tạp nhất) ---
-        // flight.getNumberOfChairs(): Tổng ghế CŨ
-        // flightDTO.getNumberOfChairs(): Tổng ghế MỚI
-
+        // --- LOGIC TÍNH TOÁN LẠI SỐ GHẾ ---
         if(flightDTO.getNumberOfChairs() >= flight.getNumberOfChairs()){
-            // TRƯỜNG HỢP 1: Tăng thêm ghế (hoặc bằng)
-            // Ghế trống mới = Ghế trống cũ + (Số lượng tăng thêm)
+            // Tăng thêm ghế
             flight.setSeatAvailable(flight.getSeatAvailable() + flightDTO.getNumberOfChairs() - flight.getNumberOfChairs());
         } else {
-            // TRƯỜNG HỢP 2: Giảm bớt ghế
-            // Tính số ghế ĐÃ BÁN = Tổng cũ - Trống cũ
+            // Giảm bớt ghế
             int soGheDaDuocDat = flight.getNumberOfChairs() - flight.getSeatAvailable();
-
-            // Nếu Tổng ghế MỚI < Số ghế ĐÃ BÁN -> Vô lý (Không thể ép khách xuống máy bay) -> Báo lỗi
             if(flightDTO.getNumberOfChairs() < soGheDaDuocDat){
                 throw new AppException(ErrorCode.NUMBER_CHAIR_NOT_VALID);
             } else {
-                // Nếu hợp lệ: Ghế trống mới = Tổng mới - Đã bán
                 flight.setSeatAvailable(flightDTO.getNumberOfChairs() - soGheDaDuocDat);
             }
         }
 
-        // Cập nhật các thông tin còn lại
+        // Cập nhật các thông tin
+        flight.setDepartureLocation(flightDTO.getDepartureLocation()); // Cập nhật điểm đi
+        flight.setArrivalLocation(flightDTO.getArrivalLocation());     // Cập nhật điểm đến
+
         flight.setTicketClass(flightDTO.getTicketClass());
         flight.setAirlineName(flightDTO.getAirlineName());
         flight.setPrice(flightDTO.getPrice());
@@ -117,9 +112,17 @@ public class FlightServiceImpl implements FlightService {
         return flightRepository.save(flight);
     }
 
-    // --- 4. LẤY TẤT CẢ ---
+    // --- 4. LẤY TẤT CẢ (GIỮ NGUYÊN) ---
     @Override
     public List<Flight> getAllFlights() {
         return flightRepository.findAll();
+    }
+
+    // --- 5. GỢI Ý CHUYẾN BAY (MỚI THÊM VÀO) ---
+    // Hàm này override từ Interface FlightService vừa sửa
+    @Override
+    public List<Flight> getSuggestedFlights(String fromLocation, String toLocation) {
+        // Gọi xuống Repository để tìm những chuyến bay khớp địa điểm và chưa bay
+        return flightRepository.findSuggestedFlights(fromLocation, toLocation);
     }
 }

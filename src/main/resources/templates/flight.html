@@ -47,8 +47,20 @@
 </section>
 
 <div class="container">
+    <div class="search-box">
+        <div class="input-group">
+            <label><i class="fas fa-plane-departure"></i> Điểm đi</label>
+            <input type="text" id="searchFrom" placeholder="VD: Hà Nội">
+        </div>
+        <div class="input-group">
+            <label><i class="fas fa-plane-arrival"></i> Điểm đến</label>
+            <input type="text" id="searchTo" placeholder="VD: Đà Nẵng">
+        </div>
+        <button onclick="searchFlightsAPI()">Tìm kiếm</button>
+        <button onclick="resetFlights()" class="btn-reset"><i class="fas fa-sync"></i></button>
+    </div>
     <div class="section-heading">
-        <h1>Chuyến bay <span>Sẵn có</span></h1>
+        <h1>Danh sách <span>Chuyến bay</span></h1>
     </div>
 
     <div id="flight-list" class="flight-list"></div>

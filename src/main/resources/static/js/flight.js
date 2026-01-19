@@ -38,19 +38,22 @@
     });
   }
 
-  // ===== ORIGINAL FLIGHT LOGIC =====
+  // ===== FLIGHT LOGIC =====
+  let globalOrderId = null; // Lưu orderId để dùng chung
+
   function initFlightsPage() {
     const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('orderId');
+    globalOrderId = urlParams.get('orderId');
 
     const flightList = document.getElementById('flight-list');
     if (!flightList) return;
 
     flightList.innerHTML = '<div class="loading">Đang tải danh sách chuyến bay...</div>';
-    fetchFlights(orderId);
+    fetchFlights(globalOrderId);
   }
 
   function fetchFlights(orderId) {
+    // Mặc định gọi API lấy tất cả
     fetch('/flight/getAll')
         .then(response => response.json())
         .then(result => {
@@ -63,6 +66,39 @@
         .catch(() => showError('Không thể tải danh sách chuyến bay!'));
   }
 
+  // --- THÊM MỚI: TÌM KIẾM CHUYẾN BAY ---
+  window.searchFlightsAPI = function() {
+    const from = document.getElementById('searchFrom').value.trim();
+    const to = document.getElementById('searchTo').value.trim();
+
+    if(!from || !to) {
+      alert("Vui lòng nhập cả điểm đi và điểm đến!");
+      return;
+    }
+
+    const flightList = document.getElementById('flight-list');
+    flightList.innerHTML = '<div class="loading">Đang tìm chuyến bay phù hợp...</div>';
+
+    // Gọi API suggest mới thêm ở Backend
+    fetch(`/flight/suggest?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+        .then(res => res.json())
+        .then(result => {
+          if (result.code === 1000 || result.data) {
+            renderFlights(result.data, globalOrderId);
+          } else {
+            showError(result.message || 'Không tìm thấy chuyến bay nào!');
+          }
+        })
+        .catch(err => showError('Lỗi kết nối khi tìm kiếm!'));
+  };
+
+  window.resetFlights = function() {
+    document.getElementById('searchFrom').value = '';
+    document.getElementById('searchTo').value = '';
+    initFlightsPage(); // Load lại tất cả
+  };
+  // -------------------------------------
+
   function renderFlights(flights, orderId) {
     const flightList = document.getElementById('flight-list');
     if (!flightList) return;
@@ -70,7 +106,7 @@
     flightList.innerHTML = '';
 
     if (!flights || flights.length === 0) {
-      showError('Không có chuyến bay nào!');
+      showError('Không tìm thấy chuyến bay phù hợp!');
       return;
     }
 
@@ -78,8 +114,16 @@
       const flightItem = document.createElement('div');
       flightItem.classList.add('flight-item');
 
+      // --- CẬP NHẬT: HIỂN THỊ ĐIỂM ĐI -> ĐIỂM ĐẾN ---
       flightItem.innerHTML = `
         <div class="airline-name">${flight.airlineName}</div>
+        
+        <div class="route-info" style="color: #333; font-weight: bold; margin: 10px 20px; font-size: 1.1rem;">
+             <i class="fas fa-plane-departure" style="color: var(--primary);"></i> ${flight.departureLocation || 'N/A'} 
+             &nbsp; <i class="fas fa-long-arrow-alt-right"></i> &nbsp; 
+             <i class="fas fa-plane-arrival" style="color: var(--primary);"></i> ${flight.arrivalLocation || 'N/A'}
+        </div>
+
         <div class="ticket-class">${flight.ticketClass}</div>
         <div class="price">${Number(flight.price || 0).toLocaleString()} VND</div>
         <div class="check-in-date">Ngày đi: ${formatDate(flight.checkInDate)}</div>
@@ -128,7 +172,7 @@
   function showError(message) {
     const flightList = document.getElementById('flight-list');
     if (!flightList) return;
-    flightList.innerHTML = `<p class="error-message">${message}</p>`;
+    flightList.innerHTML = `<p class="error-message" style="text-align:center; width:100%; color: red; font-weight:bold; padding: 20px;">${message}</p>`;
   }
 
   function formatDate(dateStr) {
@@ -137,7 +181,7 @@
     return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
   }
 
-  // ===== SEAT SELECTION MODAL =====
+  // ===== SEAT SELECTION MODAL (GIỮ NGUYÊN) =====
   let selectedSeats = [];
   let currentOrderId = null;
   let currentFlightId = null;

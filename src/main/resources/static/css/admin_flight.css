@@ -168,6 +168,8 @@ body.hust-admin-flight .btn-delete {
 body.hust-admin-flight .table-wrapper {
   padding: 0 5%;
   margin-bottom: 10px;
+  /* Thêm overflow để nếu bảng quá dài sẽ có thanh cuộn ngang */
+  overflow-x: auto;
 }
 
 body.hust-admin-flight table {
@@ -178,6 +180,8 @@ body.hust-admin-flight table {
   border-radius: var(--radius);
   overflow: hidden;
   font-size: 0.9rem;
+  /* Đảm bảo bảng không bị co quá mức */
+  min-width: 900px;
 }
 
 body.hust-admin-flight th,
@@ -242,6 +246,9 @@ body.hust-admin-flight .modal-content {
   padding: 30px;
   border-radius: 12px;
   width: 500px;
+  /* Thêm max-height và scroll để nếu modal dài quá màn hình thì vẫn cuộn được */
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   animation: hustFlightFadeIn 0.3s ease-in-out;
 }

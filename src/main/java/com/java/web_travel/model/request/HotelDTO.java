@@ -1,9 +1,6 @@
 package com.java.web_travel.model.request;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,4 +21,8 @@ public class HotelDTO {
    @Min(value = 1 ,message = "NUMBER_FLOOR_NOT_VALID")
    private int numberFloor;
 
+    @NotNull(message = "Số phòng một tầng không được để trống")
+    @Min(value = 1, message = "Một tầng phải có ít nhất 1 phòng")
+    @Max(value = 100, message = "Số phòng một tầng không được vượt quá 100")
+    private Integer numberRoomPerFloor;
 }

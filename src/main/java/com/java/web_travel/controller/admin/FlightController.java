@@ -16,87 +16,80 @@ import java.util.List;
 @RestController
 @RequestMapping("/flight")
 @Slf4j
-public class FLightController {
+public class FlightController {
 
     @Autowired
     private FlightService flightService;
 
-    // --- API 1: TẠO MỚI CHUYẾN BAY ---
+    // --- API 1: TẠO MỚI CHUYẾN BAY (GIỮ NGUYÊN) ---
     @PostMapping("/create")
     public ApiResponse<Flight> createFlight(@Valid @RequestBody FlightDTO flightDTO) {
-        // @Valid: Kiểm tra dữ liệu đầu vào (VD: tên không được rỗng) dựa trên rule trong file FlightDTO.
-        // @RequestBody: Ép kiểu dữ liệu JSON gửi lên từ Client thành object Java (FlightDTO).
-
-        // Ghi log ra console để biết đang nhận được dữ liệu gì
         log.info("Create flightDTO: {}", flightDTO);
-
-        // Khởi tạo đối tượng trả về chuẩn (Wrapper response)
         ApiResponse<Flight> apiResponse = new ApiResponse<>();
-
-        // Gọi Service để thực hiện logic tạo chuyến bay và lưu vào DB
         Flight flight = flightService.createFlight(flightDTO);
-
-        // Gán dữ liệu chuyến bay vừa tạo vào kết quả trả về
         apiResponse.setData(flight);
-        // Gán thông báo thành công
         apiResponse.setMessage("Flight created");
-
-        // Ghi log thông báo đã xong việc
         log.info("Flight created successfully: {}", flight);
-
-        // Trả kết quả JSON về cho người dùng
         return apiResponse;
     }
 
-    // --- API 2: XÓA CHUYẾN BAY ---
+    // --- API 2: XÓA CHUYẾN BAY (GIỮ NGUYÊN) ---
     @DeleteMapping("/delete/{id}")
     public ApiResponse<Flight> deleteFlight(@PathVariable Long id) {
-        // @PathVariable: Lấy giá trị {id} trên URL gán vào biến 'id' của hàm.
-
-        log.info("Delete flight id = : {}", id); // Ghi log ID chuẩn bị xóa
-
+        log.info("Delete flight id = : {}", id);
         ApiResponse<Flight> apiResponse = new ApiResponse<>();
-
-        // Gọi Service để xóa bản ghi trong Database theo ID
         flightService.deleteFlight(id);
-
-        apiResponse.setMessage("Flight deleted"); // Thông báo xóa thành công
-        log.info("Flight deleted successfully id = : {}", id); // Ghi log hoàn tất
-
+        apiResponse.setMessage("Flight deleted");
+        log.info("Flight deleted successfully id = : {}", id);
         return apiResponse;
     }
 
-    // --- API 3: CẬP NHẬT CHUYẾN BAY ---
+    // --- API 3: CẬP NHẬT CHUYẾN BAY (GIỮ NGUYÊN) ---
     @PatchMapping("/update/{id}")
     public ApiResponse<Flight> updateFlight(@PathVariable Long id, @Valid @RequestBody FlightDTO flightDTO) {
-        // Hàm này cần 2 tham số:
-        // 1. id: Lấy từ URL (@PathVariable) để biết sửa chuyến bay nào.
-        // 2. flightDTO: Lấy từ Body JSON (@RequestBody) để biết thông tin mới là gì.
-
         log.info("Update flight id = {}", id);
         ApiResponse<Flight> apiResponse = new ApiResponse<>();
-
-        // Gọi Service xử lý update, sau đó gán kết quả đã update vào data trả về
         apiResponse.setData(flightService.updateFlight(id, flightDTO));
         apiResponse.setMessage("Flight updated");
-
         log.info("Flight updated successfully id = {}", id);
         return apiResponse;
     }
 
-    // --- API 4: LẤY DANH SÁCH TẤT CẢ ---
+    // --- API 4: LẤY DANH SÁCH TẤT CẢ (GIỮ NGUYÊN) ---
     @GetMapping("/getAll")
     public ApiResponse<List<Flight>> getAllFlights() {
         log.info("Get all flights");
-
-        // Lưu ý: Kiểu dữ liệu trả về ở đây là List<Flight> (Danh sách)
         ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
-
-        // Gọi Service lấy toàn bộ danh sách từ DB
         apiResponse.setData(flightService.getAllFlights());
         apiResponse.setMessage("success");
-
         log.info("Get all success");
+        return apiResponse;
+    }
+
+    // --- API 5: GỢI Ý CHUYẾN BAY THEO ĐỊA ĐIỂM (MỚI THÊM VÀO) ---
+    // URL mẫu: /flight/suggest?from=Hà Nội&to=Đà Nẵng
+    @GetMapping("/suggest")
+    public ApiResponse<List<Flight>> suggestFlights(
+            @RequestParam String from, // Lấy tham số 'from' trên URL
+            @RequestParam String to    // Lấy tham số 'to' trên URL
+    ) {
+        log.info("Request suggest flight from: {} to: {}", from, to);
+
+        ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
+
+        // Gọi hàm Service mới viết để lấy danh sách
+        List<Flight> flights = flightService.getSuggestedFlights(from, to);
+
+        apiResponse.setData(flights);
+
+        // Thông báo kết quả cho rõ ràng
+        if(flights.isEmpty()){
+            apiResponse.setMessage("No suitable flights found (future flights only)");
+        } else {
+            apiResponse.setMessage("Found " + flights.size() + " flights");
+        }
+
+        log.info("Suggest flight success, found: {}", flights.size());
         return apiResponse;
     }
 }

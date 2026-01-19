@@ -36,7 +36,7 @@
 
 <div class="container-info">
     <div class="left">
-        <p><b>Quản lý Khách sạn</b></p>
+        <p><b id="tableTitle">Quản lý Khách sạn</b></p>
     </div>
     <div class="right">
         <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
@@ -47,6 +47,10 @@
 <div class="action-bar">
     <button class="btn btn-create" onclick="openAddModal()">
         <i class="fas fa-plus"></i> Thêm khách sạn mới
+    </button>
+
+    <button id="toggleTrashBtn" class="btn btn-secondary" onclick="toggleViewMode()">
+        <i class="fas fa-trash-restore"></i> Thùng rác
     </button>
 </div>
 
@@ -59,6 +63,7 @@
             <th>Giá từ</th>
             <th>Địa chỉ</th>
             <th>Số tầng</th>
+            <th>Số phòng/tầng</th>
             <th>Thao tác</th>
         </tr>
         </thead>
@@ -92,6 +97,11 @@
             <div class="form-group">
                 <label>Số tầng</label>
                 <input type="number" id="numberFloor" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Số phòng 1 tầng</label>
+                <input type="number" id="numberRoomPerFloor" class="form-control" placeholder="Nhập số lượng phòng mỗi tầng">
+                <small style="color: red; font-size: 0.8em;">*Lưu ý: Chỉ có tác dụng tạo phòng khi thêm mới.</small>
             </div>
         </div>
         <div class="modal-footer">

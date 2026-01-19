@@ -5,7 +5,7 @@ import com.java.web_travel.enums.ErrorCode;
 import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.EmailDTO;
 import com.java.web_travel.repository.OrderRepository;
-import com.java.web_travel.service.EmailService; // Import Interface vừa tạo
+import com.java.web_travel.service.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,8 @@ public class EmailServiceImpl implements EmailService {
     public String sendEmail(EmailDTO emailDTO) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8"); // Thêm UTF-8 để tránh lỗi font
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            // Lưu ý: Bạn có thể muốn đổi email gửi đi nếu cần thiết
             helper.setFrom("hanamkhanh2004@gmail.com");
             helper.setTo(emailDTO.getToEmail());
             helper.setSubject(emailDTO.getSubject());
@@ -51,13 +52,14 @@ public class EmailServiceImpl implements EmailService {
         EmailDTO emailDTO = new EmailDTO();
 
         emailDTO.setToEmail(order.getUser().getEmail());
-        String subject = "Cảm ơn quý ông/bà " + order.getUser().getFullName() + " đã đặt chuyến đi của FUTURE WONDER";
+        // Đổi tên tại tiêu đề
+        String subject = "Cảm ơn quý ông/bà " + order.getUser().getFullName() + " đã đặt chuyến đi của VIVUTRAVEL";
         emailDTO.setSubject(subject);
 
         String orderDetails = generateOrderInfoHtml(order);
         String body = orderDetails +
                 "<i>Vui lòng sớm thanh toán để có một chuyến đi tuyệt vời.</i><br>" +
-                "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên phần footer
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -74,7 +76,7 @@ public class EmailServiceImpl implements EmailService {
         String orderDetails = generateOrderInfoHtml(order);
         String body = "------------------<b>XÁC NHẬN THANH TOÁN THÀNH CÔNG</b>------------------<br>" +
                 orderDetails +
-                "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -90,9 +92,9 @@ public class EmailServiceImpl implements EmailService {
 
         String orderDetails = generateOrderInfoHtml(order);
         String body = "------------------<b>THANH TOÁN THẤT BẠI</b>------------------<br>" +
-                "---------------<b>FUTURE WONDER rất tiếc khi phải thông báo rằng bạn đã thanh toán không thành công, vui lòng kiểm tra lại</b><br>" +
+                "---------------<b>VIVUTRAVEL rất tiếc khi phải thông báo rằng bạn đã thanh toán không thành công, vui lòng kiểm tra lại</b><br>" + // Đổi tên
                 orderDetails +
-                "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -108,10 +110,10 @@ public class EmailServiceImpl implements EmailService {
 
         String orderDetails = generateOrderInfoHtml(order);
         String body = "------------------<b>HỦY CHUYẾN THÀNH CÔNG</b>------------------<br>" +
-                "---------------<b>FUTURE WONDER rất tiếc khi không thể đồng hành cùng bạn trong chuyến đi lần này!</b><br>" +
+                "---------------<b>VIVUTRAVEL rất tiếc khi không thể đồng hành cùng bạn trong chuyến đi lần này!</b><br>" + // Đổi tên
                 "Hẹn quý khách trong một tương lai gần nhất<br>" +
                 orderDetails +
-                "<b>FUTURE WONDER TRÂN TRỌNG CẢM ƠN!</b>";
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -121,23 +123,23 @@ public class EmailServiceImpl implements EmailService {
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setToEmail(toEmail);
-        emailDTO.setSubject("Yêu cầu đặt lại mật khẩu - FUTURE WONDER");
+        emailDTO.setSubject("Yêu cầu đặt lại mật khẩu - VIVUTRAVEL"); // Đổi tên
 
         String body = "<h3>Xin chào,</h3>" +
-                "<p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản Future Wonder của mình.</p>" +
+                "<p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản VivuTravel của mình.</p>" + // Đổi tên
                 "<p>Vui lòng nhấp vào liên kết bên dưới để đổi mật khẩu:</p>" +
                 "<p><a href=\"" + resetLink + "\">BẤM VÀO ĐÂY ĐỂ ĐẶT LẠI MẬT KHẨU</a></p>" +
                 "<br>" +
                 "<p>Link này sẽ hết hạn sau 1 giờ.</p>" +
                 "<p>Nếu bạn không yêu cầu thay đổi này, vui lòng bỏ qua email này.</p>" +
                 "<br>" +
-                "<b>FUTURE WONDER TEAM</b>";
+                "<b>VIVUTRAVEL TEAM</b>"; // Đổi tên
 
         emailDTO.setBody(body);
         sendEmail(emailDTO);
     }
 
-    // --- PRIVATE HELPER METHODS (Để tránh lặp code) ---
+    // --- PRIVATE HELPER METHODS ---
 
     private Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId)
@@ -150,15 +152,11 @@ public class EmailServiceImpl implements EmailService {
         return localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
-    /**
-     * Hàm này tạo đoạn HTML thông tin chi tiết chuyến đi dùng chung cho cả 4 loại email
-     */
     private String generateOrderInfoHtml(Order order) {
         String userName = order.getUser().getFullName();
         String destination = order.getDestination();
+        String currentDestination = order.getDestination();
         int numberOfPeople = order.getNumberOfPeople();
-        String dateCheckIn = formatDate(order.getCheckinDate());
-        String dateCheckOut = formatDate(order.getCheckoutDate());
         String hotelName = order.getHotel() != null ? order.getHotel().getHotelName() : "N/A";
         String flightName = order.getFlight() != null ? order.getFlight().getAirlineName() : "N/A";
         String flightClass = order.getFlight() != null ? order.getFlight().getTicketClass().toString() : "";
@@ -166,10 +164,9 @@ public class EmailServiceImpl implements EmailService {
 
         return "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
                 "<b>Người đặt:</b> " + userName + "<br>" +
+                "<b>Địa điểm:</b> " + currentDestination + "<br>"+
                 "<b>Địa điểm:</b> " + destination + "<br>" +
                 "<b>Số người:</b> " + numberOfPeople + "<br>" +
-                "<b>Thời gian check-in:</b> " + dateCheckIn + "<br>" +
-                "<b>Thời gian check-out:</b> " + dateCheckOut + "<br>" +
                 "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightClass + "<br>" +
                 "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
                 "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>";

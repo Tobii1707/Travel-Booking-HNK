@@ -39,7 +39,6 @@ public class OrderController {
         ApiResponse<Order> apiResponse = new ApiResponse<>();
 
         Order order = orderService.chooseHotel(orderId, hotelId, orderHotelDTO);
-        orderService.saveOrder(order);
 
         apiResponse.setData(order);
         apiResponse.setMessage("success");
@@ -58,26 +57,35 @@ public class OrderController {
         return apiResponse;
     }
 
-    // --- ĐÂY LÀ ĐOẠN ĐÃ SỬA ĐỂ KHỚP VỚI URL .../3/1 ---
+    // --- ĐÂY LÀ ĐOẠN ĐÃ SỬA: THÊM TRY-CATCH ĐỂ BẮT LỖI LOGIC TỪ SERVICE ---
     @PostMapping("/chooseFlightWithSeats/{orderId}/{flightId}")
     public ApiResponse<Order> chooseFlightWithSeats(
             @PathVariable Long orderId,
-            @PathVariable Long flightId, // Thêm tham số này để hứng số 1 từ URL
+            @PathVariable Long flightId,
             @RequestBody OrderFlightDTO orderFlightDTO) {
 
         log.info("Start choose flight with seats for order id = {} and flight id = {}", orderId, flightId);
-        ApiResponse<Order> apiResponse = new ApiResponse<>();
 
-        // Gán flightId từ URL vào DTO để Service biết chọn chuyến nào
-        orderFlightDTO.setFlightId(flightId);
+        // Thêm Try-Catch vào đây để hứng lỗi "Sai lộ trình"
+        try {
+            ApiResponse<Order> apiResponse = new ApiResponse<>();
 
-        // Gọi service xử lý
-        Order order = orderService.chooseFlightWithSeats(orderId, orderFlightDTO);
+            // Gán flightId từ URL vào DTO
+            orderFlightDTO.setFlightId(flightId);
 
-        apiResponse.setData(order);
-        apiResponse.setMessage("Choose flight with seats success");
-        log.info("Choose flight with seats successfully for order id = {}", orderId);
-        return apiResponse;
+            // Gọi service xử lý
+            Order order = orderService.chooseFlightWithSeats(orderId, orderFlightDTO);
+
+            apiResponse.setData(order);
+            apiResponse.setMessage("Choose flight with seats success");
+            log.info("Choose flight with seats successfully for order id = {}", orderId);
+            return apiResponse;
+        } catch (Exception e) {
+            // Nếu Service báo lỗi (ví dụ: Địa điểm không khớp), code sẽ nhảy vào đây
+            log.error("Error choosing flight: {}", e.getMessage());
+            // Trả về lỗi 7777 thay vì 500
+            return new ApiResponse<>(7777, e.getMessage(), null);
+        }
     }
     // ----------------------------------------------------
 

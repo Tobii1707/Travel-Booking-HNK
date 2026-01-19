@@ -5,13 +5,13 @@
   if (!document.body || !document.body.classList.contains('hust-booking-page')) return;
 
   document.addEventListener('DOMContentLoaded', function () {
-    initUserMenu();
-    initErrorModal();
-    prefillDestination();     // <-- NEW
-    initBookingForm();
+    initUserMenu();         // Giữ nguyên
+    initErrorModal();       // Giữ nguyên
+    prefillDestination();   // Giữ nguyên
+    initBookingForm();      // <--- Đã sửa logic bỏ ngày, thêm điểm xuất phát
   });
 
-  // ===== USER MENU =====
+  // ===== USER MENU (GIỮ NGUYÊN KHÔNG ĐỔI) =====
   function initUserMenu() {
     const userIcon = document.getElementById('user-icon');
     const menu = document.getElementById('user-menu');
@@ -29,7 +29,7 @@
     });
   }
 
-  // ===== ERROR MODAL =====
+  // ===== ERROR MODAL (GIỮ NGUYÊN KHÔNG ĐỔI) =====
   let modalEl, errorMessageEl, closeXEl, closeBtnEl;
 
   function initErrorModal() {
@@ -43,7 +43,7 @@
     if (closeXEl) closeXEl.addEventListener('click', closeErrorModal);
     if (closeBtnEl) closeBtnEl.addEventListener('click', closeErrorModal);
 
-    // Click ngoài modal-content để đóng (không ghi đè window.onclick)
+    // Click ngoài modal-content để đóng
     modalEl.addEventListener('click', function (e) {
       if (e.target === modalEl) closeErrorModal();
     });
@@ -60,20 +60,20 @@
     modalEl.style.display = 'none';
   }
 
-  // ===== PREFILL DESTINATION (NEW) =====
+  // ===== PREFILL DESTINATION (GIỮ NGUYÊN KHÔNG ĐỔI) =====
   function prefillDestination() {
     const input = document.getElementById('palaceName');
     if (!input) return;
 
     let destination = '';
 
-    // 1) ưu tiên lấy từ query: booking?destination=Tokyo
+    // 1) ưu tiên lấy từ query
     try {
       const params = new URLSearchParams(window.location.search);
       destination = (params.get('destination') || '').trim();
     } catch (_) {}
 
-    // 2) fallback lấy từ localStorage (gallery.js set trước khi redirect)
+    // 2) fallback lấy từ localStorage
     if (!destination) {
       try {
         destination = (localStorage.getItem('prefillDestination') || '').trim();
@@ -82,16 +82,12 @@
 
     if (destination) {
       input.value = destination;
-
-      // clear để lần sau không bị fill bậy
       try { localStorage.removeItem('prefillDestination'); } catch (_) {}
-
-      // optional: focus nhẹ cho UX
       input.focus();
     }
   }
 
-  // ===== BOOKING FORM =====
+  // ===== BOOKING FORM (ĐÃ SỬA: BỎ NGÀY THÁNG, THÊM CURRENT LOCATION) =====
   function initBookingForm() {
     const form = document.getElementById('booking-form');
     if (!form) return;
@@ -99,37 +95,49 @@
     form.addEventListener('submit', function (event) {
       event.preventDefault();
 
+      // 1. Lấy dữ liệu từ các ô input
+      // MỚI: Thêm lấy điểm xuất phát
+      const currentLocation = document.getElementById('currentLocation')?.value || '';
       const palaceName = document.getElementById('palaceName')?.value || '';
       const numberOfPeople = document.getElementById('numberOfPeople')?.value || '';
-      const checkinTime = document.getElementById('checkinTime')?.value || '';
-      const checkoutTime = document.getElementById('checkoutTime')?.value || '';
+
+      // ĐÃ XÓA: checkinTime và checkoutTime ở đây theo yêu cầu của bạn
+
+      // Validate cơ bản
+      if(!currentLocation || !palaceName) {
+        showErrorModal("Vui lòng nhập điểm xuất phát và điểm đến!");
+        return;
+      }
 
       const userId = localStorage.getItem('userId') || 1;
 
+      // 2. Tạo object gửi lên Server (Bỏ checkInDate, checkOutDate)
       const orderData = {
+        currentLocation: currentLocation, // Thêm trường này cho khớp backend
         destination: palaceName,
-        numberOfPeople: parseInt(numberOfPeople, 10),
-        checkInDate: checkinTime,
-        checkOutDate: checkoutTime
+        numberOfPeople: parseInt(numberOfPeople, 10)
+        // ĐÃ XÓA: checkInDate, checkOutDate
       };
 
+      // 3. Gọi API
       fetch(`/order/create/${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
       })
-        .then(response => response.json())
-        .then(result => {
-          if (result.code === 1000) {
-            window.location.href = `/hotel?orderId=${result.data.id}`;
-          } else {
-            showErrorModal(result.message || 'Booking failed!');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          showErrorModal('An error occurred while booking!');
-        });
+          .then(response => response.json())
+          .then(result => {
+            if (result.code === 1000) {
+              // Thành công -> Chuyển hướng
+              window.location.href = `/hotel?orderId=${result.data.id}`;
+            } else {
+              showErrorModal(result.message || 'Booking failed!');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showErrorModal('An error occurred while booking!');
+          });
     });
   }
 })();

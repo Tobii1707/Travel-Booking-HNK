@@ -59,27 +59,25 @@
 
   // ===== Ticket Class mapping (UI <-> backend) =====
   function uiToApiTicketClass(uiValue) {
-    // UI: ECONOMY/BUSINESS -> API: NORMAL_CLASS/BUSINESS_CLASS
     if (uiValue === 'BUSINESS') return 'BUSINESS_CLASS';
     return 'NORMAL_CLASS';
   }
 
   function apiToUiTicketClass(apiValue) {
-    // API: NORMAL_CLASS/BUSINESS_CLASS -> UI: ECONOMY/BUSINESS
     if (apiValue === 'BUSINESS_CLASS') return 'BUSINESS';
     return 'ECONOMY';
   }
 
   function displayTicketClass(apiValue) {
-    // hiển thị trên table
     return apiToUiTicketClass(apiValue);
   }
 
   // ===== UI HELPERS =====
   function showNoRow(message) {
+    // Sửa colspan từ 9 lên 11 do thêm 2 cột
     const tbody = document.querySelector('#flight-table tbody');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:18px;">${message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding:18px;">${message}</td></tr>`;
   }
 
   function renderFlightTable(flights) {
@@ -94,10 +92,13 @@
     tableBody.innerHTML = '';
     flights.forEach(flight => {
       const row = document.createElement('tr');
+      // --- THÊM HIỂN THỊ ĐIỂM ĐI VÀ ĐIỂM ĐẾN ---
       row.innerHTML = `
         <td>${flight.id}</td>
         <td>${displayTicketClass(flight.ticketClass)}</td>
         <td>${flight.airlineName ?? ''}</td>
+        <td>${flight.departureLocation ?? ''}</td> 
+        <td>${flight.arrivalLocation ?? ''}</td>
         <td>${flight.price ?? ''}</td>
         <td>${flight.checkInDate ? new Date(flight.checkInDate).toLocaleDateString() : 'N/A'}</td>
         <td>${flight.checkOutDate ? new Date(flight.checkOutDate).toLocaleDateString() : 'N/A'}</td>
@@ -112,7 +113,7 @@
     });
   }
 
-  // Pagination giống admin_booking/admin_account: luôn có Prev 1 Next
+  // Pagination giống admin_booking/admin_account
   function renderPagination(totalPages) {
     const container = document.getElementById('pagination');
     if (!container) return;
@@ -172,29 +173,33 @@
   // ===== API =====
   function fetchFlights() {
     fetch('/flight/getAll')
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          allFlights = Array.isArray(data.data) ? data.data : [];
-          currentPage = 0;
-          renderCurrentPage();
-        } else {
+        .then(res => res.json())
+        .then(data => {
+          if (data.code === 1000) {
+            allFlights = Array.isArray(data.data) ? data.data : [];
+            currentPage = 0;
+            renderCurrentPage();
+          } else {
+            allFlights = [];
+            renderCurrentPage();
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching flights:', err);
           allFlights = [];
           renderCurrentPage();
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching flights:', err);
-        allFlights = [];
-        renderCurrentPage();
-      });
+        });
   }
 
   function createFlight() {
     const uiTicket = document.getElementById('ticketClass')?.value;
+
+    // --- THÊM LẤY GIÁ TRỊ TỪ INPUT MỚI ---
     const newFlight = {
       ticketClass: uiToApiTicketClass(uiTicket),
       airlineName: document.getElementById('airlineName')?.value || '',
+      departureLocation: document.getElementById('departureLocation')?.value || '', // Mới
+      arrivalLocation: document.getElementById('arrivalLocation')?.value || '',     // Mới
       price: document.getElementById('price')?.value || 0,
       checkInDate: document.getElementById('checkInDate')?.value || '',
       checkOutDate: document.getElementById('checkOutDate')?.value || '',
@@ -206,17 +211,17 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newFlight)
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          alert('Flight added successfully!');
-          fetchFlights();
-          closeModal('addFlightModal');
-        } else {
-          alert('Error: ' + data.message);
-        }
-      })
-      .catch(err => console.error('Error adding flight:', err));
+        .then(res => res.json())
+        .then(data => {
+          if (data.code === 1000) {
+            alert('Flight added successfully!');
+            fetchFlights();
+            closeModal('addFlightModal');
+          } else {
+            alert('Error: ' + data.message);
+          }
+        })
+        .catch(err => console.error('Error adding flight:', err));
   }
   window.createFlight = createFlight;
 
@@ -224,9 +229,9 @@
     if (!confirm('Are you sure you want to delete this flight?')) return;
 
     fetch(`/flight/delete/${flightId}`, { method: 'DELETE' })
-      .then(res => res.json())
-      .then(() => fetchFlights())
-      .catch(err => console.error('Error deleting flight:', err));
+        .then(res => res.json())
+        .then(() => fetchFlights())
+        .catch(err => console.error('Error deleting flight:', err));
   }
   window.deleteFlight = deleteFlight;
 
@@ -238,8 +243,13 @@
 
     // API -> UI
     document.getElementById('updateTicketClass').value = apiToUiTicketClass(flight.ticketClass);
-
     document.getElementById('updateAirlineName').value = flight.airlineName || '';
+
+    // --- THÊM ĐỔ DỮ LIỆU VÀO FORM UPDATE ---
+    document.getElementById('updateDepartureLocation').value = flight.departureLocation || '';
+    document.getElementById('updateArrivalLocation').value = flight.arrivalLocation || '';
+    // ----------------------------------------
+
     document.getElementById('updatePrice').value = flight.price || 0;
     document.getElementById('updateCheckInDate').value = flight.checkInDate ? flight.checkInDate.split('T')[0] : '';
     document.getElementById('updateCheckOutDate').value = flight.checkOutDate ? flight.checkOutDate.split('T')[0] : '';
@@ -256,9 +266,12 @@
 
     const uiTicket = document.getElementById('updateTicketClass')?.value;
 
+    // --- THÊM LẤY DỮ LIỆU UPDATE MỚI ---
     const updatedFlight = {
       ticketClass: uiToApiTicketClass(uiTicket),
       airlineName: document.getElementById('updateAirlineName')?.value || '',
+      departureLocation: document.getElementById('updateDepartureLocation')?.value || '', // Mới
+      arrivalLocation: document.getElementById('updateArrivalLocation')?.value || '',     // Mới
       price: document.getElementById('updatePrice')?.value || 0,
       checkInDate: document.getElementById('updateCheckInDate')?.value || '',
       checkOutDate: document.getElementById('updateCheckOutDate')?.value || '',
@@ -270,17 +283,17 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedFlight)
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          alert('Flight updated successfully!');
-          fetchFlights();
-          closeModal('updateFlightModal');
-        } else {
-          alert('Failed to update flight: ' + data.message);
-        }
-      })
-      .catch(err => console.error('Error updating flight:', err));
+        .then(res => res.json())
+        .then(data => {
+          if (data.code === 1000) {
+            alert('Flight updated successfully!');
+            fetchFlights();
+            closeModal('updateFlightModal');
+          } else {
+            alert('Failed to update flight: ' + data.message);
+          }
+        })
+        .catch(err => console.error('Error updating flight:', err));
   }
   window.saveUpdatedFlight = saveUpdatedFlight;
 

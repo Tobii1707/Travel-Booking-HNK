@@ -16,7 +16,10 @@ import java.util.List;
                 @Index(name = "idx_flight_check_in", columnList = "check_in_date"),
                 @Index(name = "idx_flight_check_out", columnList = "check_out_date"),
                 @Index(name = "idx_flight_ticket_class", columnList = "ticket_class"),
-                @Index(name = "idx_flight_airline", columnList = "airline_name")
+                @Index(name = "idx_flight_airline", columnList = "airline_name"),
+                // Thêm index cho 2 trường mới để tìm kiếm nhanh hơn
+                @Index(name = "idx_flight_departure", columnList = "departure_location"),
+                @Index(name = "idx_flight_arrival", columnList = "arrival_location")
         }
 )
 @Setter
@@ -29,6 +32,12 @@ public class Flight {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @Column(name = "departure_location", nullable = false, length = 100)
+    private String departureLocation;
+
+    @Column(name = "arrival_location", nullable = false, length = 100)
+    private String arrivalLocation;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ticket_class", nullable = false, length = 30)

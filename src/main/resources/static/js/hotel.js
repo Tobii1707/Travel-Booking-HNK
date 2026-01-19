@@ -150,30 +150,63 @@ function showError(message) {
 }
 
 function openHotelModal(hotelId) {
-  document.getElementById("hotel-id").value = hotelId;
-  document.getElementById("hotel-modal").style.display = "flex";
+  // 1. Gán ID vào input ẩn
+  const hotelIdInput = document.getElementById("hotel-id");
+  if (hotelIdInput) hotelIdInput.value = hotelId;
 
+  // 2. Hiển thị Modal
+  const modal = document.getElementById("hotel-modal");
+  if (modal) modal.style.display = "flex";
+
+  // 3. Reset giao diện danh sách phòng
   const roomList = document.getElementById("room-list");
-  roomList.style.display = "none";
+  if (roomList) {
+    roomList.style.display = "none";
+    roomList.innerHTML = '<p style="text-align:center; padding:10px;">Đang tải danh sách phòng...</p>';
+  }
 
+  // 4. Xử lý nút bấm
   const chooseRoomBtn = document.getElementById("choose-room-btn");
+  if (chooseRoomBtn) {
+    chooseRoomBtn.textContent = "Hiện danh sách phòng";
 
-  // ✅ dùng onclick để tránh addEventListener bị nhân bản khi mở modal nhiều lần
-  chooseRoomBtn.onclick = function () {
-    const hotel = hotelData.find(h => h.id == hotelId);
-    if (hotel && hotel.hotelBedrooms.length > 0) {
-      if (roomList.style.display === "none") {
-        renderRoomList(hotel.hotelBedrooms);
-        roomList.style.display = "block";
-        chooseRoomBtn.textContent = "Ẩn danh sách phòng";
-      } else {
+    // Gán sự kiện onclick mới
+    chooseRoomBtn.onclick = function () {
+
+      // Nếu đang hiện thì ẩn đi
+      if (roomList.style.display === "block") {
         roomList.style.display = "none";
-        chooseRoomBtn.textContent = "Chọn phòng";
+        chooseRoomBtn.textContent = "Hiện danh sách phòng";
+        return;
       }
-    } else {
-      roomList.innerHTML = "<p class='error-message'>Không có phòng nào!</p>";
-    }
-  };
+
+      // Gọi API mới vừa tạo ở Bước 1
+      console.log("Đang gọi API lấy phòng cho Hotel ID:", hotelId);
+
+      fetch(`/admin/get-rooms/${hotelId}`)
+          .then(response => response.json())
+          .then(result => {
+            console.log("Kết quả API:", result);
+
+            // Kiểm tra dữ liệu trả về (result.data là chuẩn theo ApiResponse của bạn)
+            const rooms = result.data;
+
+            if (rooms && rooms.length > 0) {
+              renderRoomList(rooms); // Hàm render cũ của bạn vẫn dùng tốt
+              roomList.style.display = "block";
+              chooseRoomBtn.textContent = "Ẩn danh sách phòng";
+            } else {
+              roomList.style.display = "block";
+              roomList.innerHTML = "<p class='error-message'>Khách sạn này chưa có phòng nào!</p>";
+            }
+          })
+          .catch(error => {
+            console.error("Lỗi khi tải phòng:", error);
+            roomList.style.display = "block";
+            roomList.innerHTML = "<p class='error-message'>Lỗi kết nối Server!</p>";
+          });
+    };
+  }
 }
 
 function renderRoomList(rooms) {

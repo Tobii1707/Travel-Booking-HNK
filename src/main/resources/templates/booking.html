@@ -57,6 +57,11 @@
 
         <form id="booking-form">
             <div class="input-group">
+                <label>Điểm xuất phát</label>
+                <input type="text" name="currentLocation" id="currentLocation" placeholder="Bạn đang ở đâu?" required />
+            </div>
+
+            <div class="input-group">
                 <label>Điểm đến</label>
                 <input type="text" name="palaceName" id="palaceName" placeholder="Bạn muốn đi đâu?" required />
             </div>
@@ -66,16 +71,6 @@
                 <input type="number" name="numberOfPeople" id="numberOfPeople" placeholder="Bao nhiêu người?" required min="1" />
             </div>
 
-            <div class="input-row">
-                <div class="input-group">
-                    <label>Ngày nhận phòng</label>
-                    <input type="date" name="checkinTime" id="checkinTime" required />
-                </div>
-                <div class="input-group">
-                    <label>Ngày trả phòng</label>
-                    <input type="date" name="checkoutTime" id="checkoutTime" required />
-                </div>
-            </div>
 
             <input type="submit" value="Đặt Ngay" class="btn-submit" />
         </form>
