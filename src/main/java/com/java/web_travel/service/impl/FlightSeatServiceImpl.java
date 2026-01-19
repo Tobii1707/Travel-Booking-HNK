@@ -39,21 +39,58 @@ public class FlightSeatServiceImpl implements FlightSeatService {
         }
 
         List<FlightSeat> seats = new ArrayList<>();
-        int rowsPerClass = numberOfSeats / 6;
-        char[] columns = {'A', 'B', 'C', 'D', 'E', 'F'};
 
-        for (int row = 1; row <= rowsPerClass; row++) {
-            for (char column : columns) {
+        // --- CẤU HÌNH THỰC TẾ ---
+        int businessRows = 3; // 3 hàng đầu là thương gia
+
+        // Cấu hình cột:
+        // Thương gia bỏ B và E (chỉ còn A,C bên trái và D,F bên phải)
+        char[] businessColumns = {'A', 'C', 'D', 'F'};
+        // Phổ thông đầy đủ
+        char[] economyColumns = {'A', 'B', 'C', 'D', 'E', 'F'};
+
+        int seatsGenerated = 0;
+        int currentRow = 1;
+
+        // Vòng lặp chạy cho đến khi sinh đủ số lượng ghế yêu cầu
+        while (seatsGenerated < numberOfSeats) {
+
+            // LOGIC BỎ QUA HÀNG 13 (Mê tín)
+            if (currentRow == 13) {
+                currentRow++;
+                continue;
+            }
+
+            // Xác định đây là hàng Thương gia hay Phổ thông
+            boolean isBusiness = currentRow <= businessRows;
+            char[] currentColumns = isBusiness ? businessColumns : economyColumns;
+
+            for (char col : currentColumns) {
+                // Kiểm tra lại lần nữa để không sinh lố số lượng ghế (ví dụ lẻ 1 ghế cuối)
+                if (seatsGenerated >= numberOfSeats) {
+                    break;
+                }
+
                 FlightSeat seat = new FlightSeat();
                 seat.setFlight(flight);
-                seat.setSeatNumber(row + String.valueOf(column));
+
+                // Tạo số ghế: 1A, 1C... hoặc 4A, 4B...
+                seat.setSeatNumber(currentRow + String.valueOf(col));
+
+                // Set hạng ghế (nếu bạn có trường class trong Entity Seat thì set ở đây)
+                // seat.setSeatClass(isBusiness ? "BUSINESS" : "ECONOMY");
+
                 seat.setBooked(false);
                 seats.add(seat);
+
+                seatsGenerated++;
             }
+            currentRow++;
         }
+        // ------------------------
 
         flightSeatRepository.saveAll(seats);
-        log.info("Initialized {} seats for flight {}", seats.size(), flightId);
+        log.info("Initialized {} seats (Realistic Mode) for flight {}", seats.size(), flightId);
     }
 
     @Override

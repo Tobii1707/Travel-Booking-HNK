@@ -154,8 +154,6 @@ body.hust-payment-page .page-header {
   text-align: center;
   color: var(--white);
   margin-bottom: 30px;
-
-  /* bù header fixed để không bị che */
   padding-top: 60px;
 }
 
@@ -260,7 +258,7 @@ body.hust-payment-page .pagination .btn {
   font-size: 0.9rem;
 }
 
-/* MODAL */
+/* MODAL DEFAULT */
 body.hust-payment-page .modal {
   display: none;
   position: fixed;
@@ -413,7 +411,160 @@ body.hust-payment-page .comment-container small {
   margin-top: 5px;
 }
 
+/* ==========================================================================
+   CSS MỚI THÊM: HỖ TRỢ CHI TIẾT VOUCHER KHÁCH SẠN & VÉ MÁY BAY
+   ========================================================================== */
+
+/* Nút Icon con mắt xem chi tiết */
+body.hust-payment-page .btn-icon-eye {
+  border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(52, 152, 219, 0.1);
+  color: var(--info);
+}
+body.hust-payment-page .btn-icon-eye:hover {
+  background: var(--info);
+  color: var(--white);
+  transform: scale(1.1);
+}
+
+/* Chỉnh sửa Modal Content dành cho popup chi tiết (rộng hơn mặc định) */
+body.hust-payment-page .modal-content.detail-content {
+  max-width: 600px;
+  padding: 0;
+  text-align: left;
+  overflow: hidden;
+}
+
+body.hust-payment-page .close-modal {
+  position: absolute;
+  right: 15px; top: 10px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #ccc;
+  z-index: 10;
+  transition: color 0.2s;
+}
+body.hust-payment-page .close-modal:hover { color: var(--danger); }
+
+/* Animation Bounce In */
+body.hust-payment-page .bounce-in { animation: bounceIn 0.4s; }
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* --- HOTEL VOUCHER STYLES --- */
+body.hust-payment-page .hotel-voucher {
+  background: var(--white);
+}
+
+body.hust-payment-page .hotel-header {
+  background: #2c3e50;
+  color: var(--white);
+  padding: 20px;
+  text-align: center;
+}
+body.hust-payment-page .hotel-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--white);
+}
+body.hust-payment-page .hotel-stars {
+  color: #f1c40f;
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+body.hust-payment-page .hotel-body { padding: 25px; }
+
+body.hust-payment-page .date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed #eee;
+  padding-bottom: 15px;
+}
+
+body.hust-payment-page .date-box { text-align: center; }
+body.hust-payment-page .date-box .label {
+  font-size: 0.8rem; color: #7f8c8d;
+  display: block; margin-bottom: 4px; text-transform: uppercase;
+}
+body.hust-payment-page .date-box .big-date {
+  font-size: 1.2rem; font-weight: bold; color: #2c3e50; display: block;
+}
+body.hust-payment-page .date-box .time {
+  font-size: 0.85rem; color: #e67e22; font-weight: 500;
+}
+
+body.hust-payment-page .info-list { font-size: 0.95rem; }
+body.hust-payment-page .info-item {
+  display: flex; justify-content: space-between;
+  margin-bottom: 10px;
+}
+body.hust-payment-page .info-item i { width: 25px; color: var(--info); text-align: center;}
+body.hust-payment-page .room-badge {
+  background: #e0f2fe; color: #0284c7;
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 0.9em; font-weight: bold;
+}
+
+/* --- FLIGHT TICKET STYLES --- */
+body.hust-payment-page .flight-ticket { background: var(--white); }
+
+body.hust-payment-page .flight-header {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: var(--white);
+  padding: 15px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+body.hust-payment-page .airline-brand { font-weight: bold; font-size: 1.1rem; }
+body.hust-payment-page .flight-class {
+  background: rgba(255,255,255,0.2);
+  padding: 3px 10px; border-radius: 4px; font-size: 0.8rem;
+}
+
+body.hust-payment-page .flight-body { padding: 25px; }
+
+body.hust-payment-page .route-visual {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+body.hust-payment-page .loc-box { text-align: center; width: 35%; }
+body.hust-payment-page .loc-code {
+  font-size: 1.8rem; font-weight: bold; color: #2c3e50;
+  display: block; line-height: 1; margin-bottom: 5px;
+}
+body.hust-payment-page .loc-name { font-size: 0.8rem; color: #7f8c8d; display: block; }
+body.hust-payment-page .loc-time {
+  color: var(--info); font-weight: 600; font-size: 1.1rem;
+  margin-top: 8px; display: block;
+}
+body.hust-payment-page .plane-icon { color: #95a5a6; font-size: 1.5rem; }
+
+body.hust-payment-page .flight-details-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 15px; background: #f8f9fa;
+  padding: 15px; border-radius: 8px;
+}
+body.hust-payment-page .detail-item span { display: block; }
+body.hust-payment-page .detail-label { font-size: 0.75rem; color: #7f8c8d; text-transform: uppercase; margin-bottom: 3px; }
+body.hust-payment-page .detail-val { font-size: 0.95rem; font-weight: 600; color: #333; }
+
 /* Responsive */
 @media (max-width: 1200px) {
   body.hust-payment-page header { padding: 1rem 2rem; }
+}
+@media (max-width: 600px) {
+  body.hust-payment-page .modal-content { width: 95%; padding: 1.5rem; }
+  body.hust-payment-page .route-visual { gap: 10px; }
+  body.hust-payment-page .loc-code { font-size: 1.4rem; }
 }

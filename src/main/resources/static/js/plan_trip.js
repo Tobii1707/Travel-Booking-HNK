@@ -207,14 +207,26 @@ function updatePaginationInfo() {
 // --- CÁC HÀM TIỆN ÍCH ---
 
 function getOrderData(orderId) {
-  // Tìm input checkbox tương ứng với orderId để lấy dataset từ thẻ tr cha
   const checkbox = document.querySelector(`input[value="${orderId}"]`);
   if(!checkbox) return null;
   return JSON.parse(checkbox.closest('tr').dataset.order);
 }
 
+// Hàm format ngày tháng cơ bản
 function formatDate(dateStr) {
   return dateStr ? new Date(dateStr).toLocaleDateString('vi-VN') : 'N/A';
+}
+
+// Hàm lấy giờ (HH:mm)
+function getTime(dateStr) {
+  if (!dateStr) return '--:--';
+  return new Date(dateStr).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Hàm lấy ngày (DD/MM/YYYY)
+function getDate(dateStr) {
+  if (!dateStr) return 'N/A';
+  return new Date(dateStr).toLocaleDateString('vi-VN');
 }
 
 function showCustomModal(title, content) {
@@ -223,11 +235,10 @@ function showCustomModal(title, content) {
 
   const modalHtml = `
         <div id="custom-detail-modal" class="modal" style="display:flex; align-items:center; justify-content:center;">
-            <div class="modal-content detail-content bounce-in" style="max-width:500px;">
+            <div class="modal-content detail-content bounce-in">
                 <span class="close-modal" onclick="document.getElementById('custom-detail-modal').remove()">&times;</span>
-                <h2 style="text-align:center; color:var(--primary); margin-bottom:15px; font-size:1.5rem;">${title}</h2>
-                ${content}
-                <div style="text-align:center; margin-top:20px;">
+                <div style="padding-bottom: 0;">${content}</div>
+                <div style="text-align:center; padding: 15px; background: #f8f9fa; border-top: 1px solid #eee;">
                     <button class="btn cancel" onclick="document.getElementById('custom-detail-modal').remove()">Đóng</button>
                 </div>
             </div>
@@ -236,64 +247,148 @@ function showCustomModal(title, content) {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- POPUP: CHI TIẾT KHÁCH SẠN ---
+// --- POPUP: CHI TIẾT KHÁCH SẠN (GIAO DIỆN VOUCHER MỚI) ---
 window.showHotelDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order || !order.hotel) return;
 
   const h = order.hotel;
+
+  // Tính toán số đêm
+  const start = new Date(order.startHotel);
+  const end = new Date(order.endHotel);
+  const nights = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+
   const html = `
-        <div class="detail-card hotel-card full-width">
-            <h3><i class="fas fa-hotel"></i> ${h.hotelName}</h3>
-            <div class="info-row"><span class="label">Địa chỉ:</span> <span class="value" style="max-width:250px; text-align:right;">${h.address || 'N/A'}</span></div>
-            <div class="info-row"><span class="label">Nhận phòng:</span> <span class="value">${formatDate(order.startHotel)}</span></div>
-            <div class="info-row"><span class="label">Trả phòng:</span> <span class="value">${formatDate(order.endHotel)}</span></div>
-            <div class="info-row"><span class="label">Phòng:</span> <span class="value room-badge">${order.listBedrooms || 'Chưa chọn'}</span></div>
-            ${h.description ? `<div style="margin-top:10px; font-size:0.9em; color:#555; font-style:italic; border-top:1px dashed #eee; padding-top:5px;">"${h.description}"</div>` : ''}
+        <div class="hotel-voucher">
+            <div class="hotel-header">
+                <h3>${h.hotelName}</h3>
+                <div class="hotel-stars">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+            </div>
+            <div class="hotel-body">
+                <div class="date-grid">
+                    <div class="date-box">
+                        <span class="label">NHẬN PHÒNG</span>
+                        <span class="big-date">${getDate(order.startHotel)}</span>
+                        <span class="time">Sau 14:00</span>
+                    </div>
+                    <div class="date-box">
+                        <span class="label">TRẢ PHÒNG</span>
+                        <span class="big-date">${getDate(order.endHotel)}</span>
+                        <span class="time">Trước 12:00</span>
+                    </div>
+                </div>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <span style="display:flex; align-items:center; gap:5px;"><i class="fas fa-map-marker-alt"></i> <b>Địa chỉ:</b></span>
+                        <span style="text-align:right; max-width:60%;">${h.address || 'Đang cập nhật'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span style="display:flex; align-items:center; gap:5px;"><i class="fas fa-moon"></i> <b>Lưu trú:</b></span>
+                        <span style="color:var(--primary); font-weight:bold;">${nights} đêm</span>
+                    </div>
+                    <div class="info-item">
+                        <span style="display:flex; align-items:center; gap:5px;"><i class="fas fa-bed"></i> <b>Phòng:</b></span>
+                        <span class="room-badge">${order.listBedrooms || 'Theo sắp xếp'}</span>
+                    </div>
+                     <div class="info-item">
+                        <span style="display:flex; align-items:center; gap:5px;"><i class="fas fa-user-friends"></i> <b>Số khách:</b></span>
+                        <span>${order.numberOfPeople || 1} người</span>
+                    </div>
+                </div>
+                
+                ${h.description ? `
+                <div style="margin-top:15px; padding:10px; background:#f9f9f9; border-radius:8px; font-size:0.9em; font-style:italic; color:#666;">
+                    <i class="fas fa-quote-left" style="color:#ddd;"></i> ${h.description}
+                </div>` : ''}
+            </div>
         </div>
     `;
-  showCustomModal("Thông tin Khách sạn", html);
+  showCustomModal("Xác nhận đặt phòng", html);
 };
 
-// --- POPUP: CHI TIẾT MÁY BAY (ĐÃ FIX LỖI HIỂN THỊ THIẾU THÔNG TIN) ---
+// --- POPUP: CHI TIẾT MÁY BAY (GIAO DIỆN VÉ MÁY BAY MỚI) ---
 window.showFlightDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order || !order.flight) return;
 
   const f = order.flight;
 
-  // Xử lý biến ngày tháng (check nhiều trường hợp tên biến)
-  const startDate = f.checkInDate || f.startDate || f.departureTime;
-  const endDate = f.checkOutDate || f.endDate || f.arrivalTime;
+  // Xử lý dữ liệu fallback
+  const checkIn = f.checkInDate || f.startDate || f.departureTime;
+  const checkOut = f.checkOutDate || f.endDate || f.arrivalTime;
 
-  // Xử lý địa điểm
-  const dep = f.departureLocation || f.departure || 'N/A';
-  const dest = f.arrivalLocation || f.destination || f.arrival || 'N/A';
+  // Tách địa điểm để lấy Mã sân bay giả định (3 chữ cái đầu hoặc tên)
+  const depFull = f.departureLocation || f.departure || 'N/A';
+  const destFull = f.arrivalLocation || f.destination || 'N/A';
 
-  // Xử lý ghế ngồi (Fallback: listSeats -> flightSeats -> numberOfPeople)
-  let seatDisplay = 'Chưa chọn ghế';
-  if (order.listSeats && order.listSeats.trim() !== "") {
-    seatDisplay = order.listSeats;
-  } else if (order.flightSeats && order.flightSeats.length > 0) {
-    seatDisplay = order.flightSeats.map(s => s.seatNumber).join(', ');
-  }
+  const depCode = depFull.split(',')[0].substring(0, 3).toUpperCase();
+  const destCode = destFull.split(',')[0].substring(0, 3).toUpperCase();
+
+  // Ghế ngồi
+  let seatDisplay = 'Chưa chọn';
+  if (order.listSeats && order.listSeats.trim() !== "") seatDisplay = order.listSeats;
+  else if (order.flightSeats && order.flightSeats.length > 0) seatDisplay = order.flightSeats.map(s => s.seatNumber).join(', ');
 
   const html = `
-        <div class="detail-card flight-card full-width">
-            <h3><i class="fas fa-plane"></i> ${f.brand || 'Hãng bay'}</h3>
-            <div class="info-row"><span class="label">Ngày đi:</span> <span class="value">${formatDate(startDate)}</span></div>
-            <div class="info-row"><span class="label">Ngày về:</span> <span class="value">${formatDate(endDate)}</span></div>
-            <div class="info-row"><span class="label">Nơi đi:</span> <span class="value highlight">${dep}</span></div>
-            <div class="info-row"><span class="label">Nơi đến:</span> <span class="value highlight">${dest}</span></div>
-            <div class="info-row"><span class="label">Hạng vé:</span> <span class="value">${f.ticketClass || 'Phổ thông'}</span></div>
-            <div class="info-row"><span class="label">Ghế ngồi:</span> <span class="value seat-badge">${seatDisplay}</span></div>
-            <div class="info-row"><span class="label">Giá vé gốc:</span> <span class="value">${f.price ? f.price.toLocaleString() : 0} VND</span></div>
+        <div class="flight-ticket">
+            <div class="flight-header">
+                <div class="airline-brand"><i class="fas fa-plane-departure"></i> ${f.brand || 'Hãng bay'}</div>
+                <div class="flight-class">${f.ticketClass || 'Phổ thông'}</div>
+            </div>
+            
+            <div class="flight-body">
+                <div class="route-visual">
+                    <div class="loc-box">
+                        <span class="loc-code">${depCode}</span>
+                        <span class="loc-name">${depFull.split(',')[0]}</span>
+                        <span class="loc-time">${getTime(checkIn)}</span>
+                        <span style="font-size:0.8em; color:#999;">${getDate(checkIn)}</span>
+                    </div>
+                    
+                    <div style="text-align:center; flex-grow:1;">
+                        <i class="fas fa-long-arrow-alt-right plane-icon"></i>
+                        <div style="font-size:0.75rem; color:#999; margin-top:2px;">Bay thẳng</div>
+                    </div>
+                    
+                    <div class="loc-box">
+                        <span class="loc-code">${destCode}</span>
+                        <span class="loc-name">${destFull.split(',')[0]}</span>
+                        <span class="loc-time">${getTime(checkOut)}</span>
+                         <span style="font-size:0.8em; color:#999;">${getDate(checkOut)}</span>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px dashed #ddd; margin: 15px 0;">
+
+                <div class="flight-details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">SỐ HIỆU</span>
+                        <span class="detail-val">${f.flightNumber || 'VN-Default'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">GHẾ NGỒI</span>
+                        <span class="detail-val" style="color:#e74c3c;">${seatDisplay}</span>
+                    </div>
+                     <div class="detail-item">
+                        <span class="detail-label">HÀNH KHÁCH</span>
+                        <span class="detail-val">${order.numberOfPeople} người</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">TRẠNG THÁI</span>
+                        <span class="detail-val" style="color:#27ae60;">Đã xác nhận</span>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
-  showCustomModal("Thông tin Chuyến bay", html);
+  showCustomModal("Vé Máy Bay Điện Tử", html);
 };
 
-// --- POPUP: CHI TIẾT GIÁ (MỚI THÊM) ---
+// --- POPUP: CHI TIẾT GIÁ (GIỮ NGUYÊN) ---
 window.showPriceDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order) return;
@@ -304,14 +399,9 @@ window.showPriceDetails = (orderId) => {
 
   if (order.flight) {
     let seatCount = 0;
-    // Đếm số lượng ghế logic fallback
-    if (order.flightSeats && order.flightSeats.length > 0) {
-      seatCount = order.flightSeats.length;
-    } else if (order.listSeats) {
-      seatCount = order.listSeats.trim().split(/\s+/).length;
-    } else {
-      seatCount = order.numberOfPeople; // Mặc định theo số người
-    }
+    if (order.flightSeats && order.flightSeats.length > 0) seatCount = order.flightSeats.length;
+    else if (order.listSeats) seatCount = order.listSeats.trim().split(/\s+/).length;
+    else seatCount = order.numberOfPeople;
 
     const pricePerTicket = order.flight.price || 0;
     flightCost = pricePerTicket * seatCount;
@@ -327,10 +417,10 @@ window.showPriceDetails = (orderId) => {
         `;
   }
 
-  // 2. Tính toán chi phí Khách sạn = Tổng - Máy bay
+  // 2. Tính toán chi phí Khách sạn
   let total = order.totalPrice || 0;
   let hotelCost = total - flightCost;
-  if (hotelCost < 0) hotelCost = 0; // Fix trường hợp data lỗi âm tiền
+  if (hotelCost < 0) hotelCost = 0;
 
   let hotelInfo = '<span style="color:#999; font-style:italic;">Không đặt khách sạn</span>';
   if (order.hotel) {
@@ -343,8 +433,8 @@ window.showPriceDetails = (orderId) => {
   }
 
   const html = `
-        <div class="detail-card full-width" style="border-top: 3px solid #27ae60;">
-            <h3 style="color:#27ae60; margin-top:0;"><i class="fas fa-file-invoice-dollar"></i> Chi tiết thanh toán</h3>
+        <div class="detail-card full-width" style="border-top: 3px solid #27ae60; padding: 20px;">
+            <h3 style="color:#27ae60; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom:15px;"><i class="fas fa-file-invoice-dollar"></i> Chi tiết thanh toán</h3>
             
             <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <div style="margin-bottom: 12px; border-bottom:1px dashed #ddd; padding-bottom:12px;">
@@ -507,37 +597,50 @@ async function deleteReview() {
   if(res.code === 1000) { alert('Đã xóa!'); reviewModal.style.display = 'none'; }
 }
 
-// --- CSS INJECT (CẬP NHẬT CSS MỚI CHO MODAL & BUTTONS) ---
+// --- CSS INJECT (Fallback cho Modal Styles) ---
 const style = document.createElement('style');
 style.innerHTML = `
     .btn-icon-eye {
-        border: none;
-        width: 32px; height: 32px;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(52, 152, 219, 0.1);
-        color: #3498db;
+        border: none; width: 32px; height: 32px; border-radius: 50%;
+        cursor: pointer; transition: all 0.3s;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(52, 152, 219, 0.1); color: #3498db;
     }
     .btn-icon-eye:hover { background: #3498db; color: white; transform: scale(1.1); }
-    
     .text-center { text-align: center; }
-    
-    .detail-card h3 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; color: #333; font-size: 1.2rem; }
-    .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px dashed #f0f0f0; padding-bottom: 5px; }
-    .info-row .label { color: #666; font-weight: 500; }
-    .info-row .value { color: #333; font-weight: 600; text-align: right; }
-    
-    .highlight { color: #2ecc71; }
-    .seat-badge, .room-badge { background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; font-weight: bold; }
     
     .bounce-in { animation: bounceIn 0.4s; }
     @keyframes bounceIn {
       0% { transform: scale(0.5); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
     }
+
+    /* Modal Specifics Override if needed */
+    .modal-content.detail-content { max-width: 600px; padding: 0; border-radius: 12px; overflow: hidden; }
+    
+    /* Hotel Voucher Basic Styles (Fallback) */
+    .hotel-header { background: #2c3e50; color: #fff; padding: 20px; text-align: center; }
+    .hotel-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
+    .hotel-stars { color: #f1c40f; margin-top: 5px; }
+    .hotel-body { padding: 25px; background: #fff; }
+    .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-bottom: 1px dashed #eee; padding-bottom: 15px; margin-bottom: 15px; }
+    .date-box { text-align: center; }
+    .date-box .label { font-size: 0.8rem; color: #7f8c8d; display: block; }
+    .date-box .big-date { font-size: 1.2rem; font-weight: bold; color: #2c3e50; display: block; margin: 5px 0; }
+    .date-box .time { font-size: 0.85rem; color: #e67e22; }
+    .info-list .info-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+    
+    /* Flight Ticket Basic Styles (Fallback) */
+    .flight-header { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .flight-body { padding: 25px; background: #fff; }
+    .route-visual { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .loc-box { text-align: center; width: 35%; }
+    .loc-code { font-size: 1.8rem; font-weight: bold; color: #2c3e50; display: block; }
+    .loc-time { color: #3498db; font-weight: 600; font-size: 1.1rem; display: block; margin-top: 5px; }
+    .plane-icon { font-size: 1.5rem; color: #95a5a6; }
+    .flight-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 8px; }
+    .detail-item span { display: block; }
+    .detail-label { font-size: 0.75rem; color: #7f8c8d; margin-bottom: 3px; }
+    .detail-val { font-weight: 600; color: #333; }
 `;
 document.head.appendChild(style);

@@ -6,12 +6,14 @@ import com.java.web_travel.enums.ErrorCode;
 import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.HotelBedroomDTO;
 import com.java.web_travel.repository.HotelBedroomRepository;
+import com.java.web_travel.repository.HotelBookingRepository;
 import com.java.web_travel.repository.HotelRepository;
 import com.java.web_travel.service.HotelBedroomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -22,6 +24,9 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
 
     @Autowired
     private HotelRepository hotelRepository;
+
+    @Autowired
+    private HotelBookingRepository hotelBookingRepository;
 
     @Override
     @Transactional
@@ -89,5 +94,11 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
     public HotelBedroom getRoom(Long roomId) {
         return hotelBedroomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
+    }
+    @Override
+    public List<Long> getBookedRoomIds(Long hotelId, Date startDate, Date endDate) {
+        // Hàm này gọi repository để lấy danh sách ID các phòng đã có người đặt
+        // Frontend sẽ dùng list này để tô màu đỏ
+        return hotelBookingRepository.findBookedRoomIds(hotelId, startDate, endDate);
     }
 }

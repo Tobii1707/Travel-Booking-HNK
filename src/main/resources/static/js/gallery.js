@@ -6,234 +6,234 @@
   const PLACES = {
     tokyo: {
       name: 'Tokyo',
-      subtitle: 'A city where neon skylines and centuries-old shrines coexist—fast, flavorful, and endlessly surprising.',
+      subtitle: 'Nơi những đường chân trời rực rỡ đèn neon và những ngôi đền hàng thế kỷ cùng tồn tại—nhanh, đậm đà bản sắc và luôn đầy ắp bất ngờ.',
       image: '/images/tokyo.jpg',
-      bestTime: 'March–May (sakura) and October–November (autumn foliage).',
+      bestTime: 'Tháng 3–5 (mùa hoa anh đào) và tháng 10–11 (mùa lá đỏ mùa thu).',
       highlights: [
-        'Senso-ji Temple & Asakusa streets: lanterns, street snacks, traditional vibes',
-        'Shibuya Crossing & Harajuku: youth culture, fashion, iconic city energy',
-        'Tsukiji outer market food crawl: sushi, wagyu skewers, matcha desserts',
-        'TeamLab / modern museums: immersive art, futuristic installations',
-        'Night views from Tokyo Tower / Skytree: city lights that feel infinite'
+        'Đền Senso-ji & phố Asakusa: đèn lồng, đồ ăn đường phố, không gian truyền thống',
+        'Giao lộ Shibuya & Harajuku: văn hóa giới trẻ, thời trang, năng lượng đô thị mang tính biểu tượng',
+        'Chợ ngoài Tsukiji: sushi tươi, xiên bò wagyu, tráng miệng matcha',
+        'TeamLab / bảo tàng hiện đại: nghệ thuật nhập vai, các tác phẩm sắp đặt tương lai',
+        'Cảnh đêm từ Tháp Tokyo / Skytree: ánh đèn thành phố trải dài vô tận'
       ],
       tips: [
-        'Get a transit IC card (Suica/Pasmo) to tap-and-go across trains and buses.',
-        'Eat like a local: small shops, ramen counters, and depachika (basement food halls).',
-        'Plan neighborhoods by day: Tokyo is huge—group spots by area to avoid wasting time.',
-        'Carry cash: many small places still prefer it, though cards are improving.'
+        'Mua thẻ IC (Suica/Pasmo) để chạm và đi trên các chuyến tàu và xe buýt.',
+        'Ăn như người bản địa: quán nhỏ, quầy ramen và depachika (khu ẩm thực tầng hầm).',
+        'Lên kế hoạch theo khu vực: Tokyo rất rộng—gom các điểm gần nhau để tránh lãng phí thời gian.',
+        'Mang theo tiền mặt: nhiều quán nhỏ vẫn thích tiền mặt hơn, dù thẻ đang dần phổ biến.'
       ],
       photoSpots: [
-        'Shinjuku skyline viewpoints',
-        'Meiji Jingu gates & forest paths',
-        'Odaiba waterfront at sunset',
-        'Asakusa pagoda angle shots'
+        'Các điểm ngắm cảnh đường chân trời Shinjuku',
+        'Cổng Torii đền Meiji Jingu & lối đi trong rừng',
+        'Bến cảng Odaiba lúc hoàng hôn',
+        'Góc chụp chùa 5 tầng Asakusa'
       ],
       itinerary: {
-        day1: ['Morning: Asakusa & Senso-ji', 'Afternoon: Ueno Park / museums', 'Evening: Akihabara lights & arcades'],
-        day2: ['Morning: Meiji Jingu + Harajuku', 'Afternoon: Shibuya + shopping', 'Evening: Shinjuku night views + izakaya alley']
+        day1: ['Sáng: Asakusa & Đền Senso-ji', 'Chiều: Công viên Ueno / bảo tàng', 'Tối: Ánh đèn Akihabara & khu vui chơi'],
+        day2: ['Sáng: Meiji Jingu + Harajuku', 'Chiều: Shibuya + mua sắm', 'Tối: Cảnh đêm Shinjuku + ngõ nhậu izakaya']
       }
     },
 
     saturnia: {
       name: 'Saturnia (Tuscany)',
-      subtitle: 'Thermal cascades, countryside air, and slow Italian afternoons—this is Tuscany at its most magical.',
+      subtitle: 'Những thác nước nóng, không khí đồng quê và những buổi chiều Ý chậm rãi—đây là Tuscany ở thời điểm diệu kỳ nhất.',
       image: '/images/Saturnia-ý.jpg',
-      bestTime: 'April–June or September–October for pleasant weather and fewer crowds.',
+      bestTime: 'Tháng 4–6 hoặc tháng 9–10 để có thời tiết dễ chịu và ít đám đông hơn.',
       highlights: [
-        'Cascate del Mulino: natural hot spring waterfalls with milky-blue pools',
-        'Tuscan countryside drives: rolling hills, cypress roads, golden sunset fields',
-        'Local trattorias: rustic pasta, olive oil, pecorino, and wines',
-        'Nearby medieval villages: Pitigliano, Sovana, Sorano for stone streets and views',
-        'Spa relaxation: thermal soaking + wellness for the ultimate reset'
+        'Cascate del Mulino: thác nước nóng tự nhiên với các hồ nước xanh màu sữa',
+        'Lái xe vùng quê Tuscany: đồi thoai thoải, đường hàng cây bách, cánh đồng hoàng hôn vàng rực',
+        'Các quán Trattoria địa phương: mì ống mộc mạc, dầu ô liu, phô mai pecorino và rượu vang',
+        'Các ngôi làng trung cổ lân cận: Pitigliano, Sovana, Sorano với đường đá và tầm nhìn đẹp',
+        'Thư giãn Spa: ngâm mình trong suối khoáng + chăm sóc sức khỏe để tái tạo năng lượng'
       ],
       tips: [
-        'Bring water shoes: the rocks can be slippery at the cascades.',
-        'Go early morning or late afternoon to avoid peak crowds.',
-        'Pack a towel + robe: facilities are minimal in natural areas.',
-        'Respect nature: keep the place clean and avoid loud music.'
+        'Mang giày đi nước: đá tại các thác nước có thể rất trơn.',
+        'Đi sáng sớm hoặc chiều muộn để tránh giờ cao điểm đông đúc.',
+        'Mang theo khăn + áo choàng: cơ sở vật chất ở các khu tự nhiên rất tối giản.',
+        'Tôn trọng thiên nhiên: giữ vệ sinh chung và tránh mở nhạc to.'
       ],
       photoSpots: [
-        'Top of the cascades for layered pool shots',
-        'Golden-hour countryside panoramas',
-        'Stone village viewpoints at dusk'
+        'Đỉnh thác để chụp các tầng hồ nước',
+        'Toàn cảnh vùng quê vào giờ vàng',
+        'Góc nhìn từ làng đá lúc chập tối'
       ],
       itinerary: {
-        day1: ['Morning: Cascate del Mulino soak', 'Afternoon: lunch in Saturnia village', 'Evening: sunset countryside photo stop'],
-        day2: ['Morning: Pitigliano exploration', 'Afternoon: wine/olive tasting', 'Evening: thermal soak round 2 (less crowded!)']
+        day1: ['Sáng: Ngâm mình tại Cascate del Mulino', 'Chiều: Ăn trưa tại làng Saturnia', 'Tối: Dừng chân chụp ảnh hoàng hôn vùng quê'],
+        day2: ['Sáng: Khám phá Pitigliano', 'Chiều: Thử rượu vang/dầu ô liu', 'Tối: Ngâm mình lần 2 (vắng vẻ hơn!)']
       }
     },
 
     mumbai: {
       name: 'Mumbai',
-      subtitle: 'A city that never whispers—markets, oceanside promenades, and cinematic energy everywhere you look.',
+      subtitle: 'Thành phố không bao giờ thì thầm—những khu chợ, đường dạo bộ ven biển và năng lượng điện ảnh ở khắp mọi nơi.',
       image: '/images/p-1.jpg',
-      bestTime: 'November–February for cooler weather and clearer skies.',
+      bestTime: 'Tháng 11–2 để có thời tiết mát mẻ và bầu trời trong xanh hơn.',
       highlights: [
-        'Gateway of India & Colaba: iconic monuments + café culture',
-        'Marine Drive: the “Queen’s Necklace” at night with ocean breeze',
-        'Street food adventures: vada pav, pav bhaji, bhel puri, cutting chai',
-        'Art & heritage walks: colonial architecture, museums, galleries',
-        'Bollywood vibes: a city built on stories and ambition'
+        'Cổng Ấn Độ & Colaba: di tích biểu tượng + văn hóa cà phê',
+        'Marine Drive: "Chiếc vòng cổ của Nữ hoàng" về đêm với gió biển',
+        'Phiêu lưu ẩm thực đường phố: vada pav, pav bhaji, bhel puri, trà chai',
+        'Dạo bộ nghệ thuật & di sản: kiến trúc thuộc địa, bảo tàng, phòng tranh',
+        'Không khí Bollywood: thành phố được xây dựng trên những câu chuyện và tham vọng'
       ],
       tips: [
-        'Traffic is real: plan buffers and use local trains/ride-hailing smartly.',
-        'Drink bottled water; go easy on spicy food if you’re not used to it.',
-        'Carry small cash for markets and snacks.',
-        'Best sunsets: Marine Drive / Bandra Bandstand.'
+        'Giao thông rất kinh khủng: hãy trừ hao thời gian và sử dụng tàu địa phương/xe công nghệ thông minh.',
+        'Uống nước đóng chai; cẩn thận với đồ ăn cay nếu bạn không quen.',
+        'Mang theo tiền lẻ cho chợ và đồ ăn vặt.',
+        'Hoàng hôn đẹp nhất: Marine Drive / Bandra Bandstand.'
       ],
       photoSpots: [
-        'Gateway of India at sunrise',
-        'Marine Drive long exposure',
-        'Bandra-Worli Sea Link at twilight'
+        'Cổng Ấn Độ lúc bình minh',
+        'Phơi sáng dài tại Marine Drive',
+        'Cầu vượt biển Bandra-Worli lúc chạng vạng'
       ],
       itinerary: {
-        day1: ['Morning: Gateway + Colaba stroll', 'Afternoon: museum / heritage district', 'Evening: Marine Drive sunset & snacks'],
-        day2: ['Morning: markets + local eats', 'Afternoon: Bandra cafés & street art', 'Evening: sea link viewpoints + dessert']
+        day1: ['Sáng: Cổng Ấn Độ + Dạo quanh Colaba', 'Chiều: Bảo tàng / khu di sản', 'Tối: Hoàng hôn Marine Drive & ăn vặt'],
+        day2: ['Sáng: Đi chợ + món ăn địa phương', 'Chiều: Các quán cà phê Bandra & nghệ thuật đường phố', 'Tối: Ngắm cảnh cầu vượt biển + tráng miệng']
       }
     },
 
     hamnoy: {
       name: 'Hamnøy (Lofoten)',
-      subtitle: 'Red cabins, Arctic peaks, and glassy waters—Hamnøy is pure Norway postcard material.',
+      subtitle: 'Những cabin đỏ, đỉnh núi Bắc Cực và làn nước trong vắt như gương—Hamnøy là chất liệu bưu thiếp thuần khiết của Na Uy.',
       image: '/images/Hamnoy-nauy.jpg',
-      bestTime: 'February–March for northern lights; June–August for midnight sun and hikes.',
+      bestTime: 'Tháng 2–3 để săn cực quang; Tháng 6–8 để ngắm mặt trời lúc nửa đêm và leo núi.',
       highlights: [
-        'Classic red rorbuer cabins against fjords and mountains',
-        'Epic hikes with panoramic viewpoints (weather permitting)',
-        'Northern lights chasing on clear winter nights',
-        'Seafood and cozy fishing-village vibes',
-        'Photography heaven: dramatic skies, reflections, and clean air'
+        'Những cabin rorbuer đỏ cổ điển bên vịnh hẹp và núi non',
+        'Những chuyến leo núi hùng vĩ với tầm nhìn toàn cảnh (tùy thời tiết)',
+        'Săn Bắc cực quang vào những đêm mùa đông trời quang',
+        'Hải sản và không khí làng chài ấm cúng',
+        'Thiên đường nhiếp ảnh: bầu trời kịch tính, sự phản chiếu và không khí trong lành'
       ],
       tips: [
-        'Weather changes fast: dress in layers and bring a waterproof jacket.',
-        'Rent a car for flexibility; public transport is limited in remote areas.',
-        'In winter, drive carefully—roads can be icy and windy.',
-        'For photos: sunrise/sunset is unreal even in summer (long golden hours).'
+        'Thời tiết thay đổi nhanh: mặc nhiều lớp và mang theo áo khoác chống nước.',
+        'Thuê xe tự lái để linh hoạt; giao thông công cộng hạn chế ở các vùng xa.',
+        'Vào mùa đông, lái xe cẩn thận—đường có thể đóng băng và nhiều gió.',
+        'Chụp ảnh: bình minh/hoàng hôn đẹp siêu thực ngay cả vào mùa hè (giờ vàng kéo dài).'
       ],
       photoSpots: [
-        'Hamnøy bridge viewpoint',
-        'Nearby Reine panoramas',
-        'Fjord reflections after rain'
+        'Điểm ngắm cảnh trên cầu Hamnøy',
+        'Toàn cảnh làng Reine gần đó',
+        'Sự phản chiếu của vịnh hẹp sau cơn mưa'
       ],
       itinerary: {
-        day1: ['Morning: Hamnøy viewpoints', 'Afternoon: Reine village', 'Evening: aurora hunt / cozy cabin dinner'],
-        day2: ['Morning: short hike (weather check)', 'Afternoon: seafood stop', 'Evening: sunset photography session']
+        day1: ['Sáng: Các điểm ngắm cảnh Hamnøy', 'Chiều: Làng Reine', 'Tối: Săn cực quang / ăn tối ấm cúng tại cabin'],
+        day2: ['Sáng: Leo núi ngắn (kiểm tra thời tiết)', 'Chiều: Dừng chân ăn hải sản', 'Tối: Buổi chụp ảnh hoàng hôn']
       }
     },
 
     mauritius: {
       name: 'Mauritius',
-      subtitle: 'Turquoise lagoons, calm beaches, and island culture—perfect for slow travel and easy happiness.',
+      subtitle: 'Những đầm phá xanh ngọc, bãi biển êm đềm và văn hóa đảo—hoàn hảo cho du lịch chậm và niềm hạnh phúc giản đơn.',
       image: '/images/Mauri.jpg',
-      bestTime: 'May–December for drier weather; avoid cyclones in January–March.',
+      bestTime: 'Tháng 5–12 cho thời tiết khô ráo; tránh bão vào tháng 1–3.',
       highlights: [
-        'Lagoon beaches: clear water, snorkeling, and soft sand',
-        'Chamarel: colored earth and scenic viewpoints',
-        'Island-hopping: nearby islets and coral reefs',
-        'Local food: Creole flavors, seafood, tropical fruits',
-        'Sunset cruises: golden horizons and ocean breeze'
+        'Bãi biển đầm phá: nước trong, lặn ống thở và cát mịn',
+        'Chamarel: vùng đất 7 màu và các điểm ngắm cảnh',
+        'Nhảy đảo: các đảo nhỏ lân cận và rạn san hô',
+        'Ẩm thực địa phương: hương vị Creole, hải sản, trái cây nhiệt đới',
+        'Du thuyền hoàng hôn: đường chân trời vàng rực và gió biển'
       ],
       tips: [
-        'Use reef-safe sunscreen to protect marine life.',
-        'Book snorkeling/boat trips in the morning for calmer sea.',
-        'Try street food markets for authentic flavors.',
-        'Bring a light jacket: evenings can be breezy by the coast.'
+        'Sử dụng kem chống nắng an toàn cho rạn san hô để bảo vệ sinh vật biển.',
+        'Đặt tour lặn/thuyền vào buổi sáng để biển êm hơn.',
+        'Thử các chợ ẩm thực đường phố để nếm hương vị đích thực.',
+        'Mang theo áo khoác mỏng: buổi tối có thể hơi se lạnh ở bờ biển.'
       ],
       photoSpots: [
-        'Lagoon aerial viewpoints',
-        'Sunset on the west coast',
-        'Chamarel viewpoints'
+        'Góc nhìn đầm phá từ trên cao',
+        'Hoàng hôn ở bờ biển phía tây',
+        'Các điểm ngắm cảnh Chamarel'
       ],
       itinerary: {
-        day1: ['Morning: beach + snorkeling', 'Afternoon: local market lunch', 'Evening: sunset cruise'],
-        day2: ['Morning: Chamarel scenic loop', 'Afternoon: waterfall stop', 'Evening: seafood dinner by the beach']
+        day1: ['Sáng: Biển + lặn ống thở', 'Chiều: Ăn trưa tại chợ địa phương', 'Tối: Du thuyền ngắm hoàng hôn'],
+        day2: ['Sáng: Vòng quanh ngắm cảnh Chamarel', 'Chiều: Dừng chân tại thác nước', 'Tối: Ăn tối hải sản bên bờ biển']
       }
     },
 
     cappadocia: {
       name: 'Cappadocia',
-      subtitle: 'Fairy chimneys, cave hotels, and balloons at sunrise—this is one of the world’s dreamiest landscapes.',
+      subtitle: 'Những ống khói cổ tích, khách sạn hang động và khinh khí cầu lúc bình minh—đây là một trong những cảnh quan mơ mộng nhất thế giới.',
       image: '/images/dia-diem-tho-nhi-ky.jpg',
-      bestTime: 'April–June and September–October for comfortable weather and balloon chances.',
+      bestTime: 'Tháng 4–6 và tháng 9–10 để có thời tiết dễ chịu và cơ hội bay khinh khí cầu cao nhất.',
       highlights: [
-        'Hot air balloons at sunrise (weather dependent)',
-        'Cave hotels: unique stays carved into stone',
-        'Göreme Open-Air Museum: rock-cut churches and frescoes',
-        'Underground cities: ancient hidden architecture',
-        'Valley hikes: surreal shapes and wide open views'
+        'Khinh khí cầu lúc bình minh (tùy thuộc thời tiết)',
+        'Khách sạn hang động: nơi lưu trú độc đáo được đục vào đá',
+        'Bảo tàng ngoài trời Göreme: nhà thờ trong đá và các bức bích họa',
+        'Thành phố ngầm: kiến trúc ẩn giấu cổ xưa',
+        'Leo núi thung lũng: những hình thù siêu thực và tầm nhìn bao la'
       ],
       tips: [
-        'Balloon rides depend on wind: keep a flexible morning schedule.',
-        'Pack layers: mornings can be cold even when afternoons are warm.',
-        'Good shoes = must for dusty trails and rocky paths.',
-        'Book popular cave hotels early if traveling in peak season.'
+        'Chuyến bay khinh khí cầu phụ thuộc vào gió: hãy giữ lịch trình buổi sáng linh hoạt.',
+        'Mặc nhiều lớp: buổi sáng có thể rất lạnh ngay cả khi buổi chiều ấm áp.',
+        'Giày tốt = bắt buộc cho những con đường bụi bặm và đường mòn đá.',
+        'Đặt trước các khách sạn hang động nổi tiếng nếu đi vào mùa cao điểm.'
       ],
       photoSpots: [
-        'Sunrise viewpoints over Göreme',
-        'Love Valley / Rose Valley sunset',
-        'Cave hotel terraces with balloons'
+        'Điểm ngắm bình minh trên Göreme',
+        'Hoàng hôn tại Thung lũng Tình Yêu / Thung lũng Hoa Hồng',
+        'Sân thượng khách sạn hang động với nền là khinh khí cầu'
       ],
       itinerary: {
-        day1: ['Morning: balloon / sunrise viewpoint', 'Afternoon: Göreme museum', 'Evening: valley sunset hike'],
-        day2: ['Morning: underground city', 'Afternoon: pottery town visit', 'Evening: Turkish dinner + tea with views']
+        day1: ['Sáng: Khinh khí cầu / điểm ngắm bình minh', 'Chiều: Bảo tàng Göreme', 'Tối: Leo núi ngắm hoàng hôn thung lũng'],
+        day2: ['Sáng: Thành phố ngầm', 'Chiều: Thăm làng gốm sứ', 'Tối: Bữa tối Thổ Nhĩ Kỳ + trà với view đẹp']
       }
     },
 
     hallstatt: {
       name: 'Hallstatt',
-      subtitle: 'A tiny lakeside village with storybook charm—mountains, reflections, and quiet lanes.',
+      subtitle: 'Một ngôi làng nhỏ bên hồ với vẻ đẹp như truyện cổ tích—những ngọn núi, sự phản chiếu và những con ngõ yên tĩnh.',
       image: '/images/Hallstatt.jpg',
-      bestTime: 'May–June and September for fewer crowds and pleasant temperatures.',
+      bestTime: 'Tháng 5–6 và tháng 9 để ít đám đông hơn và nhiệt độ dễ chịu.',
       highlights: [
-        'Lake viewpoints: iconic postcard angle of the village',
-        'Salt mine: history + scenic funicular ride',
-        'Lakeside walks: calm, slow, and photogenic',
-        'Mountain backdrops: dramatic scenery from every corner',
-        'Day trip friendly: easy to combine with nearby Austrian towns'
+        'Điểm ngắm cảnh hồ: góc bưu thiếp mang tính biểu tượng của ngôi làng',
+        'Mỏ muối: lịch sử + chuyến đi đường ray leo núi ngắm cảnh',
+        'Dạo bộ ven hồ: yên bình, chậm rãi và ăn ảnh',
+        'Nền núi hùng vĩ: cảnh quan kịch tính từ mọi góc độ',
+        'Dễ dàng đi trong ngày: kết hợp tốt với các thị trấn Áo lân cận'
       ],
       tips: [
-        'Arrive early: it gets crowded midday.',
-        'Respect residents: keep noise low in narrow streets.',
-        'Bring a light jacket: lakeside weather can flip quickly.',
-        'Try local pastries and warm drinks by the lake.'
+        'Đến sớm: giữa trưa sẽ rất đông khách du lịch.',
+        'Tôn trọng cư dân: giữ trật tự tại các con phố hẹp.',
+        'Mang áo khoác mỏng: thời tiết ven hồ có thể thay đổi nhanh chóng.',
+        'Thử bánh ngọt địa phương và đồ uống ấm bên hồ.'
       ],
       photoSpots: [
-        'Classic lakeside viewpoint platform',
-        'Salt mine skywalk view',
-        'Sunrise reflections on the lake'
+        'Nền tảng ngắm cảnh ven hồ cổ điển',
+        'Cầu đi bộ trên không tại mỏ muối',
+        'Sự phản chiếu bình minh trên mặt hồ'
       ],
       itinerary: {
-        day1: ['Morning: viewpoint + village stroll', 'Afternoon: salt mine visit', 'Evening: lakeside sunset walk'],
-        day2: ['Morning: quiet photo route', 'Afternoon: café + souvenir stop', 'Evening: relax and enjoy the scenery']
+        day1: ['Sáng: Điểm ngắm cảnh + dạo quanh làng', 'Chiều: Thăm mỏ muối', 'Tối: Đi dạo hoàng hôn ven hồ'],
+        day2: ['Sáng: Tuyến đường chụp ảnh yên tĩnh', 'Chiều: Cà phê + mua quà lưu niệm', 'Tối: Thư giãn và tận hưởng phong cảnh']
       }
     },
 
     pisa: {
       name: 'Pisa',
-      subtitle: 'More than a leaning tower—Pisa is history, piazzas, and timeless Italian architecture.',
+      subtitle: 'Hơn cả một tháp nghiêng—Pisa là lịch sử, quảng trường và kiến trúc Ý vượt thời gian.',
       image: '/images/thap-nghieng-Pisa.png',
-      bestTime: 'April–June and September–October for mild weather and easier sightseeing.',
+      bestTime: 'Tháng 4–6 và tháng 9–10 để có thời tiết ôn hòa và tham quan dễ dàng hơn.',
       highlights: [
-        'Leaning Tower: the icon everyone comes for',
-        'Piazza dei Miracoli: cathedral + baptistery + grand lawns',
-        'Riverside walks along the Arno: calm views and local life',
-        'Old streets and cafés: simple pleasures and Italian charm',
-        'Easy day trip: pairs nicely with Florence/Lucca itineraries'
+        'Tháp Nghiêng: biểu tượng mà mọi người đều đến để chiêm ngưỡng',
+        'Quảng trường Piazza dei Miracoli: nhà thờ + nhà rửa tội + bãi cỏ lớn',
+        'Dạo bộ ven sông Arno: quang cảnh yên bình và cuộc sống địa phương',
+        'Phố cổ và quán cà phê: những niềm vui giản dị và nét quyến rũ kiểu Ý',
+        'Chuyến đi trong ngày dễ dàng: kết hợp tốt với lịch trình Florence/Lucca'
       ],
       tips: [
-        'Book tower time slots in advance during peak season.',
-        'Go early morning for fewer crowds and cleaner photos.',
-        'Walk a bit away from the main square for cheaper, better food.',
-        'Keep your schedule flexible if combining with nearby cities.'
+        'Đặt khung giờ lên tháp trước vào mùa cao điểm.',
+        'Đi sáng sớm để ít người hơn và ảnh chụp sạch sẽ hơn.',
+        'Đi bộ xa một chút khỏi quảng trường chính để có đồ ăn ngon và rẻ hơn.',
+        'Giữ lịch trình linh hoạt nếu kết hợp với các thành phố lân cận.'
       ],
       photoSpots: [
-        'Wide shot from the lawn',
-        'Cathedral symmetry angles',
-        'Arno river golden-hour reflections'
+        'Góc rộng từ bãi cỏ',
+        'Các góc đối xứng của nhà thờ',
+        'Sự phản chiếu giờ vàng trên sông Arno'
       ],
       itinerary: {
-        day1: ['Morning: Piazza dei Miracoli full visit', 'Afternoon: riverside stroll + lunch', 'Evening: relaxed old-town café'],
-        day2: ['Morning: nearby town day trip', 'Afternoon: shopping/souvenirs', 'Evening: sunset walk and photos']
+        day1: ['Sáng: Tham quan toàn bộ Piazza dei Miracoli', 'Chiều: Dạo ven sông + ăn trưa', 'Tối: Cà phê thư giãn ở phố cổ'],
+        day2: ['Sáng: Chuyến đi trong ngày đến thị trấn gần đó', 'Chiều: Mua sắm/quà lưu niệm', 'Tối: Đi dạo và chụp ảnh hoàng hôn']
       }
     }
   };
@@ -344,41 +344,41 @@
     const itinerary = place.itinerary || { day1: [], day2: [] };
 
     return `
-      <h3>Overview</h3>
+      <h3>Tổng Quan</h3>
       <p>
-        ${safe(place.name)} isn’t just a destination—it’s a full mood. If you love places that feel
-        cinematic, layered, and alive with detail, this one delivers from the first minute.
+        ${safe(place.name)} không chỉ là một điểm đến—đó là một cảm xúc trọn vẹn. Nếu bạn yêu những nơi
+        mang cảm giác điện ảnh, đa tầng và sống động từng chi tiết, nơi này sẽ chinh phục bạn ngay từ phút đầu tiên.
       </p>
       <p>
-        The best way to experience it is to slow down: walk more than you plan, pause for small local snacks,
-        and let a few “unplanned” turns happen.
+        Cách tốt nhất để trải nghiệm là sống chậm lại: đi bộ nhiều hơn dự định, dừng chân thưởng thức những món ăn vặt địa phương,
+        và để những ngã rẽ "không định trước" xảy ra.
       </p>
       <p>
-        Below is a practical deep-dive so you can imagine the trip clearly before you book. Scroll all the way
-        down to the end—there’s a <b>Book Now</b> button waiting for you.
+        Dưới đây là thông tin chi tiết thực tế để bạn có thể hình dung chuyến đi rõ ràng trước khi đặt vé.
+        Hãy cuộn xuống cuối cùng—có một nút <b>Đặt Ngay</b> đang chờ bạn.
       </p>
 
-      <h3>Top Highlights</h3>
+      <h3>Những Điểm Nổi Bật Nhất</h3>
       <ul>${li(place.highlights)}</ul>
 
-      <h3>Best Time to Visit</h3>
-      <p><b>Recommended:</b> ${safe(place.bestTime)}</p>
+      <h3>Thời Điểm Tốt Nhất Để Ghé Thăm</h3>
+      <p><b>Gợi ý:</b> ${safe(place.bestTime)}</p>
 
-      <h3>Suggested 2-Day Plan (easy to follow)</h3>
-      <p><b>Day 1</b></p>
+      <h3>Lịch Trình Gợi Ý 2 Ngày (dễ thực hiện)</h3>
+      <p><b>Ngày 1</b></p>
       <ul>${li(itinerary.day1)}</ul>
-      <p><b>Day 2</b></p>
+      <p><b>Ngày 2</b></p>
       <ul>${li(itinerary.day2)}</ul>
 
-      <h3>Practical Tips</h3>
+      <h3>Mẹo Thực Tế</h3>
       <ul>${li(place.tips)}</ul>
 
-      <h3>Best Photo Spots</h3>
+      <h3>Góc Chụp Ảnh Đẹp Nhất</h3>
       <ul>${li(place.photoSpots)}</ul>
 
-      <h3>Why this place is worth booking</h3>
+      <h3>Tại sao nơi này đáng để đặt vé?</h3>
       <p>
-        If you’re ready, scroll a little more and hit <b>Book Now</b>.
+        Nếu bạn đã sẵn sàng, hãy cuộn thêm một chút và nhấn nút <b>Đặt Ngay</b>.
       </p>
     `;
   }

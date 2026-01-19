@@ -195,7 +195,7 @@ body.hust-admin-trip .confirm-btn {
 }
 body.hust-admin-trip .btn-verify { background: var(--info); }
 
-/* --- PAGINATION giống admin_account --- */
+/* --- PAGINATION --- */
 body.hust-admin-trip .pagination {
   display: flex;
   justify-content: center;
@@ -257,8 +257,284 @@ body.hust-admin-trip .modal-btn {
   border-radius: 6px;
   cursor: pointer;
   color: white;
+  transition: opacity 0.2s;
 }
 
+body.hust-admin-trip .modal-btn:hover { opacity: 0.9; }
 body.hust-admin-trip .btn-success { background: var(--primary); }
 body.hust-admin-trip .btn-fail { background: var(--danger); }
 body.hust-admin-trip .btn-close { background: #7f8c8d; }
+
+/* ========================================= */
+/* === PHẦN POPUP ADMIN UI (CẬP NHẬT MỚI) === */
+/* ========================================= */
+
+/* Buttons */
+.btn-eye, .btn-eye-price {
+  background: #eff6ff;
+  border: none;
+  color: #3498db;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-eye:hover { background: #3498db; color: #fff; transform: translateY(-2px); }
+
+.btn-eye-price { color: #27ae60; background: #ecfdf5; }
+.btn-eye-price:hover { background: #27ae60; color: #fff; transform: translateY(-2px); }
+
+.badge-people {
+  background: #fff7ed;
+  color: #c2410c;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85em;
+  display: inline-block;
+}
+
+/* 1. VOUCHER KHÁCH SẠN */
+.admin-voucher {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.admin-voucher .voucher-header {
+  background: #2c3e50;
+  color: #fff;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.admin-voucher .voucher-body {
+  padding: 15px;
+}
+
+/* Timeline Ngày */
+.date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  border: 1px dashed #cbd5e1;
+}
+.date-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.date-col .lbl {
+  font-size: 0.7rem;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.date-col .val.big {
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #334155;
+  margin-top: 2px;
+}
+.arrow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+.nights-badge {
+  background: #e0f2fe;
+  color: #0284c7;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+/* Info Grid (Full Width Items) */
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.info-item {
+  /* Xóa display flex cũ để nội dung tự xuống dòng nếu dài */
+  display: block;
+}
+.info-item .lbl {
+  display: block; /* Label nằm trên riêng biệt */
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.info-item .val {
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-wrap: break-word; /* Chống tràn chữ */
+}
+.info-item .val.highlight {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* 2. VÉ MÁY BAY */
+.admin-ticket {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+.admin-ticket .ticket-header {
+  background: linear-gradient(135deg, var(--primary), #1e8544);
+  color: white;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-ticket .brand {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+.admin-ticket .class-badge {
+  background: rgba(255,255,255,0.2);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.admin-ticket .ticket-body {
+  padding: 15px;
+}
+.route-visual {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.point {
+  text-align: center;
+  width: 32%;
+}
+.point .code {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1e293b;
+  display: block;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.point .city {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 4px;
+  display: block;
+}
+.point .time {
+  font-size: 1.1rem;
+  color: var(--primary);
+  font-weight: 700;
+  margin-top: 5px;
+  display: block;
+}
+.flight-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #cbd5e1;
+  flex-grow: 1;
+}
+.flight-icon i {
+  transform: rotate(90deg);
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+.date-small {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Ticket Footer (Đã cập nhật: Căn giữa số ghế) */
+.ticket-footer {
+  background: #f8fafc;
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center; /* Căn giữa nội dung */
+  border: 1px solid #f1f5f9;
+}
+.ticket-footer .lbl {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+}
+.ticket-footer .seat-val {
+  font-size: 1.6rem; /* Phóng to số ghế */
+  font-weight: 800;
+  color: #e74c3c;
+  letter-spacing: 1px;
+}
+
+/* 3. HÓA ĐƠN */
+.invoice-box {
+  font-size: 0.95rem;
+  color: #333;
+}
+.inv-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.inv-note {
+  font-size: 0.8em;
+  color: #999;
+  font-style: italic;
+  text-align: right;
+  margin-bottom: 10px;
+}
+.inv-divider {
+  border-top: 2px dashed #eee;
+  margin: 10px 0;
+}
+.inv-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  color: #d35400;
+  font-size: 1.2em;
+}
+
+/* Animation */
+.bounce-in {
+  animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}

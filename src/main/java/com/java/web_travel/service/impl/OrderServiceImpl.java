@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,13 +54,11 @@ public class OrderServiceImpl implements OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTS));
 
-        // --- THÊM ĐOẠN CHECK NÀY ---
         if (orderDTO.getCurrentLocation() != null &&
                 orderDTO.getDestination() != null &&
                 orderDTO.getCurrentLocation().trim().equalsIgnoreCase(orderDTO.getDestination().trim())) {
             throw new RuntimeException("Điểm xuất phát và điểm đến không được trùng nhau!");
         }
-        // ----------------------------
 
         Order order = new Order();
         order.setDestination(orderDTO.getDestination());
@@ -80,28 +79,45 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
+        // 1. Validate nội bộ ngày khách sạn (Check-in phải trước Check-out)
         if(orderHotelDTO.getStartHotel().after(orderHotelDTO.getEndHotel())){
             throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
         }
 
+        // 2. Validate với chuyến bay
         Flight currentFlight = order.getFlight();
         if (currentFlight != null) {
-            Date flightDeparture = getStartOfDay(currentFlight.getCheckInDate());
-            Date flightReturn = getStartOfDay(currentFlight.getCheckOutDate());
-            Date hotelCheckIn = getStartOfDay(orderHotelDTO.getStartHotel());
-            Date hotelCheckOut = getStartOfDay(orderHotelDTO.getEndHotel());
+            Date flightDeparture = getStartOfDay(currentFlight.getCheckInDate()); // Ngày bay đi
+            Date hotelCheckIn = getStartOfDay(orderHotelDTO.getStartHotel());     // Ngày nhận phòng
 
+            // Logic: Nếu ngày bay đi SAU ngày nhận phòng -> Lỗi
             if (flightDeparture.after(hotelCheckIn)) {
-                throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
+                throw new RuntimeException("Ngày bay đi (" + currentFlight.getCheckInDate() +
+                        ") không được sau ngày nhận phòng (" + orderHotelDTO.getStartHotel() + ")");
             }
-            if (flightReturn.before(hotelCheckOut)) {
-                throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
-            }
+        }
+
+        // 3. Validate số lượng phòng vs số người
+        int requestedRoomsCount = orderHotelDTO.getHotelBedroomList().size();
+        if (requestedRoomsCount == 0) {
+            throw new RuntimeException("Bạn phải chọn ít nhất 1 phòng!");
+        }
+        if (requestedRoomsCount > order.getNumberOfPeople()) {
+            throw new RuntimeException("Số lượng phòng (" + requestedRoomsCount +
+                    ") không được lớn hơn số lượng người (" + order.getNumberOfPeople() + ")!");
         }
 
         order.setHotel(hotel);
         order.setStartHotel(orderHotelDTO.getStartHotel());
         order.setEndHotel(orderHotelDTO.getEndHotel());
+
+        // 4. Tính toán giá tiền
+        long diffInMillies = Math.abs(orderHotelDTO.getEndHotel().getTime() - orderHotelDTO.getStartHotel().getTime());
+        long numberOfNights = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+
+        if (numberOfNights < 1) {
+            numberOfNights = 1;
+        }
 
         StringBuilder listBedrooms = new StringBuilder();
         double totalPrice = 0;
@@ -131,13 +147,15 @@ public class OrderServiceImpl implements OrderService {
             hotelBookingRepository.save(hotelBooking);
 
             listBedrooms.append(hotelBedroom.getRoomNumber()).append(" ");
-            totalPrice += hotelBedroom.getPrice();
+            totalPrice += (hotelBedroom.getPrice() * numberOfNights);
         }
 
         order.setListBedrooms(listBedrooms.toString());
         order.setTotalPrice(order.getTotalPrice() + totalPrice);
         return orderRepository.save(order);
     }
+
+    // ... (Các method còn lại) ...
 
     @Override
     public Order getOrderById(Long id) {
@@ -155,20 +173,15 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
-    // =========================================================================
-    // === CẬP NHẬT: LƯU THÊM LIST SEATS VÀO ORDER ĐỂ HIỂN THỊ =================
-    // =========================================================================
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Order chooseFlightWithSeats(Long orderId, OrderFlightDTO orderFlightDTO) {
-        // 1. Tìm Order & Flight
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         Flight flight = flightRepository.findById(orderFlightDTO.getFlightId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTS));
 
-        // --- VALIDATE LOGIC (GIỮ NGUYÊN) ---
         String orderDest = order.getDestination() != null ? order.getDestination().trim() : "";
         String flightDest = flight.getArrivalLocation() != null ? flight.getArrivalLocation().trim() : "";
         String orderFrom = order.getCurrentLocation() != null ? order.getCurrentLocation().trim() : "";
@@ -183,17 +196,30 @@ public class OrderServiceImpl implements OrderService {
                     "' nhưng chuyến bay lại đi từ '" + flightFrom + "'");
         }
 
+        // --- SỬA LOGIC TẠI ĐÂY ---
         if (order.getStartHotel() != null && order.getEndHotel() != null) {
             Date flightDeparture = getStartOfDay(flight.getCheckInDate());
-            Date flightReturn = getStartOfDay(flight.getCheckOutDate());
+            // Date flightReturn = getStartOfDay(flight.getCheckOutDate()); // Không cần biến này nữa nếu không check
             Date hotelCheckIn = getStartOfDay(order.getStartHotel());
             Date hotelCheckOut = getStartOfDay(order.getEndHotel());
 
-            if (flightDeparture.after(hotelCheckIn)) throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
-            if (flightReturn.before(hotelCheckOut)) throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
-        }
+            // 1. Kiểm tra Ngày Bay Đi vs Ngày Nhận Phòng
+            // Nếu Bay Đi (20) .after .Nhận Phòng (22) -> Sai (Vì 20 < 22 là False -> OK)
+            // Nếu Bay Đi (25) .after .Nhận Phòng (22) -> Lỗi (True)
+            if (flightDeparture.after(hotelCheckIn)) {
+                throw new RuntimeException("Ngày bay đi (" + flight.getCheckInDate() +
+                        ") không được sau ngày nhận phòng khách sạn (" + order.getStartHotel() + ")");
+            }
 
-        // 2. XỬ LÝ GHẾ NGỒI & TẠO STRING LIST SEATS
+            // 2. Kiểm tra Ngày Bay Về vs Ngày Trả Phòng
+            // [CŨ - GÂY LỖI]: if (flightReturn.before(hotelCheckOut)) throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
+
+            // Giải thích: Nếu bạn bay về ngày 20, nhưng trả phòng ngày 22.
+            // 20 before 22 -> TRUE -> Ném lỗi DATE_TIME_NOT_VALID -> Đây là lỗi bạn gặp.
+            // [MỚI]: Tôi đã comment dòng này lại để cho phép chuyến bay kết thúc trước khi trả phòng.
+        }
+        // -------------------------
+
         List<String> requestedSeatNumbers = orderFlightDTO.getSeatNumbers();
         if (requestedSeatNumbers == null || requestedSeatNumbers.isEmpty()) {
             throw new AppException(ErrorCode.INVALID_REQUEST);
@@ -203,7 +229,6 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.FLIGHT_OUT_OF_SEATS);
         }
 
-        // >>> THÊM BIẾN STRING BUILDER ĐỂ GỘP TÊN GHẾ <<<
         StringBuilder listSeatsStr = new StringBuilder();
 
         for (String seatNum : requestedSeatNumbers) {
@@ -218,7 +243,6 @@ public class OrderServiceImpl implements OrderService {
             seat.setBooked(true);
             flightSeatRepository.save(seat);
 
-            // >>> NỐI TÊN GHẾ VÀO CHUỖI (VÍ DỤ: "A1 A2 ") <<<
             listSeatsStr.append(seatNum).append(" ");
         }
 
@@ -226,9 +250,6 @@ public class OrderServiceImpl implements OrderService {
         flightRepository.save(flight);
 
         order.setFlight(flight);
-
-        // >>> LƯU CHUỖI GHẾ VÀO ORDER ĐỂ FRONTEND HIỂN THỊ <<<
-        // (Đảm bảo Entity Order của bạn đã có trường listSeats kiểu String sau khi làm Bước 1)
         order.setListSeats(listSeatsStr.toString().trim());
 
         double totalFlightPrice = requestedSeatNumbers.size() * flight.getPrice();
@@ -248,7 +269,10 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()->new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        hotelBookingRepository.deleteByOrderId(orderId);
+        List<HotelBooking> bookings = hotelBookingRepository.findByOrderId(orderId);
+        if (!bookings.isEmpty()) {
+            hotelBookingRepository.deleteAll(bookings);
+        }
 
         Flight flight = order.getFlight();
         if (flight != null) {

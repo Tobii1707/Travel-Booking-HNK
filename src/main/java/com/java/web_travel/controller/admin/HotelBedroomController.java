@@ -7,8 +7,10 @@ import com.java.web_travel.service.HotelBedroomService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat; // <--- MỚI: Để xử lý ngày tháng
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date; // <--- MỚI
 import java.util.List;
 
 @Slf4j
@@ -18,6 +20,10 @@ public class HotelBedroomController {
 
     @Autowired
     private HotelBedroomService hotelBedroomService;
+
+    // -------------------------------------------------------------------------
+    // --- PHẦN CODE CŨ (GIỮ NGUYÊN) -------------------------------------------
+    // -------------------------------------------------------------------------
 
     @PostMapping("/room")
     public ApiResponse<HotelBedroom> createRoom(@Valid @RequestBody HotelBedroomDTO dto) {
@@ -60,5 +66,21 @@ public class HotelBedroomController {
         ApiResponse<Void> response = new ApiResponse<>();
         response.setMessage("Room deleted successfully");
         return response;
+    }
+
+    // -------------------------------------------------------------------------
+    // --- PHẦN CODE MỚI THÊM VÀO (ĐỂ HIỂN THỊ MÀU ĐỎ/TRẮNG) -------------------
+    // -------------------------------------------------------------------------
+
+    // API này trả về danh sách các ID phòng ĐÃ BỊ ĐẶT trong khoảng thời gian chọn
+    @GetMapping("/booked-rooms")
+    public List<Long> getBookedRooms(
+            @RequestParam Long hotelId,
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
+    ) {
+        log.info("Checking booked rooms for hotel: {}, from {} to {}", hotelId, startDate, endDate);
+        // Gọi Service đã viết trước đó
+        return hotelBedroomService.getBookedRoomIds(hotelId, startDate, endDate);
     }
 }

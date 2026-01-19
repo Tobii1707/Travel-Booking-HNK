@@ -3,6 +3,7 @@ package com.java.web_travel.service;
 import com.java.web_travel.entity.HotelBedroom;
 import com.java.web_travel.model.request.HotelBedroomDTO;
 
+import java.util.Date;
 import java.util.List;
 
 public interface HotelBedroomService {
@@ -16,4 +17,6 @@ public interface HotelBedroomService {
     List<HotelBedroom> getRoomsByHotel(Long hotelId);
 
     HotelBedroom getRoom(Long roomId);
+
+    List<Long> getBookedRoomIds(Long hotelId, Date startDate, Date endDate);
 }

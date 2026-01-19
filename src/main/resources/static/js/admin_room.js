@@ -1,16 +1,24 @@
 'use strict';
 
 (function () {
-  // Guard để không ảnh hưởng trang khác
   if (!document.body || !document.body.classList.contains('hust-admin-room')) return;
+
+  // ===== INIT DATE =====
+  // Mặc định chọn ngày hôm nay và ngày mai khi vào trang
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  document.getElementById('checkInDate').valueAsDate = today;
+  document.getElementById('checkOutDate').valueAsDate = tomorrow;
 
   // ===== TIME =====
   function updateTime() {
     const now = new Date();
     const dateEl = document.getElementById('currentDate');
     const timeEl = document.getElementById('currentTime');
-    if (dateEl) dateEl.innerText = now.toLocaleDateString();
-    if (timeEl) timeEl.innerText = now.toLocaleTimeString();
+    if (dateEl) dateEl.innerText = now.toLocaleDateString('vi-VN');
+    if (timeEl) timeEl.innerText = now.toLocaleTimeString('vi-VN');
   }
   setInterval(updateTime, 1000);
   updateTime();
@@ -18,310 +26,238 @@
   // ===== USER MENU =====
   const userIcon = document.getElementById('user-icon');
   const userMenu = document.getElementById('user-menu');
-
   if (userIcon && userMenu) {
-    userIcon.addEventListener('click', function (event) {
-      event.preventDefault();
-      userMenu.style.display = (userMenu.style.display === 'flex') ? 'none' : 'flex';
-    });
-
-    document.addEventListener('click', function (event) {
-      if (!userIcon.contains(event.target) && !userMenu.contains(event.target)) {
-        userMenu.style.display = 'none';
-      }
-    });
+    userIcon.addEventListener('click', (e) => { e.preventDefault(); userMenu.style.display = userMenu.style.display === 'flex' ? 'none' : 'flex'; });
+    document.addEventListener('click', (e) => { if (!userIcon.contains(e.target) && !userMenu.contains(e.target)) userMenu.style.display = 'none'; });
   }
 
   // ===== STATE =====
   let currentHotelId = '';
-  let allRooms = [];
-  let currentPage = 0;
-  const pageSize = 5;
-
-  // ===== HELPERS =====
-  function showNoRow(message) {
-    const tbody = document.getElementById('roomTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-message">${message}</td></tr>`;
-  }
-
-  function renderRoomTable(rooms) {
-    const tbody = document.getElementById('roomTableBody');
-    if (!tbody) return;
-
-    if (!Array.isArray(rooms) || rooms.length === 0) {
-      showNoRow('No rooms found for this hotel');
-      return;
-    }
-
-    tbody.innerHTML = '';
-    rooms.forEach(room => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${room.id}</td>
-        <td>${room.roomNumber}</td>
-        <td>${room.roomType}</td>
-        <td>${Number(room.price || 0).toLocaleString()} VND</td>
-        <td>
-          <button class="btn btn-edit" onclick="openEditModal(${room.id})">Edit</button>
-          <button class="btn btn-delete" onclick="deleteRoom(${room.id})">Delete</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderPagination(totalPages) {
-    const container = document.getElementById('pagination');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    // giống account/booking: luôn render Prev 1 Next (kể cả không có data)
-    let pages = Number(totalPages ?? 0);
-    if (!pages || pages < 1) pages = 1;
-
-    if (currentPage > pages - 1) currentPage = pages - 1;
-    if (currentPage < 0) currentPage = 0;
-
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = 'Prev';
-    prevBtn.disabled = currentPage === 0;
-    prevBtn.onclick = function () {
-      if (currentPage > 0) {
-        currentPage--;
-        renderCurrentPage();
-      }
-    };
-    container.appendChild(prevBtn);
-
-    for (let i = 0; i < pages; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i + 1;
-      btn.classList.toggle('active', i === currentPage);
-      btn.onclick = function () {
-        currentPage = i;
-        renderCurrentPage();
-      };
-      container.appendChild(btn);
-    }
-
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next';
-    nextBtn.disabled = currentPage >= pages - 1;
-    nextBtn.onclick = function () {
-      if (currentPage < pages - 1) {
-        currentPage++;
-        renderCurrentPage();
-      }
-    };
-    container.appendChild(nextBtn);
-  }
-
-  function renderCurrentPage() {
-    const start = currentPage * pageSize;
-    const end = start + pageSize;
-    const pageItems = allRooms.slice(start, end);
-
-    renderRoomTable(pageItems);
-
-    const totalPages = Math.ceil(allRooms.length / pageSize);
-    renderPagination(totalPages);
-  }
-
-  function setAddButtonState(hotelId) {
-    const addBtn = document.getElementById('addRoomBtn');
-    if (!addBtn) return;
-    addBtn.disabled = !hotelId;
-  }
+  let allRooms = []; // Cache danh sách phòng để Edit/Delete ko cần gọi lại API
 
   // ===== LOAD HOTELS =====
   function fetchHotels() {
     fetch('/admin/getAllHotels')
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          const select = document.getElementById('hotelSelect');
-          if (!select) return;
-
-          // tránh append trùng nếu js reload
-          select.innerHTML = '<option value="">-- Select a Hotel --</option>';
-
-          (data.data || []).forEach(hotel => {
-            const option = document.createElement('option');
-            option.value = hotel.id;
-            option.textContent = `${hotel.hotelName} (${hotel.address})`;
-            select.appendChild(option);
-          });
-        }
-      })
-      .catch(err => console.error('Error fetching hotels:', err));
+        .then(res => res.json())
+        .then(data => {
+          if (data.code === 1000) {
+            const select = document.getElementById('hotelSelect');
+            select.innerHTML = '<option value="">-- Chọn khách sạn --</option>';
+            (data.data || []).forEach(hotel => {
+              const option = document.createElement('option');
+              option.value = hotel.id;
+              option.textContent = `${hotel.hotelName} (${hotel.address})`;
+              select.appendChild(option);
+            });
+          }
+        });
   }
 
-  // ===== FETCH ROOMS =====
-  function fetchRooms() {
-    const hotelId = document.getElementById('hotelSelect')?.value || '';
-    currentHotelId = hotelId;
+  // ===== FETCH ROOMS & RENDER MAP =====
+  window.fetchRooms = async function() {
+    const hotelId = document.getElementById('hotelSelect').value;
+    const checkIn = document.getElementById('checkInDate').value;
+    const checkOut = document.getElementById('checkOutDate').value;
+    const mapContainer = document.getElementById('roomMapContainer');
+    const addBtn = document.getElementById('addRoomBtn');
 
-    setAddButtonState(hotelId);
+    currentHotelId = hotelId;
+    addBtn.disabled = !hotelId;
 
     if (!hotelId) {
-      allRooms = [];
-      currentPage = 0;
-      showNoRow('Please select a hotel to view rooms');
-      renderPagination(1);
+      mapContainer.innerHTML = '<p class="empty-message">Vui lòng chọn khách sạn để xem sơ đồ phòng</p>';
       return;
     }
 
-    fetch(`/admin/rooms/${hotelId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          allRooms = Array.isArray(data.data) ? data.data : [];
-          currentPage = 0;
-          renderCurrentPage();
-        } else {
-          allRooms = [];
-          currentPage = 0;
-          renderCurrentPage();
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching rooms:', err);
+    mapContainer.innerHTML = '<p class="empty-message">Đang tải dữ liệu...</p>';
+
+    try {
+      // 1. Gọi API lấy tất cả phòng của khách sạn
+      const roomsPromise = fetch(`/admin/rooms/${hotelId}`).then(res => res.json());
+
+      // 2. Gọi API kiểm tra phòng đã đặt (Nếu có ngày tháng)
+      let bookedPromise = Promise.resolve([]); // Mặc định rỗng
+      if (checkIn && checkOut) {
+        bookedPromise = fetch(`/admin/booked-rooms?hotelId=${hotelId}&startDate=${checkIn}&endDate=${checkOut}`)
+            .then(res => res.ok ? res.json() : [])
+            .catch(() => []);
+      }
+
+      const [roomsResult, bookedIds] = await Promise.all([roomsPromise, bookedPromise]);
+
+      if (roomsResult.code !== 1000 || !roomsResult.data || roomsResult.data.length === 0) {
+        mapContainer.innerHTML = '<p class="empty-message">Khách sạn này chưa có phòng nào.</p>';
         allRooms = [];
-        currentPage = 0;
-        renderCurrentPage();
+        return;
+      }
+
+      allRooms = roomsResult.data;
+      renderRoomMap(allRooms, Array.isArray(bookedIds) ? bookedIds : []);
+
+    } catch (error) {
+      console.error(error);
+      mapContainer.innerHTML = '<p class="empty-message" style="color:red">Lỗi tải dữ liệu!</p>';
+    }
+  };
+
+  // ===== RENDER LOGIC (MAP VIEW) =====
+  function renderRoomMap(rooms, bookedIds) {
+    const container = document.getElementById('roomMapContainer');
+    container.innerHTML = '';
+
+    // 1. Sắp xếp phòng theo số (để hiển thị đẹp)
+    rooms.sort((a, b) => {
+      const numA = parseInt(String(a.roomNumber).replace(/\D/g, '')) || 0;
+      const numB = parseInt(String(b.roomNumber).replace(/\D/g, '')) || 0;
+      return numA - numB;
+    });
+
+    // 2. Nhóm phòng theo tầng (Lấy ký tự đầu của số phòng)
+    const floors = {};
+    rooms.forEach(room => {
+      let floorNum = String(room.roomNumber).substring(0, 1);
+      if (!floors[floorNum]) floors[floorNum] = [];
+      floors[floorNum].push(room);
+    });
+
+    // 3. Vẽ HTML
+    // Sắp xếp tầng từ thấp đến cao
+    Object.keys(floors).sort().forEach(floorKey => {
+      const floorRooms = floors[floorKey];
+
+      const floorDiv = document.createElement('div');
+      floorDiv.className = 'hotel-floor';
+
+      const floorTitle = document.createElement('div');
+      floorTitle.className = 'floor-title';
+      floorTitle.innerText = `Tầng ${floorKey}`;
+      floorDiv.appendChild(floorTitle);
+
+      const gridDiv = document.createElement('div');
+      gridDiv.className = 'floor-grid';
+
+      floorRooms.forEach(room => {
+        const isBooked = bookedIds.includes(room.id);
+        const card = document.createElement('div');
+
+        // Thêm class booked hoặc available
+        card.className = `room-card ${isBooked ? 'booked' : 'available'}`;
+
+        card.innerHTML = `
+          <div class="room-number">${room.roomNumber}</div>
+          <div class="room-type">${room.roomType}</div>
+          <div class="room-price">${Number(room.price).toLocaleString()} đ</div>
+          <div class="status-text">${isBooked ? 'Đã đặt' : 'Trống'}</div>
+          
+          <div class="room-actions">
+            <button class="action-btn btn-edit-mini" onclick="openEditModal(${room.id})" title="Sửa">
+                <i class="fas fa-pen"></i>
+            </button>
+            <button class="action-btn btn-delete-mini" onclick="deleteRoom(${room.id})" title="Xóa">
+                <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        gridDiv.appendChild(card);
       });
+
+      floorDiv.appendChild(gridDiv);
+      container.appendChild(floorDiv);
+    });
   }
 
-  // export global vì HTML onchange gọi
-  window.fetchRooms = fetchRooms;
-
-  // ===== MODAL =====
-  function openAddModal() {
-    document.getElementById('modalTitle').innerText = 'Add Room';
+  // ===== CRUD MODAL LOGIC (Giữ nguyên logic cũ) =====
+  window.openAddModal = function() {
+    document.getElementById('modalTitle').innerText = 'Thêm phòng mới';
     document.getElementById('roomId').value = '';
     document.getElementById('roomNumber').value = '';
     document.getElementById('roomType').value = 'Normal Room';
     document.getElementById('roomPrice').value = '';
+
     document.getElementById('saveRoomBtn').onclick = createRoom;
+    document.getElementById('roomModal').style.display = 'flex';
+  };
 
-    const modal = document.getElementById('roomModal');
-    if (modal) modal.style.display = 'flex';
-  }
-
-  function openEditModal(roomId) {
+  window.openEditModal = function(roomId) {
     const room = allRooms.find(r => r.id === roomId);
     if (!room) return;
 
-    document.getElementById('modalTitle').innerText = 'Update Room';
+    document.getElementById('modalTitle').innerText = 'Cập nhật phòng';
     document.getElementById('roomId').value = room.id;
     document.getElementById('roomNumber').value = room.roomNumber;
     document.getElementById('roomType').value = room.roomType;
     document.getElementById('roomPrice').value = room.price;
+
     document.getElementById('saveRoomBtn').onclick = updateRoom;
+    document.getElementById('roomModal').style.display = 'flex';
+  };
 
-    const modal = document.getElementById('roomModal');
-    if (modal) modal.style.display = 'flex';
-  }
+  window.closeModal = function() {
+    document.getElementById('roomModal').style.display = 'none';
+  };
 
-  function closeModal() {
-    const modal = document.getElementById('roomModal');
-    if (modal) modal.style.display = 'none';
-  }
-
-  window.openAddModal = openAddModal;
-  window.openEditModal = openEditModal;
-  window.closeModal = closeModal;
-
-  // Không ghi đè window.onclick
-  window.addEventListener('click', function (event) {
-    if (event.target && event.target.classList && event.target.classList.contains('modal')) {
-      event.target.style.display = 'none';
-    }
-  });
-
-  // ===== CRUD =====
+  // --- API Actions ---
   function createRoom() {
-    const hotelId = currentHotelId || (document.getElementById('hotelSelect')?.value || '');
+    const hotelId = currentHotelId;
     if (!hotelId) return;
 
-    const newRoom = {
-      roomNumber: parseInt(document.getElementById('roomNumber')?.value || 0, 10),
-      roomType: document.getElementById('roomType')?.value || 'Normal Room',
-      price: parseFloat(document.getElementById('roomPrice')?.value || 0),
-      hotelId: parseInt(hotelId, 10)
+    const data = {
+      roomNumber: document.getElementById('roomNumber').value,
+      roomType: document.getElementById('roomType').value,
+      price: document.getElementById('roomPrice').value,
+      hotelId: hotelId
     };
 
     fetch('/admin/room', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newRoom)
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          alert('Room added successfully!');
-          fetchRooms(); // reload đúng hotel hiện tại
-          closeModal();
-        } else {
-          alert('Failed to add room: ' + data.message);
-        }
-      })
-      .catch(err => console.error('Error creating room:', err));
+      body: JSON.stringify(data)
+    }).then(res => res.json()).then(result => {
+      if (result.code === 1000) {
+        alert('Thêm phòng thành công!');
+        closeModal();
+        fetchRooms(); // Load lại sơ đồ
+      } else alert(result.message);
+    });
   }
 
   function updateRoom() {
-    const id = document.getElementById('roomId')?.value;
-    const hotelId = currentHotelId || (document.getElementById('hotelSelect')?.value || '');
-    if (!id || !hotelId) return;
+    const id = document.getElementById('roomId').value;
+    const hotelId = currentHotelId;
 
-    const updatedRoom = {
-      roomNumber: parseInt(document.getElementById('roomNumber')?.value || 0, 10),
-      roomType: document.getElementById('roomType')?.value || 'Normal Room',
-      price: parseFloat(document.getElementById('roomPrice')?.value || 0),
-      hotelId: parseInt(hotelId, 10)
+    const data = {
+      roomNumber: document.getElementById('roomNumber').value,
+      roomType: document.getElementById('roomType').value,
+      price: document.getElementById('roomPrice').value,
+      hotelId: hotelId
     };
 
     fetch(`/admin/room/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedRoom)
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          alert('Room updated successfully!');
-          fetchRooms();
-          closeModal();
-        } else {
-          alert('Failed to update room: ' + data.message);
-        }
-      })
-      .catch(err => console.error('Error updating room:', err));
+      body: JSON.stringify(data)
+    }).then(res => res.json()).then(result => {
+      if (result.code === 1000) {
+        alert('Cập nhật thành công!');
+        closeModal();
+        fetchRooms();
+      } else alert(result.message);
+    });
   }
 
-  function deleteRoom(id) {
-    if (!confirm('Are you sure you want to delete this room?')) return;
-
+  window.deleteRoom = function(id) {
+    if (!confirm('Bạn có chắc muốn xóa phòng này không?')) return;
     fetch(`/admin/room/${id}`, { method: 'DELETE' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.code === 1000) {
-          alert('Room deleted successfully!');
-          fetchRooms();
-        } else {
-          alert('Failed to delete room: ' + data.message);
-        }
-      })
-      .catch(err => console.error('Error deleting room:', err));
-  }
+        .then(res => res.json())
+        .then(result => {
+          if (result.code === 1000) {
+            alert('Xóa thành công!');
+            fetchRooms();
+          } else alert(result.message);
+        });
+  };
 
-  window.deleteRoom = deleteRoom;
+  // INIT
+  document.addEventListener('DOMContentLoaded', fetchHotels);
 
-  // ===== INIT =====
-  document.addEventListener('DOMContentLoaded', function () {
-    fetchHotels();
-    renderPagination(1); // để pagination luôn hiện giống các trang khác
-  });
 })();

@@ -1,333 +1,418 @@
 'use strict';
 
 (function () {
+  // Guard clause: Chỉ chạy nếu body có class này
   if (!document.body || !document.body.classList.contains('hust-admin-trip')) return;
 
-  // ===== TIME =====
-  function updateTime() {
-    const now = new Date();
-    const dateEl = document.getElementById('currentDate');
-    const timeEl = document.getElementById('currentTime');
-    if (dateEl) dateEl.innerText = now.toLocaleDateString('vi-VN');
-    if (timeEl) timeEl.innerText = now.toLocaleTimeString('vi-VN');
-  }
-  setInterval(updateTime, 1000);
-  updateTime();
-
-  // ===== USER MENU =====
-  const userIcon = document.getElementById('user-icon');
-  const userMenu = document.getElementById('user-menu');
-  if (userIcon && userMenu) {
-    userIcon.addEventListener('click', function (event) {
-      event.preventDefault();
-      userMenu.style.display = userMenu.style.display === 'flex' ? 'none' : 'flex';
-    });
-    document.addEventListener('click', function (event) {
-      if (!userIcon.contains(event.target) && !userMenu.contains(event.target)) {
-        userMenu.style.display = 'none';
-      }
-    });
-  }
-
-  // ===== STATE =====
-  let currentOrderId = null;
-  let currentPage = 0;
-  const pageSize = 5;
-  let isSearchMode = false;
-  let currentSearchQuery = '';
-  let allOrdersData = []; // Cache dữ liệu để hiển thị popup
-
-  // ===== HELPERS =====
-  function formatDateTime(dateTimeString) {
-    if (!dateTimeString) return 'N/A';
-    return new Date(dateTimeString).toLocaleString('vi-VN');
-  }
-
-  function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  }
-
-  // ===== RENDER BẢNG (LOGIC MỚI) =====
-  function renderOrderTable(orders) {
-    allOrdersData = orders; // Cập nhật cache
-    const tableBody = document.querySelector('#bookingTable tbody');
-    if (!tableBody) return;
-
-    if (!Array.isArray(orders) || orders.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center">${isSearchMode ? 'Không tìm thấy kết quả' : 'Không có đơn hàng'}</td></tr>`;
-      return;
+  // ============================================================
+  // 1. CONFIG & STATE (Cấu hình & Trạng thái)
+  // ============================================================
+  const CONFIG = {
+    pageSize: 5,
+    api: {
+      getAll: '/order/getAllOrder',
+      search: '/order/getAllOrderWithMultipleColumnsWithSearch',
+      confirmPay: (id) => `/order/${id}/confirm-payment`,
+      rejectPay: (id) => `/order/${id}/payment-falled`,
+      emailSuccess: (id) => `/api/v1/email/${id}/announce-pay-success`,
+      emailFail: (id) => `/api/v1/email/${id}/announce-pay-falled`,
     }
-
-    tableBody.innerHTML = '';
-
-    orders.forEach(order => {
-      const row = document.createElement('tr');
-
-      let statusClass = '';
-      let statusText = 'Chưa thanh toán';
-      if (order.payment) {
-        if (order.payment.status === 'PAID') { statusClass = 'status-paid'; statusText = 'Đã thanh toán'; }
-        else if (order.payment.status === 'VERIFYING') { statusClass = 'status-verifying'; statusText = 'Đang xác thực'; }
-        else if (order.payment.status === 'PAYMENT_FAILED') { statusClass = 'status-unpaid'; statusText = 'Thất bại'; }
-      }
-
-      // Logic Hành trình:
-      let journey = `<span>${order.destination || 'N/A'}</span>`;
-      if (order.flight) {
-        journey = `<div style="font-size:0.85em; color:#666">${order.flight.departureLocation || '...'}</div>
-                   <div style="font-weight:600; color:#2c3e50;">➔ ${order.flight.arrivalLocation || order.destination}</div>`;
-      }
-
-      // Số người (mặc định là 1 nếu null)
-      const peopleCount = order.numberOfPeople || 1;
-
-      row.innerHTML = `
-        <td>${order.id}</td>
-        <td>${formatDateTime(order.orderDate)}</td>
-        <td>${order.user ? order.user.fullName : 'Guest'}</td>
-        
-        <td class="text-center"><span class="badge-people">${peopleCount} <i class="fas fa-user-friends"></i></span></td>
-        
-        <td>${journey}</td>
-        
-        <td class="text-center">
-            ${order.flight ? `<button class="btn-eye" onclick="showFlightDetails(${order.id})"><i class="fas fa-plane"></i></button>` : '-'}
-        </td>
-        
-        <td class="text-center">
-            ${order.hotel ? `<button class="btn-eye" onclick="showHotelDetails(${order.id})"><i class="fas fa-hotel"></i></button>` : '-'}
-        </td>
-        
-        <td>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:5px;">
-            <b style="color:#d35400;">${Number(order.totalPrice || 0).toLocaleString()} đ</b>
-            <button class="btn-eye-price" onclick="showPriceDetails(${order.id})"><i class="fas fa-file-invoice-dollar"></i></button>
-          </div>
-        </td>
-        
-        <td class="${statusClass}">${statusText}</td>
-        
-        <td>
-          ${order.payment && order.payment.status === 'VERIFYING'
-          ? `<button class="confirm-btn btn-verify" onclick="openPaymentModal(${order.id})">Xác thực</button>`
-          : ''}
-        </td>
-      `;
-      tableBody.appendChild(row);
-    });
-  }
-
-  // ===== POPUPS CHI TIẾT (ĐÃ CẬP NHẬT THEO YÊU CẦU) =====
-
-  // 1. Chi tiết Khách sạn (Thêm ngày nhận/trả)
-  window.showHotelDetails = (orderId) => {
-    const order = allOrdersData.find(o => o.id === orderId);
-    if (!order || !order.hotel) return;
-
-    // Tính số đêm
-    let nights = 1;
-    if(order.startHotel && order.endHotel) {
-      nights = Math.ceil(Math.abs(new Date(order.endHotel) - new Date(order.startHotel)) / (1000 * 60 * 60 * 24)) || 1;
-    }
-
-    const html = `
-        <div class="info-card">
-            <h4 style="color:var(--primary); margin-bottom:10px; font-size:1.1em;">${order.hotel.hotelName}</h4>
-            <div class="info-line"><i class="fas fa-map-marker-alt"></i> ${order.hotel.address || 'N/A'}</div>
-            <div class="separator"></div>
-            <div class="info-line"><i class="fas fa-calendar-check" style="color:#27ae60"></i> <b>Nhận:</b> ${formatDate(order.startHotel || order.checkinDate)}</div>
-            <div class="info-line"><i class="fas fa-calendar-times" style="color:#c0392b"></i> <b>Trả:</b> ${formatDate(order.endHotel || order.checkoutDate)}</div>
-            <div class="info-line"><i class="fas fa-moon"></i> <b>Thời gian:</b> ${nights} đêm</div>
-            <div class="separator"></div>
-            <div class="info-line"><i class="fas fa-door-open"></i> <b>Phòng:</b> ${order.listBedrooms || 'N/A'}</div>
-        </div>`;
-    showCustomModal("Chi tiết Khách sạn", html);
   };
 
-  // 2. Chi tiết Chuyến bay (Thêm tuyến và giờ)
-  window.showFlightDetails = (orderId) => {
-    const order = allOrdersData.find(o => o.id === orderId);
-    if (!order || !order.flight) return;
-
-    const f = order.flight;
-    const ticketClass = f.ticketClass === 'BUSINESS_CLASS' ? 'Thương gia' : 'Phổ thông';
-
-    const html = `
-        <div class="info-card">
-            <h4 style="color:var(--primary); margin-bottom:10px; font-size:1.1em;">${f.airlineName}</h4>
-            <div class="info-line"><i class="fas fa-route"></i> <b>Hành trình:</b> ${f.departureLocation} ➝ ${f.arrivalLocation}</div>
-            <div class="info-line"><i class="fas fa-clock"></i> <b>Khởi hành:</b> ${formatDateTime(f.checkInDate)}</div>
-            <div class="separator"></div>
-            <div class="info-line"><i class="fas fa-chair"></i> <b>Ghế ngồi:</b> ${order.listSeats || 'N/A'}</div>
-            <div class="info-line"><i class="fas fa-star"></i> <b>Hạng vé:</b> ${ticketClass}</div>
-        </div>`;
-    showCustomModal("Chi tiết Chuyến bay", html);
+  const state = {
+    currentOrderId: null,
+    currentPage: 0,
+    isSearchMode: false,
+    searchQuery: '',
+    ordersCache: [] // Lưu dữ liệu để hiển thị popup mà không cần gọi lại API
   };
 
-  // 3. Chi tiết Giá (Giữ nguyên logic tách tiền)
-  window.showPriceDetails = (orderId) => {
-    const order = allOrdersData.find(o => o.id === orderId);
-    if (!order) return;
+  // Cache DOM Elements
+  const DOM = {
+    tableBody: document.querySelector('#bookingTable tbody'),
+    pagination: document.getElementById('pagination'),
+    modalPayment: document.getElementById('payment-modal'),
+    searchInput: document.getElementById('bookingInput'),
+    btnClosePayment: document.getElementById('close-modal-btn'),
+    btnConfirmSuccess: document.getElementById('confirm-success-btn'),
+    btnConfirmFail: document.getElementById('confirm-failed-btn'),
+  };
 
-    let flightCost = 0;
-    if (order.flight) {
-      let seatCount = order.flightSeats?.length || (order.listSeats ? order.listSeats.trim().split(/\s+/).length : (order.numberOfPeople || 1));
-      flightCost = (order.flight.price || 0) * seatCount;
+  // ============================================================
+  // 2. UTILS (Các hàm tiện ích)
+  // ============================================================
+  const Utils = {
+    formatMoney: (val) => Number(val || 0).toLocaleString('vi-VN') + ' đ',
+
+    formatDateTime: (str) => str ? new Date(str).toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit', year:'numeric'}) : 'N/A',
+
+    formatDate: (str) => str ? new Date(str).toLocaleDateString('vi-VN') : 'N/A',
+
+    getTime: (str) => str ? new Date(str).toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) : '--:--',
+
+    calcNights: (start, end) => {
+      if (!start || !end) return 1;
+      const diff = new Date(end) - new Date(start);
+      const days = Math.ceil(Math.abs(diff) / (1000 * 60 * 60 * 24));
+      return days > 0 ? days : 1;
     }
-    let hotelCost = Math.max(0, (order.totalPrice || 0) - flightCost);
-
-    const html = `
-        <div class="invoice-box">
-            <div class="inv-item"><span>✈️ Vé máy bay:</span> <b>${flightCost.toLocaleString()} đ</b></div>
-            <div class="inv-item"><span>🏨 Tiền phòng:</span> <b>${hotelCost.toLocaleString()} đ</b></div>
-            <div style="font-size:0.85em; color:#777; margin-bottom:10px;">(Đã bao gồm thuế & phí dịch vụ)</div>
-            <hr style="border:0; border-top:1px dashed #ccc;">
-            <div class="inv-total" style="margin-top:10px;"><span>TỔNG CỘNG:</span> <span>${Number(order.totalPrice).toLocaleString()} đ</span></div>
-        </div>`;
-    showCustomModal("Chi tiết Hóa đơn", html);
   };
 
-  // Modal Render Helper
-  function showCustomModal(title, content) {
-    const modal = document.createElement('div');
-    modal.className = 'modal custom-info-modal';
-    modal.style.display = 'flex';
-    modal.style.zIndex = '9999';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width:360px; border-radius:12px; animation: fadeIn 0.3s ease;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--primary); font-size:1.2em;">${title}</h3>
-                <i class="fas fa-times" onclick="this.closest('.modal').remove()" style="cursor:pointer; color:#999;"></i>
+  // ============================================================
+  // 3. UI RENDERER (Xử lý giao diện)
+  // ============================================================
+  const Render = {
+    // Render Modal chung
+    customModal: (title, contentHTML) => {
+      // Xóa modal cũ nếu có
+      const oldModal = document.querySelector('.custom-info-modal');
+      if (oldModal) oldModal.remove();
+
+      const modal = document.createElement('div');
+      modal.className = 'modal custom-info-modal';
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="modal-content bounce-in" style="max-width:450px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:#2c3e50; font-size:1.2rem;">${title}</h3>
+                <i class="fas fa-times" onclick="this.closest('.modal').remove()" style="cursor:pointer; color:#95a5a6; font-size:1.2rem;"></i>
             </div>
-            ${content}
-            <button class="modal-btn btn-close" onclick="this.closest('.modal').remove()" style="margin-top:20px; width:100%">Đóng</button>
+            ${contentHTML}
+            <div class="modal-btn-group" style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
+                <button class="modal-btn btn-close" onclick="this.closest('.modal').remove()" style="width:100%">Đóng</button>
+            </div>
         </div>`;
-    document.body.appendChild(modal);
-  }
+      document.body.appendChild(modal);
+    },
 
-  // ===== FETCHERS =====
-  function renderPagination(totalPages) {
-    const paginationContainer = document.getElementById('pagination');
-    if (!paginationContainer) return;
-    paginationContainer.innerHTML = '';
-    let pages = Math.max(1, Number(totalPages ?? 0));
+    // Popup 1: Vé Máy Bay (ĐÃ SỬA: Bỏ người đặt, Nổi bật ghế ngồi)
+    popupFlight: (id) => {
+      const order = state.ordersCache.find(o => o.id === id);
+      if (!order?.flight) return;
 
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = 'Prev';
-    prevBtn.disabled = currentPage === 0;
-    prevBtn.onclick = () => { if (currentPage > 0) { currentPage--; fetchOrdersByMode(currentPage); } };
-    paginationContainer.appendChild(prevBtn);
+      const f = order.flight;
+      const ticketClass = f.ticketClass === 'BUSINESS_CLASS' ? 'Thương gia' : 'Phổ thông';
+      // Format ghế ngồi cho đẹp (thêm khoảng trắng sau dấu phẩy)
+      const seatDisplay = order.listSeats ? order.listSeats.replace(/,/g, ', ') : 'Chưa chọn ghế';
 
-    for (let i = 0; i < pages; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i + 1;
-      btn.classList.toggle('active', i === currentPage);
-      btn.onclick = () => { currentPage = i; fetchOrdersByMode(currentPage); };
-      paginationContainer.appendChild(btn);
+      const html = `
+        <div class="admin-ticket">
+            <div class="ticket-header">
+                <span class="brand"><i class="fas fa-plane-departure"></i> ${f.airlineName}</span>
+                <span class="class-badge">${ticketClass}</span>
+            </div>
+            
+            <div class="ticket-body">
+                <div class="route-visual">
+                    <div class="point">
+                        <span class="code">${f.departureLocation.substring(0,3).toUpperCase()}</span>
+                        <span class="city">${f.departureLocation}</span>
+                        <span class="time">${Utils.getTime(f.checkInDate)}</span>
+                    </div>
+                    <div class="flight-icon">
+                        <i class="fas fa-plane"></i>
+                        <span class="date-small">${Utils.formatDate(f.checkInDate)}</span>
+                    </div>
+                    <div class="point">
+                        <span class="code">${f.arrivalLocation.substring(0,3).toUpperCase()}</span>
+                        <span class="city">${f.arrivalLocation}</span>
+                        <span class="time">--:--</span>
+                    </div>
+                </div>
+
+                <div class="ticket-footer" style="display:block; text-align:center; background:#f8f9fa; margin-top:15px; padding:10px; border-radius:8px;">
+                    <span class="lbl" style="display:block; font-size:0.85em; color:#888; margin-bottom:5px;">SỐ GHẾ</span>
+                    <span class="val seat-val" style="font-size:1.4em; color:#2c3e50; font-weight:bold; letter-spacing:1px;">${seatDisplay}</span>
+                </div>
+            </div>
+        </div>`;
+      Render.customModal('Chi tiết Vé Máy Bay', html);
+    },
+
+    // Popup 2: Khách sạn (ĐÃ SỬA: Bỏ người đặt, Address và Room full dòng)
+    popupHotel: (id) => {
+      const order = state.ordersCache.find(o => o.id === id);
+      if (!order?.hotel) return;
+
+      const nights = Utils.calcNights(order.startHotel, order.endHotel);
+      const checkIn = order.startHotel ? new Date(order.startHotel) : new Date();
+      const checkOut = order.endHotel ? new Date(order.endHotel) : new Date();
+
+      const html = `
+        <div class="admin-voucher">
+            <div class="voucher-header">
+                <i class="fas fa-hotel"></i> ${order.hotel.hotelName}
+            </div>
+            
+            <div class="voucher-body">
+                <div class="date-row">
+                    <div class="date-col">
+                        <span class="lbl">Nhận phòng</span>
+                        <span class="val big">${checkIn.getDate()}/${checkIn.getMonth() + 1}</span>
+                        <span class="lbl">${checkIn.getFullYear()}</span>
+                    </div>
+                    <div class="arrow-col">
+                        <span class="nights-badge">${nights} Đêm</span>
+                        <i class="fas fa-long-arrow-alt-right"></i>
+                    </div>
+                    <div class="date-col">
+                        <span class="lbl">Trả phòng</span>
+                        <span class="val big">${checkOut.getDate()}/${checkOut.getMonth() + 1}</span>
+                        <span class="lbl">${checkOut.getFullYear()}</span>
+                    </div>
+                </div>
+
+                <div class="info-grid" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+                    <div class="info-item" style="border-bottom:1px dashed #eee; padding-bottom:8px;">
+                        <span class="lbl" style="color:#666; font-weight:500;"><i class="fas fa-map-marker-alt" style="width:20px; text-align:center"></i> Địa chỉ:</span>
+                        <div class="val" style="margin-top:4px; padding-left:25px; color:#333;">${order.hotel.address || 'N/A'}</div>
+                    </div>
+                    
+                    <div class="info-item" style="background:#f0f8ff; padding:10px; border-radius:6px;">
+                        <span class="lbl" style="color:#2980b9; font-weight:500;"><i class="fas fa-bed" style="width:20px; text-align:center"></i> Chi tiết phòng:</span>
+                        <div class="val highlight" style="margin-top:4px; padding-left:25px; font-weight:bold; color:#2c3e50;">${order.listBedrooms || 'Theo sắp xếp của khách sạn'}</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+      Render.customModal('Voucher Khách Sạn', html);
+    },
+
+    // Popup 3: Giá tiền
+    popupPrice: (id) => {
+      const order = state.ordersCache.find(o => o.id === id);
+      if (!order) return;
+
+      let flightCost = 0;
+      if (order.flight) {
+        // Ước tính giá vé (Logic tạm vì BE trả về tổng)
+        const seatStr = order.listSeats || "";
+        let seatCount = seatStr.split(',').filter(s => s.trim() !== '').length;
+        if (seatCount === 0) seatCount = order.numberOfPeople || 1;
+        flightCost = (order.flight.price || 0) * seatCount;
+      }
+      const hotelCost = Math.max(0, (order.totalPrice || 0) - flightCost);
+
+      const html = `
+        <div class="invoice-box">
+            <div class="inv-row">
+                <span><i class="fas fa-plane" style="color:#3498db"></i> Vé máy bay:</span>
+                <b>${Utils.formatMoney(flightCost)}</b>
+            </div>
+            <div class="inv-row">
+                <span><i class="fas fa-hotel" style="color:#e67e22"></i> Khách sạn:</span>
+                <b>${Utils.formatMoney(hotelCost)}</b>
+            </div>
+            <div class="inv-divider"></div>
+            <div class="inv-note">(Đã bao gồm thuế & phí dịch vụ)</div>
+            <div class="inv-total">
+                <span>TỔNG THANH TOÁN</span>
+                <span>${Utils.formatMoney(order.totalPrice)}</span>
+            </div>
+        </div>`;
+      Render.customModal('Chi tiết Thanh toán', html);
+    },
+
+    // Render Bảng chính
+    table: (orders) => {
+      state.ordersCache = orders;
+      if (!DOM.tableBody) return;
+
+      if (!Array.isArray(orders) || orders.length === 0) {
+        DOM.tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">${state.isSearchMode ? 'Không tìm thấy kết quả' : 'Chưa có đơn hàng nào'}</td></tr>`;
+        return;
+      }
+
+      DOM.tableBody.innerHTML = orders.map(order => {
+        // Xử lý status
+        let statusHtml = '<span style="color:#999">N/A</span>';
+        if (order.payment) {
+          const s = order.payment.status;
+          if (s === 'PAID') statusHtml = '<span class="status-paid">Đã thanh toán</span>';
+          else if (s === 'VERIFYING') statusHtml = '<span class="status-verifying">Đang xác thực</span>';
+          else if (s === 'PAYMENT_FAILED') statusHtml = '<span class="status-unpaid">Thất bại</span>';
+        }
+
+        // Xử lý hành trình
+        let journey = `<span>${order.destination || 'N/A'}</span>`;
+        if (order.flight) {
+          journey = `
+            <div style="font-size:0.8rem; color:#7f8c8d;">${order.flight.departureLocation}</div>
+            <div style="font-weight:600; color:#2c3e50; font-size:0.9rem;">➝ ${order.flight.arrivalLocation}</div>`;
+        }
+
+        const people = order.numberOfPeople || 1;
+
+        return `
+          <tr>
+            <td>#${order.id}</td>
+            <td>${Utils.formatDate(order.orderDate)}</td>
+            <td><strong>${order.user ? order.user.fullName : 'Khách vãng lai'}</strong></td>
+            
+            <td class="text-center"><span class="badge-people">${people} <i class="fas fa-user"></i></span></td>
+            
+            <td>${journey}</td>
+            
+            <td class="text-center">
+                ${order.flight ? `<button class="btn-eye" onclick="window.Action.viewFlight(${order.id})"><i class="fas fa-plane"></i></button>` : '<span style="color:#ccc">-</span>'}
+            </td>
+            
+            <td class="text-center">
+                ${order.hotel ? `<button class="btn-eye" onclick="window.Action.viewHotel(${order.id})"><i class="fas fa-hotel"></i></button>` : '<span style="color:#ccc">-</span>'}
+            </td>
+            
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <b style="color:#d35400;">${Utils.formatMoney(order.totalPrice)}</b>
+                <button class="btn-eye-price" onclick="window.Action.viewPrice(${order.id})"><i class="fas fa-info"></i></button>
+              </div>
+            </td>
+            
+            <td>${statusHtml}</td>
+            
+            <td>
+              ${order.payment && order.payment.status === 'VERIFYING'
+            ? `<button class="confirm-btn btn-verify" onclick="window.Action.openVerify(${order.id})">Duyệt</button>`
+            : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    },
+
+    // Render Phân trang
+    pagination: (totalPages) => {
+      if (!DOM.pagination) return;
+      DOM.pagination.innerHTML = '';
+      const pages = Math.max(1, Number(totalPages || 0));
+
+      const createBtn = (label, page, isActive = false, isDisabled = false) => {
+        const btn = document.createElement('button');
+        btn.innerHTML = label;
+        if (isActive) btn.classList.add('active');
+        if (isDisabled) btn.disabled = true;
+        btn.onclick = () => {
+          if (!isDisabled && page !== state.currentPage) {
+            state.currentPage = page;
+            API.fetchData();
+          }
+        };
+        return btn;
+      };
+
+      DOM.pagination.appendChild(createBtn('<i class="fas fa-chevron-left"></i>', state.currentPage - 1, false, state.currentPage === 0));
+
+      for (let i = 0; i < pages; i++) {
+        // Chỉ hiện tối đa 5 trang
+        if (i === 0 || i === pages - 1 || Math.abs(state.currentPage - i) <= 1) {
+          DOM.pagination.appendChild(createBtn(i + 1, i, i === state.currentPage));
+        } else if (DOM.pagination.lastChild.innerText !== '...') {
+          const span = document.createElement('span'); span.innerText = '...'; span.style.margin = '0 5px';
+          DOM.pagination.appendChild(span);
+        }
+      }
+
+      DOM.pagination.appendChild(createBtn('<i class="fas fa-chevron-right"></i>', state.currentPage + 1, false, state.currentPage >= pages - 1));
     }
-
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Next';
-    nextBtn.disabled = currentPage >= pages - 1;
-    nextBtn.onclick = () => { if (currentPage < pages - 1) { currentPage++; fetchOrdersByMode(currentPage); } };
-    paginationContainer.appendChild(nextBtn);
-  }
-
-  function fetchOrders(page) {
-    return fetch(`/order/getAllOrder?pageNo=${page}&pageSize=${pageSize}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.code === 1000) {
-            renderOrderTable(data.data.items || []);
-            renderPagination(data.data.totalPages);
-          }
-        }).catch(err => console.error('Fetch error:', err));
-  }
-
-  function fetchOrdersSearch(page, query) {
-    return fetch(`/order/getAllOrderWithMultipleColumnsWithSearch?pageNo=${page}&pageSize=${pageSize}&search=${encodeURIComponent(query)}&sortBy=totalPrice:asc`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.code === 1000) {
-            renderOrderTable(data.data.items || []);
-            renderPagination(data.data.totalPages);
-          }
-        });
-  }
-
-  function fetchOrdersByMode(page) {
-    return isSearchMode ? fetchOrdersSearch(page, currentSearchQuery) : fetchOrders(page);
-  }
-
-  window.fetchOrdersWithSearch = function() {
-    const q = document.getElementById('bookingInput')?.value.trim();
-    currentPage = 0;
-    isSearchMode = !!q;
-    currentSearchQuery = q;
-    fetchOrdersByMode(currentPage);
   };
 
-  // ===== PAYMENT ACTIONS =====
-  window.openPaymentModal = (orderId) => {
-    currentOrderId = orderId;
-    document.getElementById('payment-modal').style.display = 'flex';
+  // ============================================================
+  // 4. API HANDLER
+  // ============================================================
+  const API = {
+    fetchData: async () => {
+      try {
+        let url;
+        if (state.isSearchMode) {
+          url = `${CONFIG.api.search}?pageNo=${state.currentPage}&pageSize=${CONFIG.pageSize}&search=${encodeURIComponent(state.searchQuery)}&sortBy=totalPrice:asc`;
+        } else {
+          url = `${CONFIG.api.getAll}?pageNo=${state.currentPage}&pageSize=${CONFIG.pageSize}`;
+        }
+
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result.code === 1000) {
+          Render.table(result.data.items || []);
+          Render.pagination(result.data.totalPages);
+        }
+      } catch (error) {
+        console.error("Lỗi tải dữ liệu:", error);
+      }
+    },
+
+    confirmPayment: async (isSuccess) => {
+      if (!state.currentOrderId) return;
+      const url = isSuccess ? CONFIG.api.confirmPay(state.currentOrderId) : CONFIG.api.rejectPay(state.currentOrderId);
+      const emailUrl = isSuccess ? CONFIG.api.emailSuccess(state.currentOrderId) : CONFIG.api.emailFail(state.currentOrderId);
+
+      try {
+        const res = await fetch(url, { method: 'POST' });
+        const data = await res.json();
+
+        if (data.code === 1000) {
+          alert(isSuccess ? "Đã xác nhận thanh toán!" : "Đã từ chối thanh toán!");
+          fetch(emailUrl, { method: 'POST' }); // Gửi mail ngầm
+          DOM.modalPayment.style.display = 'none';
+          API.fetchData(); // Reload table
+        } else {
+          alert("Lỗi: " + (data.message || "Không thể xử lý"));
+        }
+      } catch (e) {
+        alert("Lỗi kết nối server");
+      }
+    }
   };
 
-  document.getElementById('close-modal-btn').onclick = () => document.getElementById('payment-modal').style.display = 'none';
-
-  document.getElementById('confirm-success-btn').onclick = function () {
-    if (!currentOrderId) return;
-    fetch(`/order/${currentOrderId}/confirm-payment`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.code === 1000) {
-            alert('Xác nhận thành công!');
-            fetch(`/api/v1/email/${currentOrderId}/announce-pay-success`, { method: 'POST' });
-            fetchOrdersByMode(currentPage);
-          }
-        }).finally(() => document.getElementById('payment-modal').style.display = 'none');
+  // ============================================================
+  // 5. GLOBAL ACTIONS (Gắn vào window để gọi từ HTML onclick)
+  // ============================================================
+  window.Action = {
+    viewFlight: (id) => Render.popupFlight(id),
+    viewHotel: (id) => Render.popupHotel(id),
+    viewPrice: (id) => Render.popupPrice(id),
+    openVerify: (id) => {
+      state.currentOrderId = id;
+      DOM.modalPayment.style.display = 'flex';
+    }
   };
 
-  document.getElementById('confirm-failed-btn').onclick = function () {
-    if (!currentOrderId) return;
-    fetch(`/order/${currentOrderId}/payment-falled`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.code === 1000) {
-            alert('Đã từ chối thanh toán!');
-            fetch(`/api/v1/email/${currentOrderId}/announce-pay-falled`, { method: 'POST' });
-            fetchOrdersByMode(currentPage);
-          }
-        }).finally(() => document.getElementById('payment-modal').style.display = 'none');
+  // ============================================================
+  // 6. INITIALIZATION & EVENTS
+  // ============================================================
+
+  // Update Time Realtime
+  setInterval(() => {
+    const now = new Date();
+    const d = document.getElementById('currentDate');
+    const t = document.getElementById('currentTime');
+    if(d) d.innerText = now.toLocaleDateString('vi-VN');
+    if(t) t.innerText = now.toLocaleTimeString('vi-VN');
+  }, 1000);
+
+  // User Menu Toggle
+  const uIcon = document.getElementById('user-icon');
+  const uMenu = document.getElementById('user-menu');
+  if (uIcon && uMenu) {
+    uIcon.onclick = (e) => { e.preventDefault(); uMenu.style.display = uMenu.style.display === 'flex' ? 'none' : 'flex'; };
+    document.onclick = (e) => { if (!uIcon.contains(e.target) && !uMenu.contains(e.target)) uMenu.style.display = 'none'; };
+  }
+
+  // Search Event
+  window.fetchOrdersWithSearch = () => {
+    const val = DOM.searchInput.value.trim();
+    state.isSearchMode = !!val;
+    state.searchQuery = val;
+    state.currentPage = 0;
+    API.fetchData();
   };
 
-  // ===== CSS INJECT =====
-  const style = document.createElement('style');
-  style.innerHTML = `
-    .badge-people { background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.9em; display: inline-block;}
-    .badge-people i { margin-left: 4px; }
-    
-    .btn-eye, .btn-eye-price { background:#f0f4f8; border:none; color:#2980b9; padding:6px; border-radius:4px; cursor:pointer; transition:0.2s; }
-    .btn-eye:hover { background:#2980b9; color:#fff; }
-    .btn-eye-price { color:#27ae60; background:#ebfbee; }
-    .btn-eye-price:hover { background:#27ae60; color:#fff; }
-    
-    .info-line { margin-bottom: 8px; font-size: 0.95em; color: #444; display: flex; align-items: center; }
-    .info-line i { width: 22px; text-align: center; margin-right: 8px; color: #666; }
-    .separator { border-top: 1px dashed #eee; margin: 8px 0; }
-    
-    .invoice-box { text-align: left; font-size: 0.95em; }
-    .inv-item { display:flex; justify-content:space-between; margin-bottom:6px; }
-    .inv-total { display:flex; justify-content:space-between; font-weight:bold; color:#d35400; font-size:1.15em; }
-    
-    .status-paid { color: #2ecc71; font-weight: bold; }
-    .status-verifying { color: #f1c40f; font-weight: bold; }
-    .status-unpaid { color: #e74c3c; font-weight: bold; }
-    
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-  `;
-  document.head.appendChild(style);
+  // Payment Modal Events
+  if(DOM.btnClosePayment) DOM.btnClosePayment.onclick = () => DOM.modalPayment.style.display = 'none';
+  if(DOM.btnConfirmSuccess) DOM.btnConfirmSuccess.onclick = () => API.confirmPayment(true);
+  if(DOM.btnConfirmFail) DOM.btnConfirmFail.onclick = () => API.confirmPayment(false);
 
-  document.addEventListener('DOMContentLoaded', () => fetchOrdersByMode(currentPage));
+  // Start
+  document.addEventListener('DOMContentLoaded', () => API.fetchData());
+
 })();

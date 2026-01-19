@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Phòng | VIVU TRAVEL</title>
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
     <link rel="stylesheet" href="/css/admin_room.css">
 </head>
 
@@ -36,7 +34,7 @@
 
 <div class="container-info">
     <div class="left">
-        <p><b>Quản lý Phòng</b></p>
+        <p><b>Quản lý & Sơ đồ Phòng</b></p>
     </div>
     <div class="right">
         <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
@@ -46,36 +44,30 @@
 
 <div class="filter-bar">
     <div class="filter-group">
-        <label for="hotelSelect">Chọn khách sạn:</label>
+        <label for="hotelSelect">Khách sạn:</label>
         <select id="hotelSelect" class="form-control" onchange="fetchRooms()">
             <option value="">-- Chọn khách sạn --</option>
         </select>
     </div>
 
+    <div class="filter-group">
+        <label>Check-in:</label>
+        <input type="date" id="checkInDate" class="form-control" onchange="fetchRooms()">
+    </div>
+    <div class="filter-group">
+        <label>Check-out:</label>
+        <input type="date" id="checkOutDate" class="form-control" onchange="fetchRooms()">
+    </div>
+
     <button class="btn btn-create" onclick="openAddModal()" id="addRoomBtn" disabled>
-        <i class="fas fa-plus"></i> Thêm phòng mới
+        <i class="fas fa-plus"></i> Thêm phòng
     </button>
 </div>
 
-<div class="table-wrapper">
-    <table id="roomTable">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Số phòng</th>
-            <th>Loại phòng</th>
-            <th>Giá</th>
-            <th>Thao tác</th>
-        </tr>
-        </thead>
-        <tbody id="roomTableBody">
-        <tr>
-            <td colspan="5" class="empty-message">Vui lòng chọn khách sạn để xem danh sách phòng</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div id="pagination" class="pagination"></div>
+<div class="map-wrapper">
+    <div id="roomMapContainer">
+        <p class="empty-message">Vui lòng chọn khách sạn để xem sơ đồ phòng</p>
+    </div>
 </div>
 
 <div id="roomModal" class="modal">
@@ -87,13 +79,13 @@
         <div class="modal-body">
             <input type="hidden" id="roomId">
             <div class="form-group">
-                <label>Số phòng</label>
+                <label>Số phòng (Ví dụ: 101, 205)</label>
                 <input type="number" id="roomNumber" class="form-control" placeholder="VD: 101">
             </div>
             <div class="form-group">
                 <label>Loại phòng</label>
                 <select id="roomType" class="form-control">
-                    <option value="Normal Room">Phòng thường (Normal)</option>
+                    <option value="Normal Room">Phòng thường</option>
                     <option value="Vip Room">Phòng VIP</option>
                     <option value="Deluxe Room">Phòng Deluxe</option>
                     <option value="Suite">Phòng Suite</option>
