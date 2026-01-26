@@ -21,7 +21,7 @@ Dự án xây dựng một hệ thống thương mại điện tử phục vụ 
     * **Đặt Chuyến bay:** Tìm kiếm và đặt vé máy bay.
     * **Đặt Khách sạn:** Tìm kiếm và đặt phòng khách sạn.
 * **Thanh toán:**
-    * Quy trình thanh toán thủ công (Chuyển khoản/Tiền mặt), trạng thái đơn hàng sẽ được cập nhật sau khi Admin xác nhận.
+    * Quy trình thanh toán thủ công (Chuyển khoản), trạng thái đơn hàng sẽ được cập nhật sau khi Admin xác nhận.
 * **Tương tác:**
     * **Liên hệ:** Gửi tin nhắn liên hệ/hỗ trợ tới quản trị viên.
     * **Đánh giá:** Viết đánh giá (Review) cho các tour đã tham gia.
