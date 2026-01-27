@@ -1,5 +1,6 @@
 package com.java.web_travel.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.java.web_travel.enums.RoleCode;
 import jakarta.persistence.*;
@@ -30,9 +31,11 @@ public class Role {
     private RoleCode roleCode;
 
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<User> users;
 
     public Role(RoleCode roleCode) {
+
         this.roleCode = roleCode;
     }
 }

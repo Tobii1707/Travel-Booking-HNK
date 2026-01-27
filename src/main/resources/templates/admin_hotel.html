@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Khách sạn | VIVU TRAVEL</title>
+    <title>Quản lý Khách sạn & Tập đoàn | VIVU TRAVEL</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
     <link rel="stylesheet" href="/css/admin_hotel.css">
 </head>
@@ -28,89 +29,302 @@
         <i class="fas fa-search" id="search-btn"></i>
         <i class="fas fa-user" id="user-icon"></i>
         <div id="user-menu" class="dropdown-menu">
-            <a href="/profile">Hồ sơ của tôi</a>
-            <a href="/user">Đăng xuất</a>
+            <a href="/profile"><i class="fas fa-id-card"></i> Hồ sơ của tôi</a>
+            <a href="/user"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
         </div>
     </div>
 </header>
 
 <div class="container-info">
-    <div class="left">
-        <p><b id="tableTitle">Quản lý Khách sạn</b></p>
+    <div class="left-tabs">
+        <button class="tab-btn active" onclick="switchTab('hotels')">
+            <i class="fas fa-hotel"></i> Khách sạn
+        </button>
+        <button class="tab-btn" onclick="switchTab('groups')">
+            <i class="fas fa-building"></i> Tập đoàn
+        </button>
     </div>
-    <div class="right">
-        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
+    <div class="right-clock">
+        <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span>
+        <span class="divider">|</span>
         <span><i class="fas fa-clock"></i> <span id="currentTime"></span></span>
     </div>
 </div>
 
-<div class="action-bar">
-    <button class="btn btn-create" onclick="openAddModal()">
-        <i class="fas fa-plus"></i> Thêm khách sạn mới
-    </button>
+<div class="main-content-wrapper">
+    <section id="tab-hotels" class="tab-content active">
+        <div class="card-box">
+            <div class="card-header-action">
+                <div class="search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Tìm kiếm khách sạn..." class="table-search">
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-create" onclick="openAddHotelModal()">
+                        <i class="fas fa-plus"></i> Thêm mới
+                    </button>
+                    <button id="toggleTrashBtn" class="btn btn-danger" onclick="toggleHotelTrash()">
+                        <i class="fas fa-trash"></i> Thùng rác
+                    </button>
+                    <div id="bulkActions" style="display: none;">
+                        <span class="selected-text">Chọn: <b id="selectedCount">0</b></span>
+                        <button class="btn btn-info" onclick="openAssignGroupModal()">Vào nhóm</button>
+                    </div>
+                </div>
+            </div>
 
-    <button id="toggleTrashBtn" class="btn btn-secondary" onclick="toggleViewMode()">
-        <i class="fas fa-trash-restore"></i> Thùng rác
-    </button>
-</div>
+            <div class="table-responsive">
+                <table id="hotelTable">
+                    <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAllCb" onchange="toggleSelectAll()"></th>
+                        <th>ID</th>
+                        <th>Tên khách sạn</th>
+                        <th>Nhóm</th>
+                        <th>Giá hiển thị</th>
+                        <th>Địa chỉ</th>
+                        <th class="text-right">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="hotelTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div id="pagination" class="pagination"></div>
+        </div>
+    </section>
 
-<div class="table-wrapper">
-    <table id="hotelTable">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên khách sạn</th>
-            <th>Giá từ</th>
-            <th>Địa chỉ</th>
-            <th>Số tầng</th>
-            <th>Số phòng/tầng</th>
-            <th>Thao tác</th>
-        </tr>
-        </thead>
-        <tbody id="hotelTableBody">
-        </tbody>
-    </table>
+    <section id="tab-groups" class="tab-content" style="display: none;">
+        <div class="card-box">
+            <div class="card-header-action">
+                <h3>Danh sách Tập Đoàn</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-create" onclick="openGroupModal()">
+                        <i class="fas fa-plus-circle"></i> Tạo Tập đoàn
+                    </button>
+                    <button id="toggleGroupTrashBtn" class="btn btn-secondary" onclick="toggleGroupTrash()">
+                        <i class="fas fa-trash-restore"></i> Thùng rác
+                    </button>
+                </div>
+            </div>
 
-    <div id="pagination" class="pagination"></div>
+            <div class="table-responsive">
+                <table id="groupTable">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Tập Đoàn</th>
+                        <th>Mô tả</th>
+                        <th>Trạng thái</th>
+                        <th>Công cụ quản lý</th>
+                        <th class="text-right">Hành động</th>
+                    </tr>
+                    </thead>
+                    <tbody id="groupTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </div>
 
 <div id="hotelModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="modalTitle">Thêm khách sạn</h3>
-            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 id="modalTitle">Thông tin khách sạn</h3>
+            <span class="close-btn" onclick="closeModal('hotelModal')">&times;</span>
         </div>
         <div class="modal-body">
             <input type="hidden" id="hotelId">
             <div class="form-group">
-                <label>Tên khách sạn</label>
+                <label>Tên khách sạn <span class="required" style="color:red">*</span></label>
                 <input type="text" id="hotelName" class="form-control" placeholder="Nhập tên khách sạn">
             </div>
             <div class="form-group">
-                <label>Giá từ (VNĐ)</label>
-                <input type="number" id="priceFrom" class="form-control" placeholder="0">
+                <label>Thuộc Tập Đoàn</label>
+                <div class="select-wrapper">
+                    <select id="hotelGroupId" class="form-control"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Giá hiển thị (VNĐ)</label>
+                <input type="number" id="priceFrom" class="form-control" placeholder="VD: 500000">
             </div>
             <div class="form-group">
                 <label>Địa chỉ</label>
-                <input type="text" id="address" class="form-control" placeholder="Nhập địa chỉ">
+                <input type="text" id="address" class="form-control" placeholder="Địa chỉ chi tiết">
             </div>
-            <div class="form-group">
-                <label>Số tầng</label>
-                <input type="number" id="numberFloor" class="form-control" placeholder="0">
-            </div>
-            <div class="form-group">
-                <label>Số phòng 1 tầng</label>
-                <input type="number" id="numberRoomPerFloor" class="form-control" placeholder="Nhập số lượng phòng mỗi tầng">
-                <small style="color: red; font-size: 0.8em;">*Lưu ý: Chỉ có tác dụng tạo phòng khi thêm mới.</small>
+            <div class="row">
+                <div class="col-half">
+                    <label>Số tầng</label>
+                    <input type="number" id="numberFloor" class="form-control">
+                </div>
+                <div class="col-half">
+                    <label>Phòng/Tầng</label>
+                    <input type="number" id="numberRoomPerFloor" class="form-control">
+                </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-cancel" onclick="closeModal()">Hủy</button>
-            <button class="btn btn-create" id="saveHotelBtn">Lưu</button>
+            <button class="btn btn-cancel" onclick="closeModal('hotelModal')">Đóng</button>
+            <button class="btn btn-create" onclick="saveHotel()">Lưu dữ liệu</button>
         </div>
     </div>
 </div>
 
+<div id="groupModal" class="modal">
+    <div class="modal-content" style="width: 500px;">
+        <div class="modal-header">
+            <h3 id="groupModalTitle">Thông tin Tập đoàn</h3>
+            <span class="close-btn" onclick="closeModal('groupModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="groupId">
+            <div class="form-group">
+                <label>Tên Tập Đoàn <span class="required" style="color:red">*</span></label>
+                <input type="text" id="groupName" class="form-control" placeholder="VD: Mường Thanh Group">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="groupDescription" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('groupModal')">Đóng</button>
+            <button class="btn btn-create" onclick="saveGroup()">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<div id="policyModal" class="modal">
+    <div class="modal-content" style="width: 450px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-tags"></i> Chính Sách Giá (Lễ/KM)</h3>
+            <span class="close-btn" onclick="closeModal('policyModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="policyGroupId">
+
+            <div class="alert-box info">
+                <i class="fas fa-info-circle"></i>
+                <div>Áp dụng thay đổi giá tự động cho <b>toàn bộ</b> khách sạn thuộc Group này theo thời gian.</div>
+            </div>
+
+            <div class="form-group mt-3">
+                <label>Tên chính sách <span style="color: red">*</span></label>
+                <input type="text" id="policyName" class="form-control" placeholder="VD: Tết Nguyên Đán hoặc Khuyến mãi Hè">
+            </div>
+
+            <div class="row">
+                <div class="col-half">
+                    <label>Từ ngày</label>
+                    <input type="date" id="policyStart" class="form-control">
+                </div>
+                <div class="col-half">
+                    <label>Đến ngày</label>
+                    <input type="date" id="policyEnd" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mức điều chỉnh (%) <span style="color: red">*</span></label>
+                <div class="input-group">
+                    <input type="number" id="policyPercent" class="form-control" placeholder="VD: 20 (Tăng) hoặc -15 (Giảm)">
+                    <span class="input-suffix">%</span>
+                </div>
+                <small style="color: #666; font-style: italic; display: block; margin-top: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px;">
+                    <i class="fas fa-arrow-up" style="color: green"></i> Nhập số <b>DƯƠNG</b> để Tăng giá (VD: 20)<br>
+                    <i class="fas fa-arrow-down" style="color: red"></i> Nhập số <b>ÂM</b> để Giảm giá (VD: -20)
+                </small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('policyModal')">Đóng</button>
+            <button class="btn btn-warning" onclick="savePolicy()">Lưu Chính Sách</button>
+        </div>
+    </div>
+</div>
+
+<div id="bulkPriceGroupModal" class="modal">
+    <div class="modal-content" style="width: 420px;">
+        <div class="modal-header warning-header">
+            <h3>Cập nhật giá toàn hệ thống</h3>
+            <span class="close-btn" onclick="closeModal('bulkPriceGroupModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="bulkPriceGroupId">
+            <div class="alert-box warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>Hành động này sẽ thay đổi <b>GIÁ GỐC</b> vĩnh viễn của tất cả khách sạn trong tập đoàn.</div>
+            </div>
+            <div class="form-group mt-3">
+                <label>Nhập % điều chỉnh</label>
+                <div class="input-group">
+                    <input type="number" id="bulkPricePercent" class="form-control" placeholder="VD: 10 hoặc -10">
+                    <span class="input-suffix">%</span>
+                </div>
+                <small style="color: #d9534f; font-style: italic; display: block; margin-top: 5px;">
+                    * Nhập <b>-10</b> để GIẢM 10% giá gốc.<br>
+                    * Nhập <b>10</b> để TĂNG 10% giá gốc.
+                </small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('bulkPriceGroupModal')">Hủy</button>
+            <button class="btn btn-create" onclick="submitBulkPriceGroup()">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<div id="assignGroupModal" class="modal">
+    <div class="modal-content" style="width: 400px;">
+        <div class="modal-header">
+            <h3>Chọn Tập Đoàn</h3>
+            <span class="close-btn" onclick="closeModal('assignGroupModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Danh sách tập đoàn</label>
+                <select id="assignGroupId" class="form-control"></select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('assignGroupModal')">Hủy</button>
+            <button class="btn btn-create" onclick="submitAssignGroup()">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<div id="historyModal" class="modal">
+    <div class="modal-content" style="max-width: 800px; width: 90%;">
+        <div class="modal-header">
+            <h3 id="historyModalTitle">Lịch sử thay đổi giá</h3>
+            <span class="close-btn" onclick="closeModal('historyModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="table-responsive">
+                <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                    <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 12px; text-align: left;">Thời gian</th>
+                        <th style="padding: 12px; text-align: left;">Hành động</th>
+                        <th style="padding: 12px; text-align: left;">Biến động (%)</th>
+                        <th style="padding: 12px; text-align: left;">Chi tiết</th>
+                    </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('historyModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="/js/admin_hotel.js"></script>
+
 </body>
 </html>

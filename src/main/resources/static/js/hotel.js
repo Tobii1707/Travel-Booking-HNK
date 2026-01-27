@@ -35,6 +35,28 @@ function bindModalClose() {
   });
 }
 
+// --- HÀM XỬ LÝ NGÀY GIỜ ---
+function formatHotelDate(dateStr, isCheckOut) {
+  if (!dateStr) return null;
+  if (dateStr.includes('T')) return dateStr;
+
+  if (isCheckOut) {
+    return dateStr + 'T12:00:00';
+  }
+
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+
+  if (dateStr === todayStr) {
+    const safeTime = new Date(now.getTime() + 5 * 60 * 1000);
+    const timePart = safeTime.toTimeString().split(' ')[0];
+    return `${dateStr}T${timePart}`;
+  } else {
+    return dateStr + 'T14:00:00';
+  }
+}
+
+// --- SỬA HÀM SUBMIT FORM (FIX LỖI BYTEBUDDY) ---
 function bindHotelFormSubmit() {
   const form = document.getElementById("hotel-form");
   if (!form) return;
@@ -59,34 +81,61 @@ function bindHotelFormSubmit() {
       return;
     }
 
-    console.log("Dữ liệu gửi đi:", {
-      startHotel: checkinDate,
-      endHotel: checkoutDate,
-      hotelBedroomList: selectedRooms
-    });
+    const startHotelISO = formatHotelDate(checkinDate, false);
+    const endHotelISO = formatHotelDate(checkoutDate, true);
+
+    // --- FIX QUAN TRỌNG: Map lại object để loại bỏ ByteBuddy Proxy ---
+    // Backend Spring Boot chỉ cần ID để map entity
+    const cleanRoomList = selectedRooms.map(room => ({
+      id: room.id
+      // Nếu Backend yêu cầu bắt buộc phải có price/roomNumber thì uncomment dòng dưới:
+      // , price: room.price, roomNumber: room.roomNumber
+    }));
+
+    const payload = {
+      startHotel: startHotelISO,
+      endHotel: endHotelISO,
+      hotelBedroomList: cleanRoomList
+    };
+
+    console.log("Payload sạch gửi đi:", payload);
 
     fetch(`/order/chooseHotel/${orderId}/${hotelId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        startHotel: checkinDate,
-        endHotel: checkoutDate,
-        hotelBedroomList: selectedRooms // Gửi danh sách các object phòng đã chọn
-      })
+      body: JSON.stringify(payload)
     })
-        .then(response => response.json())
+        .then(async response => {
+          if (!response.ok) {
+            // Cố gắng đọc lỗi text hoặc json
+            const text = await response.text();
+            try {
+              const jsonError = JSON.parse(text);
+              throw new Error(JSON.stringify(jsonError));
+            } catch(e) {
+              throw new Error(text);
+            }
+          }
+          return response.json();
+        })
         .then(result => {
-          if (result.message === "success" || result.status === 200 || result.code === 200) {
+          if (result.code === 1000 || result.code === 200) {
             alert("Đặt phòng thành công!");
             document.getElementById("hotel-modal").style.display = "none";
             window.location.href = `/flight?orderId=${result.data.id || orderId}`;
           } else {
-            alert(result.message || "Chọn khách sạn và phòng thất bại!");
+            alert(result.message || "Thất bại!");
           }
         })
         .catch(error => {
           console.error("Lỗi:", error);
-          alert("Lỗi hệ thống khi đặt phòng!");
+          try {
+            const errJson = JSON.parse(error.message);
+            alert("Lỗi: " + (errJson.message || "Hệ thống bận"));
+          } catch(e) {
+            // Nếu lỗi là text raw (ví dụ stacktrace)
+            alert("Lỗi hệ thống: " + error.message.substring(0, 100) + "...");
+          }
         });
   });
 }
@@ -147,18 +196,14 @@ function showError(message) {
   if (hotelList) hotelList.innerHTML = `<p class="error-message">${message}</p>`;
 }
 
-/* ============================================================
-   PHẦN MỚI: LOGIC MODAL & VẼ SƠ ĐỒ PHÒNG (RENDER ROOM LIST)
-   ============================================================ */
+/* ================= LOGIC MODAL & ROOM LIST ================= */
 
 function openHotelModal(hotelId) {
-  // 1. Gán ID vào input ẩn
   const hotelIdInput = document.getElementById("hotel-id");
   if (hotelIdInput) hotelIdInput.value = hotelId;
 
-  // 2. Reset dữ liệu cũ
   selectedRooms = [];
-  updateSelectedUI(); // Reset dòng text hiển thị giá
+  updateSelectedUI();
 
   const modal = document.getElementById("hotel-modal");
   if (modal) modal.style.display = "flex";
@@ -171,11 +216,8 @@ function openHotelModal(hotelId) {
     roomList.innerHTML = '';
   }
 
-  // 3. Xử lý nút bấm "Kiểm tra phòng"
   if (chooseRoomBtn) {
     chooseRoomBtn.textContent = "Kiểm tra phòng trống";
-
-    // Gán lại onclick (sử dụng async/await)
     chooseRoomBtn.onclick = async function () {
       const checkIn = document.getElementById("checkin-date").value;
       const checkOut = document.getElementById("checkout-date").value;
@@ -189,31 +231,24 @@ function openHotelModal(hotelId) {
         return;
       }
 
-      // Hiện loading
       roomList.style.display = "block";
       roomList.innerHTML = '<p style="text-align:center; padding:20px;">Đang tải sơ đồ phòng...</p>';
 
       try {
-        // --- [FIX] GỌI ĐÚNG API ---
-        // 1. Lấy tất cả phòng
-        const fetchAllRooms = fetch(`/admin/get-rooms/${hotelId}`).then(res => res.json());
+        const fetchAllRooms = fetch(`/admin/get-rooms/${hotelId}?checkInDate=${checkIn}`)
+            .then(res => res.json());
 
-        // 2. Lấy phòng đã đặt (Sửa đường dẫn thành /admin/booked-rooms)
         const fetchBookedRooms = fetch(`/admin/booked-rooms?hotelId=${hotelId}&startDate=${checkIn}&endDate=${checkOut}`)
             .then(res => {
               if (res.ok) return res.json();
-              return []; // Nếu lỗi thì trả về rỗng
+              return [];
             })
             .catch(() => []);
 
-        // Chờ cả 2 xong
         const [allRoomsResult, bookedIds] = await Promise.all([fetchAllRooms, fetchBookedRooms]);
-
-        // Data phòng (tuỳ format BE trả về, check cả .data và trực tiếp)
         const rooms = allRoomsResult.data || allRoomsResult;
 
         if (Array.isArray(rooms) && rooms.length > 0) {
-          // GỌI HÀM VẼ SƠ ĐỒ
           renderRoomList(rooms, Array.isArray(bookedIds) ? bookedIds : []);
           chooseRoomBtn.textContent = "Cập nhật ngày";
         } else {
@@ -228,19 +263,16 @@ function openHotelModal(hotelId) {
   }
 }
 
-// --- HÀM MỚI: VẼ SƠ ĐỒ PHÒNG ---
 function renderRoomList(rooms, bookedIds) {
   const container = document.getElementById("room-list");
   container.innerHTML = "";
 
-  // 1. Sắp xếp phòng theo số (fix lỗi replace không phải string)
   rooms.sort((a, b) => {
     const numA = parseInt(String(a.roomNumber).replace(/\D/g, '')) || 0;
     const numB = parseInt(String(b.roomNumber).replace(/\D/g, '')) || 0;
     return numA - numB;
   });
 
-  // 2. Nhóm theo tầng (ký tự đầu tiên của số phòng)
   const floors = {};
   rooms.forEach(room => {
     let floorNum = String(room.roomNumber).substring(0, 1);
@@ -248,10 +280,9 @@ function renderRoomList(rooms, bookedIds) {
     floors[floorNum].push(room);
   });
 
-  // 3. Render HTML
   for (const [floor, floorRooms] of Object.entries(floors)) {
     const floorDiv = document.createElement("div");
-    floorDiv.className = "hotel-floor"; // Class css cho tầng
+    floorDiv.className = "hotel-floor";
     floorDiv.innerHTML = `<div class="floor-name" style="font-weight:bold; margin:10px 0;">Tầng ${floor}</div>`;
 
     const roomsDiv = document.createElement("div");
@@ -263,7 +294,6 @@ function renderRoomList(rooms, bookedIds) {
     floorRooms.forEach(room => {
       const roomBox = document.createElement("div");
       roomBox.className = "room-box";
-      // Style cứng hoặc dùng CSS file ngoài
       roomBox.style.width = "80px";
       roomBox.style.height = "80px";
       roomBox.style.border = "1px solid #ccc";
@@ -274,10 +304,9 @@ function renderRoomList(rooms, bookedIds) {
       roomBox.style.cursor = "pointer";
       roomBox.style.borderRadius = "5px";
 
-      // CHECK TRẠNG THÁI: Nếu ID có trong bookedIds -> Màu đỏ
       const isBooked = bookedIds.includes(room.id);
       if (isBooked) {
-        roomBox.style.backgroundColor = "#ffcccc"; // Đỏ nhạt
+        roomBox.style.backgroundColor = "#ffcccc";
         roomBox.style.color = "#a00";
         roomBox.style.cursor = "not-allowed";
         roomBox.title = "Đã có người đặt";
@@ -286,17 +315,13 @@ function renderRoomList(rooms, bookedIds) {
                     <span style="font-size:12px">Bận</span>
                 `;
       } else {
-        // Nếu trống -> Màu trắng, cho phép click
         roomBox.style.backgroundColor = "#fff";
         roomBox.innerHTML = `
                     <span style="font-weight:bold">${room.roomNumber}</span>
                     <span style="font-size:11px">${room.price.toLocaleString()}</span>
                 `;
-
-        // Sự kiện click chọn
         roomBox.onclick = () => toggleSelectRoom(room, roomBox);
       }
-
       roomsDiv.appendChild(roomBox);
     });
 
@@ -305,35 +330,26 @@ function renderRoomList(rooms, bookedIds) {
   }
 }
 
-// --- HÀM MỚI: XỬ LÝ CHỌN PHÒNG ---
 function toggleSelectRoom(room, element) {
-  // Tìm xem phòng này đã chọn chưa
   const index = selectedRooms.findIndex(r => r.id === room.id);
 
   if (index > -1) {
-    // Đã chọn -> Bỏ chọn (Xóa khỏi mảng)
     selectedRooms.splice(index, 1);
-    element.style.backgroundColor = "#fff"; // Trả về màu trắng
+    element.style.backgroundColor = "#fff";
     element.style.borderColor = "#ccc";
   } else {
-    // Chưa chọn -> Thêm vào mảng
     selectedRooms.push(room);
-    element.style.backgroundColor = "#e0f7fa"; // Màu xanh nhạt khi chọn
+    element.style.backgroundColor = "#e0f7fa";
     element.style.borderColor = "#00bcd4";
   }
-
   updateSelectedUI();
 }
 
-// --- HÀM MỚI: CẬP NHẬT UI TEXT ---
 function updateSelectedUI() {
-  // Tìm chỗ hiển thị (Nếu HTML bạn chưa có thẻ này thì có thể thêm vào dưới nút chọn)
-  // Ví dụ: <div id="selected-info"></div> trong modal
   let infoDiv = document.getElementById("selected-info");
 
-  // Nếu chưa có div hiển thị thì tạo tạm (để không bị lỗi JS)
   if (!infoDiv) {
-    const modalBody = document.querySelector("#hotel-modal .modal-content"); // Selector tạm
+    const modalBody = document.querySelector("#hotel-modal .modal-content");
     if (modalBody) {
       infoDiv = document.createElement("div");
       infoDiv.id = "selected-info";

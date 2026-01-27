@@ -73,7 +73,8 @@
 
     try {
       // 1. Gọi API lấy tất cả phòng của khách sạn
-      const roomsPromise = fetch(`/admin/rooms/${hotelId}`).then(res => res.json());
+      // [QUAN TRỌNG] Đã sửa: Thêm tham số ?checkInDate=${checkIn} vào URL
+      const roomsPromise = fetch(`/admin/rooms/${hotelId}?checkInDate=${checkIn}`).then(res => res.json());
 
       // 2. Gọi API kiểm tra phòng đã đặt (Nếu có ngày tháng)
       let bookedPromise = Promise.resolve([]); // Mặc định rỗng

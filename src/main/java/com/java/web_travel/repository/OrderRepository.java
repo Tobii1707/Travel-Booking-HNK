@@ -17,36 +17,38 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    // 1. Các hàm cơ bản theo User
+    // --- 1. TÌM KIẾM THEO USER (KHÔI PHỤC LẠI ĐẦY ĐỦ) ---
+
+    // Tìm List theo ID (Dùng cho các logic logic nhỏ)
     List<Order> findByUserId(Long userId);
 
-    // Hai hàm này chức năng giống nhau, bạn có thể giữ cả 2 hoặc dùng 1 cái tùy sở thích
-    Page<Order> findByUser(User user, Pageable pageable);
+    // Tìm Page theo ID (Dùng cho phân trang nếu cần)
     Page<Order> findByUserId(Long userId, Pageable pageable);
 
-    // 2. Tìm theo Flight (Chuyến bay)
+    // [QUAN TRỌNG] ĐÂY LÀ HÀM BẠN BỊ THIẾU -> GÂY LỖI SERVICE
+    // Service đang gọi: orderRepository.findByUser(user, pageable)
+    Page<Order> findByUser(User user, Pageable pageable);
+
+
+    // --- 2. TÌM KIẾM KHÁC ---
+
+    // Tìm theo Flight (Nếu Order có liên kết với Flight)
     List<Order> findByFlight(Flight flight);
 
-    // --- MỚI: GỢI Ý THÊM CÁC HÀM TÌM KIẾM MỚI ---
-
-    // Tìm các đơn hàng theo Điểm đến (VD: Admin muốn xem ai đang đi Đà Nẵng)
+    // Tìm kiếm theo từ khóa
     Page<Order> findByDestinationContainingIgnoreCase(String destination, Pageable pageable);
-
-    // Tìm các đơn hàng theo Nơi xuất phát (Trường mới bạn vừa thêm)
     Page<Order> findByCurrentLocationContainingIgnoreCase(String currentLocation, Pageable pageable);
 
-    // --- CÁC QUERY PHỨC TẠP (Admin/Thống kê) ---
+    // --- 3. CÁC HÀM HỖ TRỢ HOTEL SERVICE (GIỮ NGUYÊN) ---
 
-    // Đếm số đơn hàng có trạng thái cụ thể của một khách sạn
-    @Query("SELECT COUNT(o) FROM Order o WHERE o.hotel.id = :hotelId AND o.status IN (:statuses)")
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.hotel.id = :hotelId AND o.status IN :statuses")
     long countActiveOrdersByHotel(
             @Param("hotelId") Long hotelId,
             @Param("statuses") List<OrderStatus> statuses
     );
 
-    // Hủy hàng loạt đơn hàng của một khách sạn (Dùng khi khách sạn bị xóa hoặc đóng cửa)
     @Modifying
-    @Query("UPDATE Order o SET o.status = :cancelStatus WHERE o.hotel.id = :hotelId AND o.status IN (:activeStatuses)")
+    @Query("UPDATE Order o SET o.status = :cancelStatus WHERE o.hotel.id = :hotelId AND o.status IN :activeStatuses")
     void cancelAllActiveOrdersByHotel(
             @Param("hotelId") Long hotelId,
             @Param("activeStatuses") List<OrderStatus> activeStatuses,

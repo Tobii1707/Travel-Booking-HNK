@@ -38,7 +38,6 @@ public class Order {
     @Column(name = "destination", nullable = false, length = 255)
     private String destination;
 
-    // --- MỚI THÊM: Nơi ở hiện tại ---
     @NotNull
     @Column(name = "current_location", nullable = false, length = 255)
     private String currentLocation;
@@ -52,9 +51,6 @@ public class Order {
     @Column(name = "order_date")
     private Date orderDate;
 
-    // --- ĐÃ XÓA: checkinDate và checkoutDate (Theo yêu cầu của bạn) ---
-
-    // Các trường startHotel, endHotel giữ lại để phục vụ việc chọn khách sạn
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "start_hotel")
     @DateTimeFormat
@@ -70,21 +66,28 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties("orders")
+    @JsonIgnoreProperties("orders") // User OK
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "payment_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // Payment OK
     private Payment payment;
 
+    // --- SỬA CHỖ NÀY ---
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "flight_id", nullable = true)
-    @JsonIgnoreProperties({"orders", "flightSeats"})
+    // 1. Đổi "flightSeats" thành "seats" (cho đúng tên bên Flight.java)
+    // 2. Thêm hibernateLazyInitializer, handler để tránh lỗi Proxy
+    @JsonIgnoreProperties({"orders", "seats", "hibernateLazyInitializer", "handler"})
     private Flight flight;
 
+    // --- SỬA CHỖ NÀY ---
     @ManyToOne
     @JoinColumn(name = "hotel_id")
-    @JsonIgnoreProperties("orders")
+    // Thêm hibernateLazyInitializer, handler.
+    // Thêm hotelBedrooms để JSON gọn hơn (optional)
+    @JsonIgnoreProperties({"orders", "hotelBedrooms", "hibernateLazyInitializer", "handler"})
     private Hotel hotel;
 
     @Column(name = "bedrooms", length = 2000)
@@ -97,16 +100,12 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    // --- CẬP NHẬT CONSTRUCTOR ---
-    // Constructor tùy chỉnh cho việc tạo Order ban đầu (bỏ ngày checkin/out, thêm currentLocation)
     public Order(String destination, String currentLocation, int numberOfPeople) {
         this.destination = destination;
         this.currentLocation = currentLocation;
         this.numberOfPeople = numberOfPeople;
     }
 
-    // === THÊM TRƯỜNG NÀY VÀO ===
     @Column(name = "list_seats")
     private String listSeats;
-    // ===========================
 }

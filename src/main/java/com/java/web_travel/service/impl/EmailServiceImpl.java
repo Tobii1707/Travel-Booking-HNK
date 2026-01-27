@@ -152,10 +152,12 @@ public class EmailServiceImpl implements EmailService {
         return localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
+    // --- ĐÃ SỬA PHẦN NÀY ---
     private String generateOrderInfoHtml(Order order) {
         String userName = order.getUser().getFullName();
-        String destination = order.getDestination();
-        String currentDestination = order.getDestination();
+        String destination = order.getDestination();           // Điểm đến
+        String currentLocation = order.getCurrentLocation();   // Điểm xuất phát (Sửa dòng này)
+
         int numberOfPeople = order.getNumberOfPeople();
         String hotelName = order.getHotel() != null ? order.getHotel().getHotelName() : "N/A";
         String flightName = order.getFlight() != null ? order.getFlight().getAirlineName() : "N/A";
@@ -164,8 +166,8 @@ public class EmailServiceImpl implements EmailService {
 
         return "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
                 "<b>Người đặt:</b> " + userName + "<br>" +
-                "<b>Địa điểm:</b> " + currentDestination + "<br>"+
-                "<b>Địa điểm:</b> " + destination + "<br>" +
+                "<b>Điểm xuất phát:</b> " + currentLocation + "<br>"+ // Sửa label
+                "<b>Điểm đến:</b> " + destination + "<br>" +        // Sửa label
                 "<b>Số người:</b> " + numberOfPeople + "<br>" +
                 "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightClass + "<br>" +
                 "<b>Tên khách sạn:</b> " + hotelName + "<br>" +

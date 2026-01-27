@@ -199,7 +199,6 @@ public class OrderServiceImpl implements OrderService {
         // --- SỬA LOGIC TẠI ĐÂY ---
         if (order.getStartHotel() != null && order.getEndHotel() != null) {
             Date flightDeparture = getStartOfDay(flight.getCheckInDate());
-            // Date flightReturn = getStartOfDay(flight.getCheckOutDate()); // Không cần biến này nữa nếu không check
             Date hotelCheckIn = getStartOfDay(order.getStartHotel());
             Date hotelCheckOut = getStartOfDay(order.getEndHotel());
 

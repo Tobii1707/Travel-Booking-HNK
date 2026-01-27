@@ -53,6 +53,8 @@ public enum ErrorCode {
     INVALID_REQUEST(1046, "Yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
     SEAT_NOT_FOUND(1047, "Không tìm thấy ghế", HttpStatus.BAD_REQUEST),
     SEAT_ALREADY_BOOKED(1048, "Ghế đã có người đặt", HttpStatus.BAD_REQUEST),
+    CANNOT_UPDATE_BOOKED_FLIGHT(1049, "Không thể thay đổi ngày hoặc địa điểm của chuyến bay đã có người đặt", HttpStatus.BAD_REQUEST),
+    CANNOT_DELETE_BOOKED_FLIGHT(1050, "Không thể xóa chuyến bay đã có người đặt vé", HttpStatus.BAD_REQUEST),
     ;
 
     private int code ;

@@ -11,6 +11,8 @@ import java.util.List;
 
 @Component
 public class HotelConverter {
+
+    // --- 1. DTO -> Entity (Dùng khi tạo mới/update) ---
     public Hotel convertHotel(HotelDTO hotelDto) {
         Hotel hotel = new Hotel();
 
@@ -18,17 +20,15 @@ public class HotelConverter {
         hotel.setHotelPriceFrom(hotelDto.getPriceFrom());
         hotel.setAddress(hotelDto.getAddress());
         hotel.setNumberFloor(hotelDto.getNumberFloor());
-
-        // --- 1. QUAN TRỌNG: Phải mở dòng này ra để lưu số lượng phòng vào DB ---
         hotel.setNumberRoomPerFloor(hotelDto.getNumberRoomPerFloor());
-        // -----------------------------------------------------------------------
 
+        // Logic tạo phòng tự động
         List<HotelBedroom> hotelBedroomList = new ArrayList<>();
 
         // Vòng lặp các tầng (i)
         for(int i = 1 ; i <= hotelDto.getNumberFloor() ; i++) {
 
-            // Vòng lặp các phòng trong 1 tầng (j) - Đã đúng theo logic động
+            // Vòng lặp các phòng trong 1 tầng (j)
             for(int j = 1 ; j <= hotelDto.getNumberRoomPerFloor() ; j++) {
 
                 HotelBedroom hotelBedroom = new HotelBedroom();
@@ -36,8 +36,7 @@ public class HotelConverter {
                 // Logic đặt tên phòng: Tầng 1 phòng 1 -> 101
                 hotelBedroom.setRoomNumber((long) (i * 100 + j));
 
-                // --- 2. Gợi ý Logic VIP linh hoạt hơn ---
-                // Ví dụ: Phòng cuối cùng của hành lang (j == max) hoặc phòng số 6, 8
+                // Logic VIP: Phòng cuối hành lang hoặc số 6, 8 là VIP
                 boolean isVip = (j == 6 || j == 8) || (j == hotelDto.getNumberRoomPerFloor());
 
                 if(isVip) {
@@ -48,7 +47,8 @@ public class HotelConverter {
                     hotelBedroom.setRoomType("Normal Room");
                 }
 
-                hotelBedroom.setHotel(hotel); // Set quan hệ 2 chiều
+                // Quan trọng: Set quan hệ 2 chiều để Hibernate lưu được
+                hotelBedroom.setHotel(hotel);
                 hotelBedroomList.add(hotelBedroom);
             }
         }
@@ -56,19 +56,30 @@ public class HotelConverter {
         hotel.setHotelBedrooms(hotelBedroomList);
         return hotel;
     }
+
+    // --- 2. Entity -> Response (Dùng để hiển thị ra FE) ---
     public HotelResponse toHotelResponse(Hotel hotel) {
         HotelResponse response = new HotelResponse();
 
-        // Map từng trường dữ liệu
         response.setId(hotel.getId());
         response.setHotelName(hotel.getHotelName());
-        response.setHotelPriceFrom(hotel.getHotelPriceFrom()); // Đã sửa đúng tên
+        response.setHotelPriceFrom(hotel.getHotelPriceFrom());
         response.setAddress(hotel.getAddress());
         response.setNumberFloor(hotel.getNumberFloor());
 
-        // --- SỬA LẠI DÒNG NÀY ---
-        // Map số phòng 1 tầng (Lúc nãy bạn copy nhầm dòng giá tiền)
+        // Đã sửa lại đúng logic map số phòng
         response.setNumberRoomPerFloor(hotel.getNumberRoomPerFloor());
+
+        // Map thêm thông tin Group nếu có (để hiển thị tên chuỗi khách sạn)
+        if (hotel.getHotelGroup() != null) {
+            response.setHotelGroupId(hotel.getHotelGroup().getId());
+            response.setGroupName(hotel.getHotelGroup().getGroupName());
+        }
+
+        // --- LƯU Ý QUAN TRỌNG ---
+        // Chúng ta KHÔNG set hotelBedrooms ở đây.
+        // Lý do: Để hàm getAllHotels() chạy nhanh, không phải query database lấy hàng nghìn phòng.
+        // Danh sách phòng sẽ được set thủ công bên Service (hàm getHotel) khi người dùng xem chi tiết.
 
         return response;
     }

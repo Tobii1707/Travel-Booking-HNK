@@ -3,6 +3,7 @@ package com.java.web_travel.service;
 import com.java.web_travel.entity.HotelBedroom;
 import com.java.web_travel.model.request.HotelBedroomDTO;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface HotelBedroomService {
 
     void deleteRoom(Long roomId);
 
-    List<HotelBedroom> getRoomsByHotel(Long hotelId);
+    List<HotelBedroom> getRoomsByHotel(Long hotelId, LocalDate checkInDate);
 
     HotelBedroom getRoom(Long roomId);
 

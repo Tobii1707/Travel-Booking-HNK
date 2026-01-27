@@ -7,10 +7,12 @@ import com.java.web_travel.service.HotelBedroomService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat; // <--- MỚI: Để xử lý ngày tháng
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date; // <--- MỚI
+import java.time.LocalDate; // <--- CẦN IMPORT CÁI NÀY
+import java.time.format.DateTimeFormatter; // <--- CẦN IMPORT CÁI NÀY
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -20,10 +22,6 @@ public class HotelBedroomController {
 
     @Autowired
     private HotelBedroomService hotelBedroomService;
-
-    // -------------------------------------------------------------------------
-    // --- PHẦN CODE CŨ (GIỮ NGUYÊN) -------------------------------------------
-    // -------------------------------------------------------------------------
 
     @PostMapping("/room")
     public ApiResponse<HotelBedroom> createRoom(@Valid @RequestBody HotelBedroomDTO dto) {
@@ -42,13 +40,37 @@ public class HotelBedroomController {
         return response;
     }
 
+    // -------------------------------------------------------------------------
+    // --- [SỬA LẠI ĐOẠN NÀY ĐỂ KHỚP VỚI SERVICE] -----------------------------
+    // -------------------------------------------------------------------------
     @GetMapping("/rooms/{hotelId}")
-    public ApiResponse<List<HotelBedroom>> getRoomsByHotel(@PathVariable Long hotelId) {
-        log.info("Getting rooms for hotel id: {}", hotelId);
+    public ApiResponse<List<HotelBedroom>> getRoomsByHotel(
+            @PathVariable Long hotelId,
+            @RequestParam(required = false) String checkInDate // <--- Nhận thêm ngày từ Frontend
+    ) {
+        log.info("Getting rooms for hotel id: {}, date: {}", hotelId, checkInDate);
+
+        // 1. Xử lý chuyển đổi String sang LocalDate
+        LocalDate date = null;
+        if (checkInDate != null && !checkInDate.isEmpty()) {
+            try {
+                date = LocalDate.parse(checkInDate, DateTimeFormatter.ISO_DATE);
+            } catch (Exception e) {
+                log.error("Lỗi format ngày: {}", e.getMessage());
+                date = LocalDate.now();
+            }
+        } else {
+            date = LocalDate.now();
+        }
+
         ApiResponse<List<HotelBedroom>> response = new ApiResponse<>();
-        response.setData(hotelBedroomService.getRoomsByHotel(hotelId));
+
+        // 2. Gọi Service với ĐỦ 2 THAM SỐ (Fix lỗi Expected 2 arguments)
+        response.setData(hotelBedroomService.getRoomsByHotel(hotelId, date));
+
         return response;
     }
+    // -------------------------------------------------------------------------
 
     @PutMapping("/room/{id}")
     public ApiResponse<HotelBedroom> updateRoom(@PathVariable Long id, @Valid @RequestBody HotelBedroomDTO dto) {
@@ -68,11 +90,7 @@ public class HotelBedroomController {
         return response;
     }
 
-    // -------------------------------------------------------------------------
-    // --- PHẦN CODE MỚI THÊM VÀO (ĐỂ HIỂN THỊ MÀU ĐỎ/TRẮNG) -------------------
-    // -------------------------------------------------------------------------
-
-    // API này trả về danh sách các ID phòng ĐÃ BỊ ĐẶT trong khoảng thời gian chọn
+    // API này trả về danh sách các ID phòng ĐÃ BỊ ĐẶT
     @GetMapping("/booked-rooms")
     public List<Long> getBookedRooms(
             @RequestParam Long hotelId,
@@ -80,7 +98,6 @@ public class HotelBedroomController {
             @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
     ) {
         log.info("Checking booked rooms for hotel: {}, from {} to {}", hotelId, startDate, endDate);
-        // Gọi Service đã viết trước đó
         return hotelBedroomService.getBookedRoomIds(hotelId, startDate, endDate);
     }
 }

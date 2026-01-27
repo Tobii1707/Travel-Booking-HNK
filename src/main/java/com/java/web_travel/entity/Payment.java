@@ -25,6 +25,7 @@ public class Payment {
     private PaymentStatus status;
 
     public Payment(PaymentStatus status) {
+
         this.status = status;
     }
 }

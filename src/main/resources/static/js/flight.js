@@ -342,47 +342,75 @@
     selectedSeats = [];
   };
 
-  // --- HÀM XỬ LÝ ĐẶT VÉ ---
+  // --- HÀM XỬ LÝ ĐẶT VÉ (ĐÃ SỬA LỖI) ---
   window.confirmSeatSelection = function() {
+    // 1. Kiểm tra xem người dùng chọn đủ ghế chưa
     if (selectedSeats.length !== requiredSeats) {
       alert(`Vui lòng chọn đủ ${requiredSeats} ghế để tiếp tục.`);
       return;
     }
 
+    // 2. [QUAN TRỌNG] Kiểm tra dữ liệu rỗng trước khi gửi
+    // Nếu orderId hoặc flightId bị thiếu, không gọi API để tránh lỗi 500
+    if (!currentOrderId || !currentFlightId) {
+      console.error("Lỗi dữ liệu: Thiếu OrderId hoặc FlightId", { currentOrderId, currentFlightId });
+      alert("Lỗi hệ thống: Không tìm thấy mã đơn hàng. Vui lòng tải lại trang và thử lại.");
+      return;
+    }
+
+    // Tạo gói dữ liệu gửi đi
     const payload = {
-      orderId: currentOrderId,
-      flightId: currentFlightId,
+      orderId: parseInt(currentOrderId),   // Ép kiểu về số nguyên
+      flightId: parseInt(currentFlightId), // Ép kiểu về số nguyên
       seatNumbers: selectedSeats
     };
 
+    console.log("Đang gửi dữ liệu lên server:", payload);
+
+    // Gọi API
     fetch(`/order/chooseFlightWithSeats/${currentOrderId}/${currentFlightId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
-        .then(response => response.json())
+        .then(response => {
+          // Nếu Server vẫn trả về lỗi 500 (mặc dù đã chặn ở trên), ném lỗi ra catch
+          if (!response.ok) {
+            throw new Error(`Lỗi kết nối Server (Mã lỗi: ${response.status})`);
+          }
+          return response.json();
+        })
         .then(result => {
+          // Xử lý kết quả trả về từ Backend
           if (result.code === 1000) {
             alert('Đặt vé thành công!');
             closeSeatModal();
-            fetch(`/api/v1/email/${currentOrderId}/announce`, { method: 'POST' });
+            // Gửi email xác nhận
+            fetch(`/api/v1/email/${currentOrderId}/announce`, { method: 'POST' }).catch(console.error);
+
+            // Chuyển trang sau 0.5 giây
             setTimeout(() => {
               window.location.href = '/plan-trip';
             }, 500);
           }
-          else if (result.code === 1048) {
-            alert('Rất tiếc! Một trong số các ghế bạn chọn vừa bị người khác đặt.\n\nHệ thống sẽ cập nhật lại danh sách ghế ngay bây giờ.');
-            selectedSeats = [];
-            updateSelectionDisplay();
-            loadAvailableSeats(currentFlightId, currentFlightData);
+          // Code 1048 hoặc 7777: Lỗi logic (ví dụ ghế vừa bị người khác đặt)
+          else if (result.code === 1048 || result.code === 7777) {
+            alert('Thông báo: ' + (result.message || 'Có lỗi xảy ra khi đặt ghế.'));
+
+            // Nếu là lỗi ghế trùng, tải lại danh sách ghế
+            if(result.code === 1048) {
+              selectedSeats = [];
+              updateSelectionDisplay();
+              loadAvailableSeats(currentFlightId, currentFlightData);
+            }
           }
           else {
-            alert(result.message || 'Lỗi không xác định khi đặt vé!');
+            alert('Lỗi: ' + (result.message || 'Không xác định'));
           }
         })
         .catch((err) => {
-          console.error(err);
-          alert('Lỗi kết nối đến máy chủ!');
+          console.error("Chi tiết lỗi:", err);
+          alert('Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng hoặc thử lại sau.');
         });
   };
 
