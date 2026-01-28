@@ -9,9 +9,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
     <link rel="stylesheet" href="/css/plan_trip.css">
+
     <style>
+        /* Đảm bảo tiêu đề bảng không bị xuống dòng */
         #order-table th { white-space: nowrap; }
-        .text-center { text-align: center !important; }
+
+        /* Căn giữa tiêu đề cột icon */
+        #order-table th.text-center { text-align: center; }
+
+        /* Nút Chatbot Trôi nổi (Floating) */
+        .chatbot-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            text-decoration: none;
+        }
+        .chatbot-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Hiệu ứng rung nhẹ cho chatbot để thu hút chú ý */
+        @keyframes floatShake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(10deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .chatbot-float:hover i {
+            animation: floatShake 0.5s ease-in-out;
+        }
     </style>
 </head>
 
@@ -59,14 +100,13 @@
                 <th width="5%">Chọn</th>
                 <th width="5%">Mã</th>
                 <th width="20%">Hành trình (Đi - Đến)</th>
-                <th width="10%" class="text-center">Khách sạn</th>
-                <th width="10%" class="text-center">Máy bay</th>
-                <th width="15%">Tổng tiền</th>
+                <th width="10%" class="text-center">Khách sạn</th> <th width="10%" class="text-center">Máy bay</th>   <th width="20%">Tổng tiền</th>
                 <th width="15%">Trạng thái</th>
                 <th width="10%">Đánh giá</th>
             </tr>
             </thead>
             <tbody>
+            <tr><td colspan="8" class="text-center" style="padding: 30px;">Đang tải dữ liệu...</td></tr>
             </tbody>
         </table>
 
@@ -78,10 +118,10 @@
     </div>
 
     <div class="btn-container">
-        <button class="btn cancel" id="cancel-btn">Hủy chuyến</button>
-        <button class="btn pay" id="pay-btn">Thanh toán</button>
-        <button class="btn choose-flight" id="choose-flight-btn">Chọn Chuyến bay</button>
-        <button class="btn choose-hotel" id="choose-hotel-btn">Chọn Khách sạn</button>
+        <button class="btn cancel" id="cancel-btn"><i class="fas fa-times"></i> Hủy chuyến</button>
+        <button class="btn pay" id="pay-btn"><i class="fas fa-wallet"></i> Thanh toán</button>
+        <button class="btn choose-flight" id="choose-flight-btn"><i class="fas fa-plane"></i> Chọn Chuyến bay</button>
+        <button class="btn choose-hotel" id="choose-hotel-btn"><i class="fas fa-hotel"></i> Chọn Khách sạn</button>
     </div>
 </div>
 
@@ -89,6 +129,7 @@
     <div class="modal-content">
         <h2>Quét mã QR để thanh toán</h2>
         <img id="qr-code" src="/images/qr.jpg" alt="Mã QR thanh toán">
+        <p style="margin-bottom: 20px; color: #666;">Vui lòng chuyển khoản đúng số tiền và nội dung.</p>
         <div class="modal-btn-group">
             <button id="confirm-payment-btn" class="btn pay">Xác nhận đã chuyển</button>
             <button id="close-modal-btn" class="btn cancel">Đóng</button>
@@ -99,6 +140,7 @@
 <div id="review-modal" class="modal">
     <div class="modal-content review-modal-content">
         <h2 id="review-modal-title">Viết Đánh giá</h2>
+
         <input type="hidden" id="review-order-id">
         <input type="hidden" id="review-id">
         <input type="hidden" id="review-hotel-name">
@@ -121,13 +163,13 @@
 
         <div class="comment-container">
             <label>Nội dung đánh giá:</label>
-            <textarea id="review-comment" placeholder="Chia sẻ trải nghiệm của bạn..." maxlength="1000" rows="4"></textarea>
-            <small><span id="char-count">0</span>/1000</small>
+            <textarea id="review-comment" placeholder="Chia sẻ trải nghiệm của bạn về khách sạn này..." maxlength="1000" rows="4"></textarea>
+            <small style="color: #999; margin-top: 5px; display: block; text-align: right;">Tối đa 1000 ký tự</small>
         </div>
 
         <div class="modal-btn-group">
             <button id="submit-review-btn" class="btn pay">Gửi đánh giá</button>
-            <button id="delete-review-btn" class="btn cancel" style="display:none;">Xóa đánh giá</button>
+            <button id="delete-review-btn" class="btn cancel" style="display:none; background-color: #c0392b;">Xóa</button>
             <button id="close-review-modal-btn" class="btn cancel">Hủy</button>
         </div>
     </div>
@@ -141,37 +183,21 @@
             <p><i class="fas fa-phone" style="margin-right: 8px;"></i> 0795129626</p>
             <p><i class="fas fa-envelope" style="margin-right: 8px;"></i> hanamkhanh2004@gmail.com</p>
         </div>
+        <div class="footer-col">
+            <h2>Liên kết nhanh</h2>
+            <ul>
+                <li><a href="home">Trang chủ</a></li>
+                <li><a href="about">Về chúng tôi</a></li>
+                <li><a href="policy">Chính sách</a></li>
+            </ul>
+        </div>
     </div>
+    <div class="credit">Created by <span>Hà Nam Khánh</span> | All Rights Reserved</div>
 </section>
 
 <a href="/chatbot" class="chatbot-float" title="Trợ lý Du lịch AI">
     <i class="fas fa-robot"></i>
 </a>
-<style>
-    .chatbot-float {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 24px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        z-index: 1000;
-        text-decoration: none;
-    }
-    .chatbot-float:hover {
-        transform: scale(1.1);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-    }
-</style>
 
 <script src="/js/plan_trip.js"></script>
 

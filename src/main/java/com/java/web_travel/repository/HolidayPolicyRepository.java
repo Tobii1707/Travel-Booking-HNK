@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-
 public interface HolidayPolicyRepository extends JpaRepository<HolidayPolicy, Long> {
 
     @Query("SELECT p FROM HolidayPolicy p WHERE p.targetGroup.id = :groupId " +
@@ -19,7 +18,6 @@ public interface HolidayPolicyRepository extends JpaRepository<HolidayPolicy, Lo
                                            @Param("dateToCheck") LocalDate dateToCheck);
 
     // HÀM MỚI: Kiểm tra xem có policy nào của Group bị trùng ngày không
-    // Logic: Có trùng nếu (Start_Cũ <= End_Mới) VÀ (End_Cũ >= Start_Mới)
     @Query("SELECT COUNT(p) > 0 FROM HolidayPolicy p " +
             "WHERE p.targetGroup.id = :groupId " +
             "AND p.startDate <= :newEnd " +
@@ -27,4 +25,15 @@ public interface HolidayPolicyRepository extends JpaRepository<HolidayPolicy, Lo
     boolean existsOverlappingPolicy(@Param("groupId") Long groupId,
                                     @Param("newStart") LocalDate newStart,
                                     @Param("newEnd") LocalDate newEnd);
+
+    // [FIX] Sửa p.hotelGroup thành p.targetGroup cho đồng bộ với Entity của bạn
+    @Query("SELECT COUNT(p) > 0 FROM HolidayPolicy p " +
+            "WHERE p.targetGroup.id = :groupId " +  // <--- ĐÃ SỬA Ở ĐÂY
+            "AND p.id <> :excludedId " +
+            "AND p.startDate <= :newEnd " +
+            "AND p.endDate >= :newStart")
+    boolean existsOverlappingPolicyExceptId(@Param("groupId") Long groupId,
+                                            @Param("newStart") LocalDate newStart,
+                                            @Param("newEnd") LocalDate newEnd,
+                                            @Param("excludedId") Long excludedId);
 }

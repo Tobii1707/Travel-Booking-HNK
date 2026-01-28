@@ -11,11 +11,13 @@ import com.java.web_travel.repository.HotelBedroomRepository;
 import com.java.web_travel.repository.HotelBookingRepository;
 import com.java.web_travel.repository.HotelRepository;
 import com.java.web_travel.service.HotelBedroomService;
+import org.springframework.beans.BeanUtils; // [FIX] Import thêm thư viện copy object
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList; // [FIX] Import ArrayList
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +76,7 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         room.setRoomNumber(dto.getRoomNumber());
         room.setPrice(dto.getPrice());
         room.setRoomType(dto.getRoomType());
+        // Hàm này là Transactional nên save() sẽ update giá gốc vào DB -> Đúng logic update
         return hotelBedroomRepository.save(room);
     }
 
@@ -85,44 +88,57 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         hotelBedroomRepository.delete(room);
     }
 
-    // --- [PHẦN SỬA ĐỔI QUAN TRỌNG Ở ĐÂY] ---
+    // --- [PHẦN ĐÃ SỬA LẠI AN TOÀN] ---
     @Override
     public List<HotelBedroom> getRoomsByHotel(Long hotelId, LocalDate checkInDate) {
         // 1. Lấy thông tin Hotel
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
-        // 2. Lấy danh sách phòng gốc
-        List<HotelBedroom> rooms = hotelBedroomRepository.findByHotelId(hotelId);
+        // 2. Lấy danh sách phòng gốc từ DB
+        List<HotelBedroom> originalRooms = hotelBedroomRepository.findByHotelId(hotelId);
 
-        // 3. Logic tính giá theo ngày check-in
+        // Tạo danh sách kết quả để trả về (chứa các bản copy)
+        List<HotelBedroom> responseRooms = new ArrayList<>();
+
+        // 3. Logic tính giá
+        double rate = 1.0;
         if (hotel.getHotelGroup() != null) {
-            // Nếu có ngày checkIn truyền vào thì dùng, không thì lấy ngày hiện tại
             LocalDate targetDate = (checkInDate != null) ? checkInDate : LocalDate.now();
-
             List<HolidayPolicy> policies = holidayPolicyRepository
                     .findActivePolicies(hotel.getHotelGroup().getId(), targetDate);
 
             if (!policies.isEmpty()) {
-                HolidayPolicy policy = policies.get(0);
-                double rate = 1.0 + (policy.getIncreasePercentage() / 100.0);
-
-                for (HotelBedroom room : rooms) {
-                    room.setPrice(smartRoundPrice(room.getPrice() * rate));
-                }
+                rate = 1.0 + (policies.get(0).getIncreasePercentage() / 100.0);
             }
         }
-        return rooms;
+
+        // 4. Loop và Copy
+        for (HotelBedroom original : originalRooms) {
+            // [QUAN TRỌNG] Tạo object mới và copy dữ liệu sang
+            // Việc này giúp tách object ra khỏi Hibernate Session -> Không bị tự động Update vào DB
+            HotelBedroom displayRoom = new HotelBedroom();
+            BeanUtils.copyProperties(original, displayRoom);
+
+            // Tính toán giá trên object COPY (Giá gốc * rate)
+            displayRoom.setPrice(smartRoundPrice(original.getPrice() * rate));
+
+            responseRooms.add(displayRoom);
+        }
+
+        return responseRooms;
     }
 
-    // Hàm getRoom lẻ này cũng nên sửa logic tương tự nếu cần,
-    // nhưng tạm thời giữ nguyên hoặc dùng LocalDate.now() như cũ nếu Interface chưa đổi hàm này.
     @Override
     public HotelBedroom getRoom(Long roomId) {
-        HotelBedroom room = hotelBedroomRepository.findById(roomId)
+        HotelBedroom original = hotelBedroomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
-        Hotel hotel = room.getHotel();
+        // [QUAN TRỌNG] Cũng phải copy ở hàm lẻ này
+        HotelBedroom displayRoom = new HotelBedroom();
+        BeanUtils.copyProperties(original, displayRoom);
+
+        Hotel hotel = original.getHotel();
         if (hotel != null && hotel.getHotelGroup() != null) {
             LocalDate today = LocalDate.now();
             List<HolidayPolicy> policies = holidayPolicyRepository
@@ -131,10 +147,12 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
             if (!policies.isEmpty()) {
                 HolidayPolicy policy = policies.get(0);
                 double rate = 1.0 + (policy.getIncreasePercentage() / 100.0);
-                room.setPrice(smartRoundPrice(room.getPrice() * rate));
+
+                // Set giá trên bản copy
+                displayRoom.setPrice(smartRoundPrice(original.getPrice() * rate));
             }
         }
-        return room;
+        return displayRoom;
     }
 
     @Override

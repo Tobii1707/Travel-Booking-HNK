@@ -1,6 +1,6 @@
 package com.java.web_travel.controller.admin;
 
-import com.java.web_travel.entity.GroupPriceHistory; // <--- Import Entity mới
+import com.java.web_travel.entity.GroupPriceHistory;
 import com.java.web_travel.entity.HotelGroup;
 import com.java.web_travel.model.request.HolidayPolicyDTO;
 import com.java.web_travel.model.request.HotelGroupRequest;
@@ -78,14 +78,29 @@ public class HotelGroupController {
     //  3. API NGHIỆP VỤ NÂNG CAO (GIÁ & CHÍNH SÁCH & LỊCH SỬ)
     // =========================================================================
 
-    // POST: Thêm chính sách ngày lễ
+    // POST: Thêm chính sách ngày lễ mới
     @PostMapping("/policy")
     public ResponseEntity<String> addHolidayPolicy(@RequestBody HolidayPolicyDTO request) {
         hotelGroupService.addHolidayPolicy(request);
         return ResponseEntity.ok("Đã thêm chính sách giá ngày lễ thành công.");
     }
 
-    // PATCH: Tăng/Giảm giá gốc vĩnh viễn
+    // [MỚI] PUT: Sửa chính sách ngày lễ
+    @PutMapping("/policy/{policyId}")
+    public ResponseEntity<String> updateHolidayPolicy(@PathVariable Long policyId,
+                                                      @RequestBody HolidayPolicyDTO request) {
+        hotelGroupService.updateHolidayPolicy(policyId, request);
+        return ResponseEntity.ok("Đã cập nhật chính sách giá thành công.");
+    }
+
+    // [MỚI] DELETE: Xóa chính sách ngày lễ
+    @DeleteMapping("/policy/{policyId}")
+    public ResponseEntity<String> deleteHolidayPolicy(@PathVariable Long policyId) {
+        hotelGroupService.deleteHolidayPolicy(policyId);
+        return ResponseEntity.ok("Đã xóa bỏ chính sách giá thành công.");
+    }
+
+    // PATCH: Tăng/Giảm giá gốc vĩnh viễn (cho toàn bộ khách sạn trong Group)
     @PatchMapping("/{id}/bulk-price")
     public ResponseEntity<String> bulkUpdatePrice(@PathVariable Long id,
                                                   @RequestParam double percentage) {
@@ -93,8 +108,7 @@ public class HotelGroupController {
         return ResponseEntity.ok("Đã cập nhật giá (biến động " + percentage + "%) và lưu lịch sử thành công.");
     }
 
-    // --- MỚI THÊM: GET Xem lịch sử thay đổi giá ---
-    // URL: /api/hotel-groups/{id}/history
+    // GET: Xem lịch sử thay đổi giá
     @GetMapping("/{id}/history")
     public ResponseEntity<List<GroupPriceHistory>> getPriceHistory(@PathVariable Long id) {
         return ResponseEntity.ok(hotelGroupService.getPriceHistories(id));

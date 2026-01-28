@@ -1,6 +1,7 @@
 package com.java.web_travel.controller;
 
 import com.java.web_travel.entity.User;
+import com.java.web_travel.enums.RoleCode; // <--- CẦN IMPORT CÁI NÀY
 import com.java.web_travel.model.request.ChangePassDTO;
 import com.java.web_travel.model.request.ForgotPasswordDTO;
 import com.java.web_travel.model.request.ResetPasswordDTO;
@@ -43,11 +44,17 @@ public class UserController {
         User user = userService.loginUser(userLoginDTO);
         apiResponse.setData(user);
         apiResponse.setMessage("login user success");
-        if(user.getRole().getRoleCode().toString().equals("ADMIN")){
+
+        // --- SỬA ĐOẠN NÀY ---
+        // Cũ: if(user.getRole().getRoleCode().toString().equals("ADMIN"))
+        // Mới: So sánh trực tiếp với Enum RoleCode.ADMIN
+        if(user.getRole() == RoleCode.ADMIN){
             apiResponse.setCode(8888);
             apiResponse.setMessage("login admin success");
             log.info("Admin login success");
         }
+        // --------------------
+
         return apiResponse;
     }
 

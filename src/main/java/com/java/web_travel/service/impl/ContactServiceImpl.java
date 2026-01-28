@@ -3,7 +3,7 @@ package com.java.web_travel.service.impl;
 import com.java.web_travel.entity.Contact;
 import com.java.web_travel.entity.User;
 import com.java.web_travel.enums.ErrorCode;
-import com.java.web_travel.enums.RoleCode;
+import com.java.web_travel.enums.RoleCode; // Import Enum RoleCode
 import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.ContactDTO;
 import com.java.web_travel.model.response.ContactResponse;
@@ -45,9 +45,13 @@ public class ContactServiceImpl implements ContactService {
             throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);
         }
 
-        if (user.getRole() != null && user.getRole().getRoleCode() == RoleCode.ADMIN) {
+        // --- SỬA ĐOẠN NÀY ---
+        // Cũ: if (user.getRole() != null && user.getRole().getRoleCode() == RoleCode.ADMIN)
+        // Mới: So sánh trực tiếp Enum
+        if (user.getRole() == RoleCode.ADMIN) {
             throw new AppException(ErrorCode.ADMIN_CANNOT_SEND_MESSAGE);
         }
+        // --------------------
 
         // --- [MỚI] KIỂM TRA DỮ LIỆU CÓ KHỚP VỚI USER KHÔNG ---
         // Kiểm tra Họ tên
@@ -83,9 +87,13 @@ public class ContactServiceImpl implements ContactService {
         User user = userRepository.findById(requesterId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTS));
 
-        if (user.getRole() == null || user.getRole().getRoleCode() != RoleCode.ADMIN) {
+        // --- SỬA ĐOẠN NÀY ---
+        // Cũ: if (user.getRole() == null || user.getRole().getRoleCode() != RoleCode.ADMIN)
+        // Mới: So sánh trực tiếp Enum
+        if (user.getRole() != RoleCode.ADMIN) {
             throw new RuntimeException("Bạn không có quyền truy cập chức năng này");
         }
+        // --------------------
 
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdAt").descending());
         String searchKey = (keyword != null && !keyword.isEmpty()) ? keyword.trim() : null;
@@ -110,9 +118,13 @@ public class ContactServiceImpl implements ContactService {
         User admin = userRepository.findById(adminId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTS));
 
-        if (admin.getRole().getRoleCode() != RoleCode.ADMIN) {
+        // --- SỬA ĐOẠN NÀY ---
+        // Cũ: if (admin.getRole().getRoleCode() != RoleCode.ADMIN)
+        // Mới: So sánh trực tiếp Enum
+        if (admin.getRole() != RoleCode.ADMIN) {
             throw new RuntimeException("Chỉ Admin mới được trả lời liên hệ");
         }
+        // --------------------
 
         Contact contact = contactRepository.findById(contactId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy liên hệ"));

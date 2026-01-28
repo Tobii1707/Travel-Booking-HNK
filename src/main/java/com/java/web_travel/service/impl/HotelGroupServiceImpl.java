@@ -59,34 +59,20 @@ public class HotelGroupServiceImpl implements HotelGroupService {
         }
 
         // --- [LOGIC MỚI v2] ĐỒNG BỘ TÊN KHÁCH SẠN ---
-        // Khi đổi tên Group, tìm và thay thế tên Group trong tên các khách sạn con
         if (!oldGroupName.equals(newGroupName)) {
             List<Hotel> hotels = group.getHotels();
             if (hotels != null && !hotels.isEmpty()) {
-
-                // Regex tìm tên Group cũ:
-                // \\s* : Chấp nhận khoảng trắng (hoặc không) phía trước
-                // Pattern.quote : Xử lý ký tự đặc biệt trong tên Group
-                // \\) : Dấu đóng ngoặc
-                // \\s*$ : Chấp nhận khoảng trắng thừa ở cuối chuỗi
                 String regexOld = "\\s*\\(" + Pattern.quote(oldGroupName) + "\\)\\s*$";
 
                 for (Hotel hotel : hotels) {
                     String currentName = hotel.getHotelName();
 
                     if (currentName != null) {
-                        // Bước 1: Chuẩn hóa chuỗi (Xóa Non-breaking space \u00A0 và trim)
                         String cleanName = currentName.replace('\u00A0', ' ').trim();
-
-                        // Bước 2: Xóa tên Group cũ đi (Dùng Regex thay vì replace thường)
                         cleanName = cleanName.replaceAll(regexOld, "");
-
-                        // Bước 3: Cộng tên Group mới vào
-                        // (Đảm bảo định dạng chuẩn: "Tên Hotel (Tên Group)")
                         hotel.setHotelName(cleanName + " (" + newGroupName + ")");
                     }
                 }
-                // Lưu danh sách khách sạn đã cập nhật
                 hotelRepository.saveAll(hotels);
             }
         }
@@ -140,7 +126,6 @@ public class HotelGroupServiceImpl implements HotelGroupService {
 
         group.setDeleted(false); // Mở lại cha
 
-        // Mở lại con
         if (group.getHotels() != null) {
             group.getHotels().forEach(hotel -> hotel.setDeleted(false));
         }
@@ -192,11 +177,83 @@ public class HotelGroupServiceImpl implements HotelGroupService {
 
         holidayPolicyRepository.save(policy);
 
-        // --- 6. MỚI THÊM: Ghi log lịch sử ---
+        // --- 6. Ghi log lịch sử ---
         String desc = "Thêm chính sách lễ: " + request.getName()
                 + " (Từ " + request.getStartDate() + " đến " + request.getEndDate() + ")";
         saveHistory(group, "ADD_HOLIDAY_POLICY", request.getIncreasePercentage(), desc);
     }
+
+    // --- [MỚI] HÀM CẬP NHẬT CHÍNH SÁCH ---
+    @Override
+    @Transactional
+    public void updateHolidayPolicy(Long policyId, HolidayPolicyDTO request) {
+        // 1. Tìm chính sách cũ
+        HolidayPolicy policy = holidayPolicyRepository.findById(policyId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chính sách giá với ID: " + policyId));
+
+        // 2. Validate cơ bản
+        if (request.getIncreasePercentage() <= -100) {
+            throw new RuntimeException("Lỗi: Mức giảm giá không được vượt quá 100%!");
+        }
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new RuntimeException("Lỗi: Ngày bắt đầu không được lớn hơn ngày kết thúc!");
+        }
+
+        // 3. Kiểm tra trùng lặp (Dùng hàm loại trừ ID hiện tại)
+        // Lưu ý: Lấy Group ID từ policy cũ: policy.getTargetGroup().getId()
+        boolean isOverlapped = holidayPolicyRepository.existsOverlappingPolicyExceptId(
+                policy.getTargetGroup().getId(),
+                request.getStartDate(),
+                request.getEndDate(),
+                policyId // ID cần loại trừ
+        );
+
+        if (isOverlapped) {
+            throw new RuntimeException("Lỗi: Thời gian chỉnh sửa bị trùng với một chính sách KHÁC đang tồn tại!");
+        }
+
+        // 4. Lưu lại giá trị cũ để log
+        String oldName = policy.getName();
+        Double oldPercent = policy.getIncreasePercentage();
+
+        // 5. Cập nhật
+        policy.setName(request.getName());
+        policy.setStartDate(request.getStartDate());
+        policy.setEndDate(request.getEndDate());
+        policy.setIncreasePercentage(request.getIncreasePercentage());
+
+        holidayPolicyRepository.save(policy);
+
+        // 6. Ghi log
+        String desc = "Cập nhật chính sách '" + oldName + "': "
+                + "Tên mới '" + request.getName() + "', "
+                + "Giá " + oldPercent + "% -> " + request.getIncreasePercentage() + "%, "
+                + "Thời gian: " + request.getStartDate() + " đến " + request.getEndDate();
+
+        saveHistory(policy.getTargetGroup(), "UPDATE_HOLIDAY_POLICY", request.getIncreasePercentage(), desc);
+    }
+
+    // --- [MỚI] HÀM XÓA CHÍNH SÁCH ---
+    @Override
+    @Transactional
+    public void deleteHolidayPolicy(Long policyId) {
+        HolidayPolicy policy = holidayPolicyRepository.findById(policyId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chính sách giá để xóa"));
+
+        HotelGroup group = policy.getTargetGroup();
+        String policyName = policy.getName();
+        Double percent = policy.getIncreasePercentage();
+        LocalDate start = policy.getStartDate();
+        LocalDate end = policy.getEndDate();
+
+        holidayPolicyRepository.delete(policy);
+
+        String desc = "Đã hủy bỏ/Xóa chính sách: " + policyName
+                + " (Vốn áp dụng từ " + start + " đến " + end + ")";
+
+        saveHistory(group, "DELETE_HOLIDAY_POLICY", percent, desc);
+    }
+    // -----------------------------------------------------------
 
     @Override
     @Transactional
@@ -230,7 +287,7 @@ public class HotelGroupServiceImpl implements HotelGroupService {
         // 2. Cập nhật giá chi tiết từng phòng
         hotelBedroomRepository.updatePriceByGroupId(groupId, percentage);
 
-        // --- 3. MỚI THÊM: Ghi log lịch sử ---
+        // --- 3. Ghi log lịch sử ---
         String action = percentage >= 0 ? "INCREASE_BASE_PRICE" : "DECREASE_BASE_PRICE";
         String desc = percentage >= 0
                 ? "Tăng giá cơ bản toàn hệ thống thêm " + percentage + "%"
@@ -250,7 +307,7 @@ public class HotelGroupServiceImpl implements HotelGroupService {
         return Math.round(rawPrice / 10000.0) * 10000.0;
     }
 
-    // --- MỚI THÊM: Hàm tiện ích private để lưu lịch sử ---
+    // --- Hàm tiện ích private để lưu lịch sử ---
     private void saveHistory(HotelGroup group, String action, Double percent, String desc) {
         try {
             GroupPriceHistory history = GroupPriceHistory.builder()

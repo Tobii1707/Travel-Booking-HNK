@@ -7,8 +7,8 @@
   // 1. CONFIG & UTILITIES
   // ================================================================
 
-  const API_ADMIN = '/admin';            // API quản lý Hotel
-  const API_GROUP = '/api/hotel-groups'; // API quản lý Group
+  const API_ADMIN = '/admin';
+  const API_GROUP = '/api/hotel-groups';
 
   let currentTab = 'hotels';
 
@@ -22,17 +22,22 @@
   let groupView = 'active';
   let allGroups = [];
 
-  // --- Date & Time Utils ---
+  // Policy State (QUẢN LÝ CHÍNH SÁCH)
+  let editingPolicyId = null;
+  let currentGroupPolicies = [];
+
+  // --- Utils ---
   const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
   const formatDate = (dateString) => {
     if(!dateString) return '';
-    // Xử lý chuỗi ISO từ Java (yyyy-MM-ddTHH:mm:ss)
     const date = new Date(dateString);
-    return date.toLocaleString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
+    return date.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const toInputDate = (dateString) => {
+    if(!dateString) return '';
+    return dateString.split('T')[0];
   };
 
   // --- Toast ---
@@ -43,8 +48,13 @@
 
     if (typeof Toastify === 'function') {
       Toastify({
-        text: msg, duration: 3500, gravity: "top", position: "right",
-        style: { background: bg }, stopOnFocus: true, close: true
+        text: msg,
+        duration: 3500,
+        gravity: "top",
+        position: "right",
+        style: { background: bg },
+        stopOnFocus: true,
+        close: true
       }).showToast();
     } else {
       console.log(`[${type}] ${msg}`);
@@ -56,6 +66,7 @@
     currentTab = tabName;
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
+
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
     document.getElementById(`tab-${tabName}`).style.display = 'block';
 
@@ -72,12 +83,13 @@
     if (modal) modal.style.display = 'none';
   };
 
+  // Xử lý đóng modal khi click ra ngoài (giữ nguyên logic cũ)
   window.onclick = function(event) {
     if (event.target.classList.contains('modal')) event.target.style.display = 'none';
   };
 
   // ================================================================
-  // 2. HOTEL LOGIC
+  // 2. HOTEL LOGIC (KHÁCH SẠN)
   // ================================================================
 
   function fetchHotels() {
@@ -99,19 +111,16 @@
       tbody.innerHTML = `<tr><td colspan="8" class="text-center p-3">Không có dữ liệu</td></tr>`;
       return;
     }
-
     const pageSize = 10;
     const start = hotelPage * pageSize;
     const end = start + pageSize;
 
     allHotels.slice(start, end).forEach(hotel => {
       const tr = document.createElement('tr');
-      const checkbox = hotelView === 'active'
-          ? `<input type="checkbox" class="hotel-cb" value="${hotel.id}" onchange="toggleHotelSelection(this)">` : '';
-
-      // Tìm tên nhóm
+      const checkbox = hotelView === 'active' ? `<input type="checkbox" class="hotel-cb" value="${hotel.id}" onchange="toggleHotelSelection(this)">` : '';
       let gName = '--';
       const gId = hotel.hotelGroupId || (hotel.hotelGroup?.id);
+
       if (gId && allGroups.length > 0) {
         const found = allGroups.find(g => g.id == gId);
         if (found) gName = found.groupName;
@@ -123,34 +132,18 @@
 
       let actions = hotelView === 'active'
           ? `<button class="btn btn-edit" onclick="openEditHotelModal(${hotel.id})"><i class="fas fa-edit"></i></button>
-           <button class="btn btn-danger" onclick="deleteHotel(${hotel.id})"><i class="fas fa-trash"></i></button>`
+             <button class="btn btn-danger" onclick="deleteHotel(${hotel.id})"><i class="fas fa-trash"></i></button>`
           : `<button class="btn btn-success" onclick="restoreHotel(${hotel.id})"><i class="fas fa-undo"></i> Khôi phục</button>`;
 
-      tr.innerHTML = `
-          <td>${checkbox}</td>
-          <td>${hotel.id}</td>
-          <td style="font-weight:600;">${hotel.hotelName || 'N/A'}</td>
-          <td>${badge}</td>
-          <td style="color:var(--primary); font-weight:bold;">${formatCurrency(hotel.hotelPriceFrom || 0)}</td>
-          <td>${hotel.address || ''}</td>
-          <td class="text-right">${actions}</td>
-      `;
+      tr.innerHTML = `<td>${checkbox}</td><td>${hotel.id}</td><td style="font-weight:600;">${hotel.hotelName || 'N/A'}</td><td>${badge}</td><td style="color:var(--primary); font-weight:bold;">${formatCurrency(hotel.hotelPriceFrom || 0)}</td><td>${hotel.address || ''}</td><td class="text-right">${actions}</td>`;
       tbody.appendChild(tr);
     });
-
-    renderPagination('pagination', Math.ceil(allHotels.length / pageSize), hotelPage, (i) => {
-      hotelPage = i;
-      renderHotelTable();
-    });
+    renderPagination('pagination', Math.ceil(allHotels.length / pageSize), hotelPage, (i) => { hotelPage = i; renderHotelTable(); });
   }
 
-  // --- Bulk Actions ---
   window.toggleSelectAll = function() {
     const mainCb = document.getElementById('selectAllCb');
-    document.querySelectorAll('.hotel-cb').forEach(cb => {
-      cb.checked = mainCb.checked;
-      toggleHotelSelection(cb, false);
-    });
+    document.querySelectorAll('.hotel-cb').forEach(cb => { cb.checked = mainCb.checked; toggleHotelSelection(cb, false); });
     updateBulkActionUI();
   };
 
@@ -163,8 +156,11 @@
 
   function updateBulkActionUI() {
     const count = selectedHotelIds.length;
-    document.getElementById('selectedCount').innerText = count;
-    document.getElementById('bulkActions').style.display = count > 0 ? 'flex' : 'none';
+    const countSpan = document.getElementById('selectedCount');
+    const actionDiv = document.getElementById('bulkActions');
+
+    if(countSpan) countSpan.innerText = count;
+    if(actionDiv) actionDiv.style.display = count > 0 ? 'flex' : 'none';
   }
 
   window.openAssignGroupModal = function() {
@@ -176,26 +172,17 @@
   window.submitAssignGroup = function() {
     const groupId = document.getElementById('assignGroupId').value;
     if(!groupId) return showToast("Vui lòng chọn tập đoàn", "warning");
+    if(selectedHotelIds.length === 0) return showToast("Chưa chọn khách sạn nào", "warning");
 
-    Promise.all(selectedHotelIds.map(id =>
-        fetch(`${API_ADMIN}/updateHotel/${id}`, {
-          // Lưu ý: Logic này tạm thời giả định update từng cái nếu backend chưa có API bulk assign
-          // Nếu backend chưa hỗ trợ bulk, đây là cách duy nhất.
-          // Cần sửa lại logic fetch này nếu Backend yêu cầu body đầy đủ.
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ hotelGroupId: groupId })
-        })
-    )).then(() => {
-      showToast(`Đã cập nhật ${selectedHotelIds.length} khách sạn!`);
-      window.closeModal('assignGroupModal');
-      selectedHotelIds = [];
-      document.getElementById('selectAllCb').checked = false;
-      fetchHotels();
-    });
+    fetch(`${API_ADMIN}/assign-group`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ groupId: parseInt(groupId), hotelIds: selectedHotelIds })
+    }).then(async res => {
+      if (res.ok) { showToast(`Đã thêm ${selectedHotelIds.length} khách sạn vào nhóm!`); window.closeModal('assignGroupModal'); selectedHotelIds = []; document.getElementById('selectAllCb').checked = false; fetchHotels(); }
+      else { showToast(await res.text(), "error"); }
+    }).catch(err => { console.error(err); showToast("Lỗi kết nối server", "error"); });
   };
 
-  // --- CRUD Hotel ---
   function loadGroupOptions(selectId, selectedValue = null) {
     const select = document.getElementById(selectId);
     if(!select) return;
@@ -204,8 +191,7 @@
       list.forEach(g => html += `<option value="${g.id}" ${selectedValue == g.id ? 'selected' : ''}>${g.groupName}</option>`);
       select.innerHTML = html;
     };
-    if(allGroups.length > 0) render(allGroups);
-    else fetchGroups().then(() => render(allGroups));
+    if(allGroups.length > 0) render(allGroups); else fetchGroups().then(() => render(allGroups));
   }
 
   window.openAddHotelModal = function() {
@@ -249,21 +235,13 @@
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload)
     }).then(res => res.json()).then(data => {
-      if(data.code === 1000 || !data.code) {
-        showToast("Thành công!");
-        window.closeModal('hotelModal');
-        fetchHotels();
-      } else showToast(data.message, 'error');
+      if(data.code === 1000 || !data.code) { showToast("Thành công!"); window.closeModal('hotelModal'); fetchHotels(); }
+      else showToast(data.message, 'error');
     });
   };
 
-  window.deleteHotel = function(id) {
-    if(confirm("Bạn có chắc chắn muốn xóa?"))
-      fetch(`${API_ADMIN}/${id}`, { method: 'DELETE' }).then(() => { showToast("Đã xóa"); fetchHotels(); });
-  };
-  window.restoreHotel = function(id) {
-    fetch(`${API_ADMIN}/restore/${id}`, { method: 'PUT' }).then(() => { showToast("Đã khôi phục"); fetchHotels(); });
-  };
+  window.deleteHotel = function(id) { if(confirm("Bạn có chắc chắn muốn xóa?")) fetch(`${API_ADMIN}/${id}`, { method: 'DELETE' }).then(() => { showToast("Đã xóa"); fetchHotels(); }); };
+  window.restoreHotel = function(id) { fetch(`${API_ADMIN}/restore/${id}`, { method: 'PUT' }).then(() => { showToast("Đã khôi phục"); fetchHotels(); }); };
   window.toggleHotelTrash = function() {
     hotelView = (hotelView === 'active') ? 'trash' : 'active';
     const btn = document.getElementById('toggleTrashBtn');
@@ -273,7 +251,7 @@
   };
 
   // ================================================================
-  // 3. GROUP LOGIC
+  // 3. GROUP LOGIC (TẬP ĐOÀN)
   // ================================================================
 
   window.fetchGroups = async function() {
@@ -288,7 +266,6 @@
       else allGroups = [];
 
       renderGroupTable();
-      // Load lại bảng hotel để hiện tên Group nếu đang ở tab Hotels
       if(currentTab === 'hotels') renderHotelTable();
     } catch (e) { console.error(e); allGroups = []; }
   };
@@ -296,88 +273,48 @@
   function renderGroupTable() {
     const tbody = document.getElementById('groupTableBody');
     tbody.innerHTML = '';
-
-    if (allGroups.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">Chưa có tập đoàn nào</td></tr>`;
-      return;
-    }
+    if (allGroups.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="text-center p-3">Chưa có tập đoàn nào</td></tr>`; return; }
 
     allGroups.forEach(g => {
       const status = !g.deleted ? '<span class="badge badge-success">Hoạt động</span>' : '<span class="badge badge-danger">Đã xóa</span>';
-
       const toolBtns = !g.deleted ? `
         <button class="btn btn-info" onclick="openPolicyModal(${g.id})" title="Giá lễ"><i class="fas fa-calendar-alt"></i></button>
         <button class="btn btn-warning" onclick="openBulkPriceGroupModal(${g.id})" title="Đổi giá hàng loạt"><i class="fas fa-percentage"></i></button>
         <button class="btn btn-secondary" onclick="openHistoryModal(${g.id})" title="Lịch sử"><i class="fas fa-history"></i></button>
       ` : '';
-
       const actionBtns = !g.deleted ? `
         <button class="btn btn-edit" onclick="openEditGroupModal(${g.id})"><i class="fas fa-pencil-alt"></i></button>
         <button class="btn btn-danger" onclick="deleteGroup(${g.id})"><i class="fas fa-trash"></i></button>
       ` : `<button class="btn btn-success" onclick="restoreGroup(${g.id})"><i class="fas fa-undo"></i></button>`;
 
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${g.id}</td>
-        <td style="font-weight:600; color:var(--primary);">${g.groupName}</td>
-        <td>${g.description || ''}</td>
-        <td>${status}</td>
-        <td style="white-space:nowrap;">${toolBtns}</td>
-        <td class="text-right" style="white-space:nowrap;">${actionBtns}</td>
-      `;
+      tr.innerHTML = `<td>${g.id}</td><td style="font-weight:600; color:var(--primary);">${g.groupName}</td><td>${g.description || ''}</td><td>${status}</td><td style="white-space:nowrap;">${toolBtns}</td><td class="text-right" style="white-space:nowrap;">${actionBtns}</td>`;
       tbody.appendChild(tr);
     });
   }
 
-  // --- Group CRUD ---
   window.openGroupModal = function() {
     document.getElementById('groupModalTitle').innerText = "Tạo Tập đoàn";
-    document.getElementById('groupId').value = "";
-    document.getElementById('groupName').value = "";
-    document.getElementById('groupDescription').value = "";
+    document.getElementById('groupId').value = ""; document.getElementById('groupName').value = ""; document.getElementById('groupDescription').value = "";
     document.getElementById('groupModal').style.display = 'flex';
   };
   window.openEditGroupModal = function(id) {
-    const g = allGroups.find(x => x.id === id);
-    if(!g) return;
+    const g = allGroups.find(x => x.id === id); if(!g) return;
     document.getElementById('groupModalTitle').innerText = "Sửa Tập đoàn";
-    document.getElementById('groupId').value = g.id;
-    document.getElementById('groupName').value = g.groupName;
-    document.getElementById('groupDescription').value = g.description;
+    document.getElementById('groupId').value = g.id; document.getElementById('groupName').value = g.groupName; document.getElementById('groupDescription').value = g.description;
     document.getElementById('groupModal').style.display = 'flex';
   };
-
   window.saveGroup = function() {
     const id = document.getElementById('groupId').value;
     const name = document.getElementById('groupName').value.trim();
     if(!name) return showToast("Tên là bắt buộc", "error");
-
-    const payload = {
-      id: id ? parseInt(id) : null,
-      name: name,
-      description: document.getElementById('groupDescription').value.trim()
-    };
-
     fetch(id ? `${API_GROUP}/${id}` : API_GROUP, {
-      method: id ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then(async res => {
-      if (res.ok) {
-        showToast(id ? "Cập nhật xong" : "Tạo mới xong");
-        window.closeModal('groupModal');
-        fetchGroups();
-      } else showToast(await res.text(), "error");
-    });
+      method: id ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id ? parseInt(id) : null, name: name, description: document.getElementById('groupDescription').value.trim(), groupName: name })
+    }).then(async res => { if (res.ok) { showToast(id ? "Cập nhật xong" : "Tạo mới xong"); window.closeModal('groupModal'); fetchGroups(); } else showToast(await res.text(), "error"); });
   };
-
-  window.deleteGroup = (id) => {
-    if(confirm("CẢNH BÁO: Xóa tập đoàn sẽ xóa toàn bộ khách sạn con!"))
-      fetch(`${API_GROUP}/${id}`, { method: 'DELETE' }).then(res => { if(res.ok) { showToast("Đã xóa"); fetchGroups(); } });
-  };
-  window.restoreGroup = (id) => {
-    fetch(`${API_GROUP}/${id}/restore`, { method: 'PATCH' }).then(res => { if(res.ok) { showToast("Đã khôi phục"); fetchGroups(); } });
-  };
+  window.deleteGroup = (id) => { if(confirm("CẢNH BÁO: Xóa tập đoàn sẽ xóa toàn bộ khách sạn con!")) fetch(`${API_GROUP}/${id}`, { method: 'DELETE' }).then(async res => { if(res.ok) { showToast(await res.text()); fetchGroups(); } }); };
+  window.restoreGroup = (id) => { fetch(`${API_GROUP}/${id}/restore`, { method: 'PATCH' }).then(async res => { if(res.ok) { showToast(await res.text()); fetchGroups(); } }); };
   window.toggleGroupTrash = function() {
     groupView = (groupView === 'active') ? 'trash' : 'active';
     const btn = document.getElementById('toggleGroupTrashBtn');
@@ -387,22 +324,137 @@
   };
 
   // ================================================================
-  // 4. ADVANCED FEATURES (Policy, Bulk Price, HISTORY)
+  // 4. ADVANCED FEATURES (Policy, Bulk Price, History)
   // ================================================================
 
-  // --- 4.1 Policy ---
+  // --- 4.1 POLICY MANAGEMENT (CHÍNH SÁCH GIÁ LỄ) ---
+
+  window.loadPolicies = function(groupId) {
+    const url = `${API_GROUP}/${groupId}?t=${Date.now()}`;
+
+    fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error("Lỗi tải dữ liệu");
+          return res.json();
+        })
+        .then(data => {
+          const group = data.result || data.data || data;
+
+          let foundList = group.holidayPolicies || group.policies || group.holiday_policies || [];
+
+          // Tìm kiếm Fallback (đề phòng backend đổi tên trường)
+          if (!foundList || foundList.length === 0) {
+            for (const key in group) {
+              if (Array.isArray(group[key]) && key !== 'hotels') {
+                foundList = group[key];
+                break;
+              }
+            }
+          }
+
+          currentGroupPolicies = foundList;
+          renderPolicyTable(foundList);
+        })
+        .catch(err => {
+          console.error(err);
+          const tbody = document.getElementById('policyTableBody');
+          if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Lỗi kết nối</td></tr>';
+        });
+  }
+
+  // Mở modal: Chỉ reset form và gọi hàm load
   window.openPolicyModal = function(groupId) {
     document.getElementById('policyGroupId').value = groupId;
+    editingPolicyId = null;
+    resetPolicyForm();
+
+    // Gọi hàm load dữ liệu mới nhất
+    window.loadPolicies(groupId);
+
+    document.getElementById('policyModal').style.display = 'flex';
+  };
+
+  // Render bảng danh sách chính sách trong Modal
+  function renderPolicyTable(policies) {
+    const tbody = document.getElementById('policyTableBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+
+    if(!policies || !Array.isArray(policies) || policies.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Chưa có chính sách nào</td></tr>';
+      return;
+    }
+
+    policies.forEach(p => {
+      const tr = document.createElement('tr');
+      const percent = p.increasePercentage !== undefined ? p.increasePercentage : (p.adjustmentPercent || 0);
+
+      let percentText = `<span class="text-success">+${percent}%</span>`;
+      if(percent < 0) percentText = `<span class="text-danger">${percent}%</span>`;
+
+      tr.innerHTML = `
+              <td>${p.name || p.policyName || 'No Name'}</td>
+              <td style="font-size:0.9em;">${toInputDate(p.startDate)} <i class="fas fa-arrow-right" style="font-size:0.8em; color:#999;"></i> ${toInputDate(p.endDate)}</td>
+              <td class="text-center font-weight-bold">${percentText}</td>
+              <td class="text-right">
+                  <button class="btn btn-sm btn-outline-primary" onclick="prepareEditPolicy(${p.id})" title="Sửa">
+                      <i class="fas fa-pencil-alt"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="deletePolicy(${p.id})" title="Xóa">
+                      <i class="fas fa-trash"></i>
+                  </button>
+              </td>
+          `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  window.prepareEditPolicy = function(policyId) {
+    const policy = currentGroupPolicies.find(p => p.id === policyId);
+    if(!policy) return;
+
+    editingPolicyId = policyId;
+    document.getElementById('policyId').value = policyId;
+    document.getElementById('policyName').value = policy.name || policy.policyName;
+    document.getElementById('policyStart').value = toInputDate(policy.startDate);
+    document.getElementById('policyEnd').value = toInputDate(policy.endDate);
+    document.getElementById('policyPercent').value = policy.increasePercentage !== undefined ? policy.increasePercentage : policy.adjustmentPercent;
+
+    document.getElementById('policyName').focus();
+  };
+
+  function resetPolicyForm() {
+    editingPolicyId = null;
+    document.getElementById('policyId').value = "";
     document.getElementById('policyName').value = "";
     document.getElementById('policyStart').value = "";
     document.getElementById('policyEnd').value = "";
     document.getElementById('policyPercent').value = "";
-    document.getElementById('policyModal').style.display = 'flex';
+  }
+
+  window.deletePolicy = function(policyId) {
+    if(!confirm("Bạn có chắc chắn muốn xóa chính sách này không?")) return;
+
+    fetch(`${API_GROUP}/policy/${policyId}`, { method: 'DELETE' })
+        .then(async res => {
+          const text = await res.text();
+          if(res.ok) {
+            showToast(text);
+            const groupId = document.getElementById('policyGroupId').value;
+            // Gọi hàm loadPolicies thay vì openPolicyModal
+            window.loadPolicies(groupId);
+          } else {
+            showToast("Lỗi: " + text, "error");
+          }
+        })
+        .catch((err) => { console.error(err); showToast("Lỗi kết nối", "error"); });
   };
 
   window.savePolicy = function() {
+    const groupId = document.getElementById('policyGroupId').value;
+
     const payload = {
-      groupId: document.getElementById('policyGroupId').value,
+      groupId: parseInt(groupId),
       name: document.getElementById('policyName').value,
       startDate: document.getElementById('policyStart').value,
       endDate: document.getElementById('policyEnd').value,
@@ -412,17 +464,35 @@
     if(!payload.name || !payload.startDate || !payload.endDate || isNaN(payload.increasePercentage))
       return showToast("Nhập thiếu thông tin", "warning");
 
-    fetch(`${API_GROUP}/policy`, {
-      method: 'POST',
+    let url = `${API_GROUP}/policy`;
+    let method = 'POST';
+
+    if (editingPolicyId) {
+      url = `${API_GROUP}/policy/${editingPolicyId}`;
+      method = 'PUT';
+    }
+
+    fetch(url, {
+      method: method,
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(payload)
     }).then(async res => {
-      if(res.ok) { showToast("Đã thêm chính sách"); window.closeModal('policyModal'); }
-      else showToast(await res.text(), "error");
+      const text = await res.text();
+      if(res.ok) {
+        showToast(text);
+        resetPolicyForm();
+        window.loadPolicies(groupId);
+      }
+      else {
+        showToast("Lỗi: " + text, "error");
+      }
+    }).catch(err => {
+      console.error(err);
+      showToast("Lỗi kết nối server", "error");
     });
   };
 
-  // --- 4.2 Bulk Price ---
+  // --- 4.2 Bulk Price (CẬP NHẬT GIÁ HÀNG LOẠT) ---
   window.openBulkPriceGroupModal = function(groupId) {
     document.getElementById('bulkPriceGroupId').value = groupId;
     document.getElementById('bulkPricePercent').value = "";
@@ -432,7 +502,6 @@
   window.submitBulkPriceGroup = async function() {
     const id = document.getElementById('bulkPriceGroupId').value;
     const percent = parseFloat(document.getElementById('bulkPricePercent').value);
-
     if(isNaN(percent)) return showToast("Vui lòng nhập số %", "warning");
     if(percent <= -100) return showToast("Không được giảm quá 100%", "error");
 
@@ -441,18 +510,20 @@
 
     try {
       const res = await fetch(`${API_GROUP}/${id}/bulk-price?percentage=${percent}`, { method: 'PATCH' });
+      const text = await res.text();
       if(res.ok) {
-        showToast("Cập nhật giá thành công");
+        showToast(text);
         window.closeModal('bulkPriceGroupModal');
-        fetchHotels(); // Refresh giá mới
-      } else showToast(await res.text(), "error");
-    } catch(e) { showToast("Lỗi kết nối", "error"); }
+        fetchHotels();
+      }
+      else showToast(text, "error");
+    } catch(e) { console.error(e); showToast("Lỗi kết nối", "error"); }
   };
 
-  // --- 4.3 History (Đã sửa tên biến khớp với Java Entity) ---
+  // --- 4.3 History (LỊCH SỬ THAY ĐỔI) ---
   window.openHistoryModal = function(groupId) {
     const tbody = document.getElementById('historyTableBody');
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center">Đang tải dữ liệu...</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center">Đang tải dữ liệu...</td></tr>';
     document.getElementById('historyModal').style.display = 'flex';
 
     fetch(`${API_GROUP}/${groupId}/history`)
@@ -462,70 +533,109 @@
         })
         .then(data => renderHistoryTable(data))
         .catch(err => {
-          tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">${err.message}</td></tr>`;
+          if (tbody) tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">${err.message}</td></tr>`;
         });
   };
 
   function renderHistoryTable(data) {
     const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    // Xử lý nếu data trả về là List hoặc Page
-    const list = Array.isArray(data) ? data : (data.content || data.data || []);
+    const list = Array.isArray(data) ? data : (data.content || data.data || data.result || []);
 
-    if(list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center">Chưa có lịch sử</td></tr>';
-      return;
-    }
+    if(list.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">Chưa có lịch sử</td></tr>'; return; }
 
     list.forEach(item => {
-      // 1. Map tên biến từ Java Entity (GroupPriceHistory)
-      // Java: percentageChange, description, actionType, createdAt
       const percent = item.percentageChange;
       const desc = item.description || 'Không có mô tả';
-      const actionRaw = item.actionType; // VD: INCREASE_BASE_PRICE, ADD_HOLIDAY_POLICY
-
-      // 2. Tạo Badge hiển thị số %
+      const actionRaw = item.actionType;
       let badge = '<span class="badge badge-secondary">0%</span>';
       if(percent > 0) badge = `<span class="badge badge-success">+${percent}%</span>`;
       else if(percent < 0) badge = `<span class="badge badge-danger">${percent}%</span>`;
 
-      // 3. Dịch Action Type sang tiếng Việt cho đẹp
       let actionDisplay = actionRaw;
       if(actionRaw === 'INCREASE_BASE_PRICE') actionDisplay = 'Tăng giá gốc';
       else if(actionRaw === 'DECREASE_BASE_PRICE') actionDisplay = 'Giảm giá gốc';
       else if(actionRaw === 'ADD_HOLIDAY_POLICY') actionDisplay = 'Thêm chính sách lễ';
+      else if(actionRaw === 'UPDATE_HOLIDAY_POLICY') actionDisplay = 'Sửa chính sách lễ';
+      else if(actionRaw === 'DELETE_HOLIDAY_POLICY') actionDisplay = 'Xóa chính sách lễ';
 
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatDate(item.createdAt)}</td>
-        <td style="font-weight:600;">${actionDisplay}</td>
-        <td>${badge}</td>
-        <td style="font-size:0.9em; color:#555;">${desc}</td>
-      `;
+      tr.innerHTML = `<td>${formatDate(item.createdAt)}</td><td style="font-weight:600;">${actionDisplay}</td><td>${badge}</td><td style="font-size:0.9em; color:#555;">${desc}</td>`;
       tbody.appendChild(tr);
     });
   }
 
-  // Helper Pagination
   function renderPagination(elemId, totalPages, currPage, cb) {
-    const container = document.getElementById(elemId);
-    if(!container) return;
-    container.innerHTML = '';
+    const container = document.getElementById(elemId); if(!container) return; container.innerHTML = '';
     if(totalPages <= 1) return;
     for(let i=0; i<totalPages; i++) {
-      const btn = document.createElement('button');
-      btn.innerText = i + 1;
+      const btn = document.createElement('button'); btn.innerText = i + 1;
       if(i === currPage) btn.classList.add('active');
-      btn.onclick = () => cb(i);
-      container.appendChild(btn);
+      btn.onclick = () => cb(i); container.appendChild(btn);
     }
   }
 
-  // Init
+  // ================================================================
+  // 5. SYSTEM UTILITIES
+  // ================================================================
+
+  // 5.1 Đồng hồ
+  function startRealtimeClock() {
+    const dateEl = document.getElementById('currentDate');
+    const timeEl = document.getElementById('currentTime');
+
+    if (!dateEl || !timeEl) return;
+
+    const update = () => {
+      const now = new Date();
+      dateEl.innerText = now.toLocaleDateString('en-GB');
+      timeEl.innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
+    };
+
+    update();
+    setInterval(update, 1000);
+  }
+
+  // 5.2 Xử lý Dropdown User (ĐÃ CẬP NHẬT MỚI)
+  function setupUserDropdown() {
+    const userIcon = document.getElementById('user-icon');
+    const userMenu = document.getElementById('user-menu');
+
+    if (userIcon && userMenu) {
+      // Toggle menu khi click icon
+      userIcon.addEventListener('click', function(e) {
+        e.stopPropagation(); // Ngăn sự kiện lan ra ngoài
+        userMenu.classList.toggle('active');
+      });
+
+      // Ẩn menu khi click ra ngoài
+      document.addEventListener('click', function(e) {
+        if (!userMenu.contains(e.target) && e.target !== userIcon) {
+          userMenu.classList.remove('active');
+        }
+      });
+    }
+
+    // Xử lý nút Đăng xuất (xác nhận)
+    const logoutBtn = document.querySelector('a[href="/user"]');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if(confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+          window.location.href = '/user';
+        }
+      });
+    }
+  }
+
+  // Khởi chạy khi load trang
   document.addEventListener('DOMContentLoaded', () => {
     fetchHotels();
     fetchGroups();
+    startRealtimeClock();
+    setupUserDropdown(); // <--- Đã thêm hàm này để menu hoạt động
   });
 
 })();

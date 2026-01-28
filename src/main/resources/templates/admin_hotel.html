@@ -8,8 +8,48 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
     <link rel="stylesheet" href="/css/admin_hotel.css">
+
+    <style>
+        /* CSS bổ sung hỗ trợ các nút sinh ra từ JS */
+        .table-modal { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 0; }
+        .table-modal th, .table-modal td { border: 1px solid #dee2e6; padding: 10px; text-align: left; vertical-align: middle; }
+        .table-modal th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
+
+        /* Style cho nút Sửa/Xóa nhỏ trong bảng Modal */
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-primary {
+            color: #007bff; border: 1px solid #007bff; background: white;
+        }
+        .btn-outline-primary:hover {
+            background: #007bff; color: white;
+        }
+
+        .btn-outline-danger {
+            color: #dc3545; border: 1px solid #dc3545; background: white;
+        }
+        .btn-outline-danger:hover {
+            background: #dc3545; color: white;
+        }
+
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+        .text-success { color: #28a745 !important; font-weight: bold; }
+        .text-danger { color: #dc3545 !important; font-weight: bold; }
+
+        /* Chỉnh lại modal content để form đẹp hơn */
+        .input-group { display: flex; align-items: center; }
+        .input-suffix { background: #e9ecef; border: 1px solid #ced4da; border-left: 0; padding: 8px 12px; color: #495057; border-radius: 0 4px 4px 0; }
+        #policyPercent { border-radius: 4px 0 0 4px; }
+    </style>
 </head>
 
 <body class="hust-admin-hotel">
@@ -29,8 +69,8 @@
         <i class="fas fa-search" id="search-btn"></i>
         <i class="fas fa-user" id="user-icon"></i>
         <div id="user-menu" class="dropdown-menu">
-            <a href="/profile"><i class="fas fa-id-card"></i> Hồ sơ của tôi</a>
-            <a href="/user"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            <a href="/profile">Hồ sơ của tôi</a>
+            <a href="/user">Đăng xuất</a>
         </div>
     </div>
 </header>
@@ -52,6 +92,7 @@
 </div>
 
 <div class="main-content-wrapper">
+
     <section id="tab-hotels" class="tab-content active">
         <div class="card-box">
             <div class="card-header-action">
@@ -66,9 +107,12 @@
                     <button id="toggleTrashBtn" class="btn btn-danger" onclick="toggleHotelTrash()">
                         <i class="fas fa-trash"></i> Thùng rác
                     </button>
-                    <div id="bulkActions" style="display: none;">
-                        <span class="selected-text">Chọn: <b id="selectedCount">0</b></span>
-                        <button class="btn btn-info" onclick="openAssignGroupModal()">Vào nhóm</button>
+
+                    <div id="bulkActions" style="display: none; align-items: center; margin-left: 10px;">
+                        <span class="selected-text" style="margin-right: 10px; font-weight: 500;">Đã chọn: <b id="selectedCount" style="color: var(--primary);">0</b></span>
+                        <button class="btn btn-info" onclick="openAssignGroupModal()">
+                            <i class="fas fa-layer-group"></i> Vào nhóm
+                        </button>
                     </div>
                 </div>
             </div>
@@ -138,7 +182,7 @@
             <input type="hidden" id="hotelId">
             <div class="form-group">
                 <label>Tên khách sạn <span class="required" style="color:red">*</span></label>
-                <input type="text" id="hotelName" class="form-control" placeholder="Nhập tên khách sạn">
+                <input type="text" id="hotelName" class="form-control" placeholder="Nhập tên khách sạn" autocomplete="off">
             </div>
             <div class="form-group">
                 <label>Thuộc Tập Đoàn</label>
@@ -152,7 +196,7 @@
             </div>
             <div class="form-group">
                 <label>Địa chỉ</label>
-                <input type="text" id="address" class="form-control" placeholder="Địa chỉ chi tiết">
+                <input type="text" id="address" class="form-control" placeholder="Địa chỉ chi tiết" autocomplete="off">
             </div>
             <div class="row">
                 <div class="col-half">
@@ -182,7 +226,7 @@
             <input type="hidden" id="groupId">
             <div class="form-group">
                 <label>Tên Tập Đoàn <span class="required" style="color:red">*</span></label>
-                <input type="text" id="groupName" class="form-control" placeholder="VD: Mường Thanh Group">
+                <input type="text" id="groupName" class="form-control" placeholder="VD: Mường Thanh Group" autocomplete="off">
             </div>
             <div class="form-group">
                 <label>Mô tả</label>
@@ -197,31 +241,53 @@
 </div>
 
 <div id="policyModal" class="modal">
-    <div class="modal-content" style="width: 450px;">
+    <div class="modal-content" style="width: 650px;">
         <div class="modal-header">
-            <h3><i class="fas fa-tags"></i> Chính Sách Giá (Lễ/KM)</h3>
+            <h3><i class="fas fa-tags"></i> Quản Lý Chính Sách Giá</h3>
             <span class="close-btn" onclick="closeModal('policyModal')">&times;</span>
         </div>
         <div class="modal-body">
             <input type="hidden" id="policyGroupId">
 
-            <div class="alert-box info">
-                <i class="fas fa-info-circle"></i>
-                <div>Áp dụng thay đổi giá tự động cho <b>toàn bộ</b> khách sạn thuộc Group này theo thời gian.</div>
+            <div style="margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 20px;">
+                <h6 style="font-weight: 600; margin-bottom: 10px; color: var(--primary);">Danh sách chính sách hiện tại:</h6>
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table-modal">
+                        <thead>
+                        <tr>
+                            <th style="width: 30%">Tên chính sách</th>
+                            <th style="width: 35%">Thời gian áp dụng</th>
+                            <th class="text-center" style="width: 15%">% Giá</th>
+                            <th class="text-right" style="width: 20%; white-space: nowrap;">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="policyTableBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="form-group mt-3">
+            <h6 style="font-weight: 600; margin-bottom: 10px; color: var(--primary);">Thêm mới / Cập nhật:</h6>
+
+            <input type="hidden" id="policyId">
+
+            <div class="alert-box info" style="padding: 10px; margin-bottom: 15px; font-size: 13px; background-color: #e3f2fd; border-left: 4px solid #2196F3; border-radius: 4px;">
+                <i class="fas fa-info-circle" style="color: #2196F3;"></i>
+                <span style="margin-left: 5px;">Áp dụng thay đổi giá tự động cho <b>toàn bộ</b> khách sạn thuộc Group này.</span>
+            </div>
+
+            <div class="form-group">
                 <label>Tên chính sách <span style="color: red">*</span></label>
-                <input type="text" id="policyName" class="form-control" placeholder="VD: Tết Nguyên Đán hoặc Khuyến mãi Hè">
+                <input type="text" id="policyName" class="form-control" placeholder="VD: Tết Nguyên Đán, Khuyến mãi Hè..." autocomplete="off">
             </div>
 
             <div class="row">
                 <div class="col-half">
-                    <label>Từ ngày</label>
+                    <label>Từ ngày <span style="color: red">*</span></label>
                     <input type="date" id="policyStart" class="form-control">
                 </div>
                 <div class="col-half">
-                    <label>Đến ngày</label>
+                    <label>Đến ngày <span style="color: red">*</span></label>
                     <input type="date" id="policyEnd" class="form-control">
                 </div>
             </div>
@@ -232,9 +298,9 @@
                     <input type="number" id="policyPercent" class="form-control" placeholder="VD: 20 (Tăng) hoặc -15 (Giảm)">
                     <span class="input-suffix">%</span>
                 </div>
-                <small style="color: #666; font-style: italic; display: block; margin-top: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px;">
-                    <i class="fas fa-arrow-up" style="color: green"></i> Nhập số <b>DƯƠNG</b> để Tăng giá (VD: 20)<br>
-                    <i class="fas fa-arrow-down" style="color: red"></i> Nhập số <b>ÂM</b> để Giảm giá (VD: -20)
+                <small style="color: #666; font-style: italic; display: block; margin-top: 8px; background: #f8f9fa; padding: 8px; border-radius: 4px; font-size: 12px;">
+                    <i class="fas fa-arrow-up" style="color: green"></i> Nhập số <b>DƯƠNG</b> để Tăng giá (VD: 20 là tăng 20%)<br>
+                    <i class="fas fa-arrow-down" style="color: red"></i> Nhập số <b>ÂM</b> để Giảm giá (VD: -20 là giảm 20%)
                 </small>
             </div>
         </div>
@@ -247,17 +313,17 @@
 
 <div id="bulkPriceGroupModal" class="modal">
     <div class="modal-content" style="width: 420px;">
-        <div class="modal-header warning-header">
+        <div class="modal-header warning-header" style="border-bottom: 2px solid #ffc107;">
             <h3>Cập nhật giá toàn hệ thống</h3>
             <span class="close-btn" onclick="closeModal('bulkPriceGroupModal')">&times;</span>
         </div>
         <div class="modal-body">
             <input type="hidden" id="bulkPriceGroupId">
-            <div class="alert-box warning">
+            <div class="alert-box warning" style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; color: #856404;">
                 <i class="fas fa-exclamation-triangle"></i>
-                <div>Hành động này sẽ thay đổi <b>GIÁ GỐC</b> vĩnh viễn của tất cả khách sạn trong tập đoàn.</div>
+                <span style="margin-left: 5px;">Hành động này sẽ thay đổi <b>GIÁ GỐC</b> vĩnh viễn của tất cả khách sạn trong tập đoàn.</span>
             </div>
-            <div class="form-group mt-3">
+            <div class="form-group mt-3" style="margin-top: 15px;">
                 <label>Nhập % điều chỉnh</label>
                 <div class="input-group">
                     <input type="number" id="bulkPricePercent" class="form-control" placeholder="VD: 10 hoặc -10">
@@ -284,8 +350,9 @@
         </div>
         <div class="modal-body">
             <div class="form-group">
-                <label>Danh sách tập đoàn</label>
-                <select id="assignGroupId" class="form-control"></select>
+                <label>Chọn tập đoàn muốn gán:</label>
+                <select id="assignGroupId" class="form-control">
+                </select>
             </div>
         </div>
         <div class="modal-footer">
@@ -302,7 +369,7 @@
             <span class="close-btn" onclick="closeModal('historyModal')">&times;</span>
         </div>
         <div class="modal-body">
-            <div class="table-responsive">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
                     <thead>
                     <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
@@ -312,8 +379,7 @@
                         <th style="padding: 12px; text-align: left;">Chi tiết</th>
                     </tr>
                     </thead>
-                    <tbody id="historyTableBody">
-                    </tbody>
+                    <tbody id="historyTableBody"></tbody>
                 </table>
             </div>
         </div>

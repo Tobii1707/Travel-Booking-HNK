@@ -2,7 +2,7 @@ package com.java.web_travel.service;
 
 import com.java.web_travel.entity.GroupPriceHistory;
 import com.java.web_travel.entity.HotelGroup;
-import com.java.web_travel.model.request.HolidayPolicyDTO; // Import đúng DTO của bạn
+import com.java.web_travel.model.request.HolidayPolicyDTO;
 import com.java.web_travel.model.request.HotelGroupRequest;
 
 import java.util.List;
@@ -18,17 +18,22 @@ public interface HotelGroupService {
     // --- XÓA MỀM & RESTORE ---
     void softDeleteGroup(Long id);
     void restoreGroup(Long id);
+    List<HotelGroup> getTrashedGroups(); // Lấy danh sách thùng rác
 
-    // --- LOGIC GIÁ & CHÍNH SÁCH (Đã sửa tham số đầu vào) ---
+    // --- LOGIC GIÁ & CHÍNH SÁCH ---
 
-    // Tạo chính sách ngày lễ (Dùng DTO của bạn)
+    // 1. Thêm mới chính sách lễ (Dùng DTO của bạn)
     void addHolidayPolicy(HolidayPolicyDTO request);
 
-    // Tăng giá gốc toàn bộ
+    // 2. [MỚI] Cập nhật chính sách (Sửa lỗi sai sót, đổi ngày, đổi %...)
+    void updateHolidayPolicy(Long policyId, HolidayPolicyDTO request);
+
+    // 3. [MỚI] Xóa chính sách (Hủy bỏ đợt tăng giá)
+    void deleteHolidayPolicy(Long policyId);
+
+    // 4. Tăng/Giảm giá gốc toàn bộ theo %
     void bulkUpdateBasePriceForGroup(Long groupId, double percentage);
 
-    // --- BỔ SUNG DÒNG NÀY ---
-    List<HotelGroup> getTrashedGroups();
-
+    // --- LỊCH SỬ THAY ĐỔI GIÁ ---
     List<GroupPriceHistory> getPriceHistories(Long groupId);
 }

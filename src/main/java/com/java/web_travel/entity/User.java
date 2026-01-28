@@ -1,6 +1,7 @@
 package com.java.web_travel.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.java.web_travel.enums.RoleCode; // Import Enum của bạn
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,10 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(
-        name = "users",
-        indexes = { @Index(name = "idx_users_role_id", columnList = "role_id") }
-)
+@Table(name = "users")
 @Setter
 @Getter
 @AllArgsConstructor
@@ -42,16 +40,19 @@ public class User {
     @Column(name = "status", nullable = false)
     private boolean status;
 
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id", nullable = false)
-    @JsonIgnore
-    private Role role;
+    // --- SỬA ĐOẠN NÀY ---
+    // Thay vì @ManyToOne nối bảng, ta lưu thẳng chuỗi (VD: "ADMIN") vào cột này
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private RoleCode role;
+    // --------------------
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Order> order;
 
-    public User(String phone, String password, String fullName, String email, Date birthday, boolean status, Role role) {
+    // Cập nhật lại các Constructor cho gọn
+    public User(String phone, String password, String fullName, String email, Date birthday, boolean status, RoleCode role) {
         this.phone = phone;
         this.password = password;
         this.fullName = fullName;
@@ -61,16 +62,7 @@ public class User {
         this.role = role;
     }
 
-    public User(String phone, String password, String fullName, String email, Date birthday, boolean status) {
-        this.phone = phone;
-        this.password = password;
-        this.fullName = fullName;
-        this.email = email;
-        this.birthday = birthday;
-        this.status = status;
-    }
-
-    public User(String phone, String password, Role role) {
+    public User(String phone, String password, RoleCode role) {
         this.phone = phone;
         this.password = password;
         this.role = role;

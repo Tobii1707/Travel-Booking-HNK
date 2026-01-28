@@ -53,12 +53,6 @@ public class HotelServiceImpl implements HotelService {
         String cleanName = currentName.replace('\u00A0', ' ').trim();
 
         // Bước 2: REGEX NÂNG CAO
-        // \\s* : Chấp nhận khoảng trắng trước dấu ngoặc
-        // \\(       : Dấu mở ngoặc
-        // [^)]* : Lấy TẤT CẢ ký tự bên trong (trừ dấu đóng ngoặc)
-        // \\)       : Dấu đóng ngoặc
-        // \\s* : QUAN TRỌNG -> Chấp nhận cả khoảng trắng thừa rớt lại phía sau cùng
-        // $         : Kết thúc chuỗi
         cleanName = cleanName.replaceAll("\\s*\\([^)]*\\)\\s*$", "");
 
         // Bước 3: Trả về tên sạch + Group mới
@@ -237,13 +231,24 @@ public class HotelServiceImpl implements HotelService {
         hotelRepository.save(hotel);
     }
 
-    // --- 6. TÌM KIẾM ---
+    // --- 6. TÌM KIẾM THEO ĐỊA ĐIỂM (ĐÃ FIX: CẬP NHẬT GIÁ ĐỘNG) ---
     @Override
     public List<HotelResponse> getHotelsByDestination(String destination) {
         List<Hotel> hotels = hotelRepository.findByDestination(destination);
+        LocalDate today = LocalDate.now(); // 1. Lấy ngày hiện tại
+
         return hotels.stream()
                 .filter(h -> !h.isDeleted())
-                .map(hotel -> hotelConverter.toHotelResponse(hotel))
+                .map(hotel -> {
+                    // 2. Convert sang Response
+                    HotelResponse response = hotelConverter.toHotelResponse(hotel);
+
+                    // 3. [FIX] Tính lại giá động (Dynamic Price) - QUAN TRỌNG
+                    Double dynamicPrice = calculateDynamicPrice(hotel.getId(), today);
+                    response.setHotelPriceFrom(dynamicPrice);
+
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 

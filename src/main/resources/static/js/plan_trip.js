@@ -388,71 +388,148 @@ window.showFlightDetails = (orderId) => {
   showCustomModal("Vé Máy Bay Điện Tử", html);
 };
 
-// --- POPUP: CHI TIẾT GIÁ (GIỮ NGUYÊN) ---
+// --- POPUP: CHI TIẾT HÓA ĐƠN (GIAO DIỆN INVOICE CHUYÊN NGHIỆP) ---
 window.showPriceDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order) return;
 
-  // 1. Tính toán chi phí Máy bay
-  let flightCost = 0;
-  let flightInfo = '<span style="color:#999; font-style:italic;">Không đặt vé máy bay</span>';
+  // --- 1. TÍNH TOÁN DỮ LIỆU ---
+
+  // A. VÉ MÁY BAY
+  let flightHtml = '';
+  let flightTotal = 0;
 
   if (order.flight) {
-    let seatCount = 0;
-    if (order.flightSeats && order.flightSeats.length > 0) seatCount = order.flightSeats.length;
-    else if (order.listSeats) seatCount = order.listSeats.trim().split(/\s+/).length;
-    else seatCount = order.numberOfPeople;
+    // Số lượng khách
+    const paxCount = order.numberOfPeople || 1;
+    // Đơn giá vé
+    const ticketPrice = order.flight.price || 0;
+    // Tổng tiền vé
+    flightTotal = ticketPrice * paxCount;
 
-    const pricePerTicket = order.flight.price || 0;
-    flightCost = pricePerTicket * seatCount;
+    // Thông tin hiển thị
+    const brand = order.flight.brand || 'Hãng bay';
+    const route = `${order.flight.departureLocation ? order.flight.departureLocation.split(',')[0] : 'Đi'} - ${order.flight.arrivalLocation ? order.flight.arrivalLocation.split(',')[0] : 'Đến'}`;
 
-    flightInfo = `
-            <div style="display:flex; justify-content:space-between; font-weight:500;">
-                <span>Vé máy bay (${seatCount} vé):</span>
-                <span>${flightCost.toLocaleString()} đ</span>
-            </div>
-            <div style="font-size:0.85em; color:#666; padding-left:10px;">
-                (${pricePerTicket.toLocaleString()} đ / vé)
-            </div>
-        `;
+    flightHtml = `
+      <tr>
+        <td>
+            <div class="item-title">Vé máy bay (${brand})</div>
+            <div class="item-desc">${route}</div>
+        </td>
+        <td class="text-center">${paxCount} khách</td>
+        <td class="text-right">${ticketPrice.toLocaleString('vi-VN')} ₫</td>
+        <td class="text-right font-weight-bold">${flightTotal.toLocaleString('vi-VN')} ₫</td>
+      </tr>
+    `;
   }
 
-  // 2. Tính toán chi phí Khách sạn
-  let total = order.totalPrice || 0;
-  let hotelCost = total - flightCost;
-  if (hotelCost < 0) hotelCost = 0;
+  // B. KHÁCH SẠN
+  let hotelHtml = '';
+  let hotelTotal = 0;
 
-  let hotelInfo = '<span style="color:#999; font-style:italic;">Không đặt khách sạn</span>';
   if (order.hotel) {
-    hotelInfo = `
-            <div style="display:flex; justify-content:space-between; font-weight:500;">
-                <span>Khách sạn (${order.hotel.hotelName}):</span>
-                <span>${hotelCost.toLocaleString()} đ</span>
-            </div>
-        `;
+    // Lấy tổng tiền đơn hàng (backend trả về)
+    const grandTotal = order.totalPrice || 0;
+
+    // Tính tiền khách sạn = Tổng - Vé máy bay (Logic suy luận để khớp tổng)
+    hotelTotal = grandTotal - flightTotal;
+    if (hotelTotal < 0) hotelTotal = 0;
+
+    // Tính số đêm lưu trú
+    const start = new Date(order.startHotel);
+    const end = new Date(order.endHotel);
+    let nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
+    if (nights < 1) nights = 1;
+
+    // Tính đơn giá trung bình 1 đêm (để khách tham khảo)
+    const pricePerNight = hotelTotal / nights;
+
+    hotelHtml = `
+      <tr>
+        <td>
+            <div class="item-title">Khách sạn ${order.hotel.hotelName}</div>
+            <div class="item-desc">Phòng: ${order.listBedrooms || 'Tiêu chuẩn'}</div>
+        </td>
+        <td class="text-center">${nights} đêm</td>
+        <td class="text-right">${pricePerNight.toLocaleString('vi-VN')} ₫</td>
+        <td class="text-right font-weight-bold">${hotelTotal.toLocaleString('vi-VN')} ₫</td>
+      </tr>
+    `;
   }
 
-  const html = `
-        <div class="detail-card full-width" style="border-top: 3px solid #27ae60; padding: 20px;">
-            <h3 style="color:#27ae60; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom:15px;"><i class="fas fa-file-invoice-dollar"></i> Chi tiết thanh toán</h3>
-            
-            <div style="background:#f9f9f9; padding:15px; border-radius:8px; margin-bottom:15px;">
-                <div style="margin-bottom: 12px; border-bottom:1px dashed #ddd; padding-bottom:12px;">
-                    ${flightInfo}
-                </div>
-                <div>
-                    ${hotelInfo}
-                </div>
-            </div>
+  // C. TỔNG CỘNG
+  const finalTotal = (order.totalPrice || (flightTotal + hotelTotal));
 
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:1.3em; font-weight:bold; color:#333; border-top:2px solid #eee; padding-top:15px;">
-                <span>Tổng cộng:</span>
-                <span style="color:#d35400;">${total.toLocaleString()} VND</span>
+  // Trạng thái thanh toán để đóng dấu
+  let paymentStatus = 'UNPAID';
+  let stampHtml = '';
+  if (order.payment) {
+    if (order.payment.status === 'PAID') {
+      stampHtml = '<div class="invoice-stamp paid">ĐÃ THANH TOÁN</div>';
+    } else if (order.payment.status === 'VERIFYING') {
+      stampHtml = '<div class="invoice-stamp verifying">ĐANG DUYỆT</div>';
+    } else {
+      stampHtml = '<div class="invoice-stamp unpaid">CHƯA THANH TOÁN</div>';
+    }
+  }
+
+  // --- 2. TẠO HTML GIAO DIỆN ---
+  const html = `
+    <div class="invoice-wrapper">
+        ${stampHtml}
+        
+        <div class="invoice-header-top">
+            <div class="inv-brand"><i class="fas fa-receipt"></i> HÓA ĐƠN CHI TIẾT</div>
+            <div class="inv-id">Mã đơn: #${order.id}</div>
+        </div>
+
+        <div class="invoice-info-row">
+            <div>
+                <span class="lbl">Khách hàng:</span> <span class="val">${localStorage.getItem('username') || 'Khách'}</span>
+            </div>
+            <div>
+                <span class="lbl">Ngày tạo:</span> <span class="val">${new Date().toLocaleDateString('vi-VN')}</span>
             </div>
         </div>
-    `;
 
-  showCustomModal("Chi tiết giá", html);
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%">Dịch vụ</th>
+                    <th style="width: 15%" class="text-center">SL</th>
+                    <th style="width: 20%" class="text-right">Đơn giá</th>
+                    <th style="width: 25%" class="text-right">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${flightHtml}
+                ${hotelHtml}
+            </tbody>
+        </table>
+
+        <div class="invoice-summary">
+            <div class="sum-row">
+                <span>Tổng tiền vé máy bay:</span>
+                <span>${flightTotal.toLocaleString('vi-VN')} ₫</span>
+            </div>
+            <div class="sum-row">
+                <span>Tổng tiền khách sạn:</span>
+                <span>${hotelTotal.toLocaleString('vi-VN')} ₫</span>
+            </div>
+            <div class="sum-row final">
+                <span>TỔNG THANH TOÁN:</span>
+                <span class="amount">${finalTotal.toLocaleString('vi-VN')} ₫</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 15px; font-size: 0.85em; color: #777; text-align: center; font-style: italic;">
+            * Giá trên đã bao gồm thuế và phí dịch vụ.
+        </div>
+    </div>
+  `;
+
+  showCustomModal("Chi Tiết Hóa Đơn", html);
 };
 
 // --- ACTION BUTTONS ---

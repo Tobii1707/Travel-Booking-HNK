@@ -31,4 +31,11 @@ public class HotelGroup {
     @OneToMany(mappedBy = "hotelGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnoreProperties("hotelGroup") // <--- THÊM DÒNG NÀY: Cắt đứt vòng lặp chiều ngược lại
     private List<Hotel> hotels;
+
+    // --- MỚI (THÊM ĐOẠN NÀY VÀO) ---
+    // mappedBy = "targetGroup" phải trùng tên biến trong HolidayPolicy
+    @OneToMany(mappedBy = "targetGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    // Ngắt vòng lặp JSON: Khi lấy list policy, không cho policy in lại group nữa
+    @JsonIgnoreProperties("targetGroup")
+    private List<HolidayPolicy> holidayPolicies;
 }

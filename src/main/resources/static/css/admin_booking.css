@@ -538,3 +538,8 @@ body.hust-admin-trip .btn-close { background: #7f8c8d; }
   0% { opacity: 0; transform: scale(0.8); }
   100% { opacity: 1; transform: scale(1); }
 }
+
+/* Helper class cho bảng giá */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.font-weight-bold { font-weight: 600; }

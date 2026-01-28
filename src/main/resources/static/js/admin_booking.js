@@ -50,10 +50,12 @@
 
     getTime: (str) => str ? new Date(str).toLocaleTimeString('vi-VN', { hour: '2-digit', minute:'2-digit' }) : '--:--',
 
+    // [FIXED] Đã sửa logic tính đêm từ Math.ceil sang Math.round để khớp với User
     calcNights: (start, end) => {
       if (!start || !end) return 1;
       const diff = new Date(end) - new Date(start);
-      const days = Math.ceil(Math.abs(diff) / (1000 * 60 * 60 * 24));
+      // Sử dụng Math.round thay vì Math.ceil để tránh lệch ngày do giờ check-in
+      const days = Math.round(Math.abs(diff) / (1000 * 60 * 60 * 24));
       return days > 0 ? days : 1;
     }
   };
@@ -62,7 +64,7 @@
   // 3. UI RENDERER (Xử lý giao diện)
   // ============================================================
   const Render = {
-    // Render Modal chung
+    // --- CẬP NHẬT QUAN TRỌNG: Render Modal khớp với CSS mới ---
     customModal: (title, contentHTML) => {
       // Xóa modal cũ nếu có
       const oldModal = document.querySelector('.custom-info-modal');
@@ -70,29 +72,40 @@
 
       const modal = document.createElement('div');
       modal.className = 'modal custom-info-modal';
-      modal.style.display = 'flex';
+      modal.style.display = 'flex'; // Flex để căn giữa màn hình
+
+      // Cấu trúc HTML mới: Header sticky - Body scroll - Footer sticky
       modal.innerHTML = `
-        <div class="modal-content bounce-in" style="max-width:450px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; color:#2c3e50; font-size:1.2rem;">${title}</h3>
-                <i class="fas fa-times" onclick="this.closest('.modal').remove()" style="cursor:pointer; color:#95a5a6; font-size:1.2rem;"></i>
+        <div class="modal-content bounce-in">
+            <div class="modal-header-sticky">
+                <h3>${title}</h3>
+                <i class="fas fa-times" onclick="this.closest('.modal').remove()"></i>
             </div>
-            ${contentHTML}
-            <div class="modal-btn-group" style="margin-top:20px; border-top:1px solid #eee; padding-top:15px;">
-                <button class="modal-btn btn-close" onclick="this.closest('.modal').remove()" style="width:100%">Đóng</button>
+            
+            <div class="modal-body-content">
+                ${contentHTML}
+            </div>
+
+            <div class="modal-btn-group">
+                <button class="modal-btn btn-close" onclick="this.closest('.modal').remove()" style="width:100px">Đóng</button>
             </div>
         </div>`;
+
       document.body.appendChild(modal);
+
+      // Sự kiện click ra ngoài để đóng
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.remove();
+      });
     },
 
-    // Popup 1: Vé Máy Bay (ĐÃ SỬA: Bỏ người đặt, Nổi bật ghế ngồi)
+    // Popup 1: Vé Máy Bay
     popupFlight: (id) => {
       const order = state.ordersCache.find(o => o.id === id);
       if (!order?.flight) return;
 
       const f = order.flight;
       const ticketClass = f.ticketClass === 'BUSINESS_CLASS' ? 'Thương gia' : 'Phổ thông';
-      // Format ghế ngồi cho đẹp (thêm khoảng trắng sau dấu phẩy)
       const seatDisplay = order.listSeats ? order.listSeats.replace(/,/g, ', ') : 'Chưa chọn ghế';
 
       const html = `
@@ -120,16 +133,16 @@
                     </div>
                 </div>
 
-                <div class="ticket-footer" style="display:block; text-align:center; background:#f8f9fa; margin-top:15px; padding:10px; border-radius:8px;">
-                    <span class="lbl" style="display:block; font-size:0.85em; color:#888; margin-bottom:5px;">SỐ GHẾ</span>
-                    <span class="val seat-val" style="font-size:1.4em; color:#2c3e50; font-weight:bold; letter-spacing:1px;">${seatDisplay}</span>
+                <div class="ticket-footer">
+                    <span class="lbl">SỐ GHẾ</span>
+                    <span class="seat-val">${seatDisplay}</span>
                 </div>
             </div>
         </div>`;
       Render.customModal('Chi tiết Vé Máy Bay', html);
     },
 
-    // Popup 2: Khách sạn (ĐÃ SỬA: Bỏ người đặt, Address và Room full dòng)
+    // Popup 2: Khách sạn
     popupHotel: (id) => {
       const order = state.ordersCache.find(o => o.id === id);
       if (!order?.hotel) return;
@@ -162,15 +175,15 @@
                     </div>
                 </div>
 
-                <div class="info-grid" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+                <div class="info-grid">
                     <div class="info-item" style="border-bottom:1px dashed #eee; padding-bottom:8px;">
-                        <span class="lbl" style="color:#666; font-weight:500;"><i class="fas fa-map-marker-alt" style="width:20px; text-align:center"></i> Địa chỉ:</span>
-                        <div class="val" style="margin-top:4px; padding-left:25px; color:#333;">${order.hotel.address || 'N/A'}</div>
+                        <span class="lbl"><i class="fas fa-map-marker-alt"></i> Địa chỉ:</span>
+                        <div class="val">${order.hotel.address || 'N/A'}</div>
                     </div>
                     
-                    <div class="info-item" style="background:#f0f8ff; padding:10px; border-radius:6px;">
-                        <span class="lbl" style="color:#2980b9; font-weight:500;"><i class="fas fa-bed" style="width:20px; text-align:center"></i> Chi tiết phòng:</span>
-                        <div class="val highlight" style="margin-top:4px; padding-left:25px; font-weight:bold; color:#2c3e50;">${order.listBedrooms || 'Theo sắp xếp của khách sạn'}</div>
+                    <div class="info-item" style="background:#f0f8ff; padding:10px; border-radius:6px; margin-top:5px">
+                        <span class="lbl" style="color:#2980b9"><i class="fas fa-bed"></i> Chi tiết phòng:</span>
+                        <div class="val highlight">${order.listBedrooms || 'Theo sắp xếp của khách sạn'}</div>
                     </div>
                 </div>
             </div>
@@ -178,39 +191,105 @@
       Render.customModal('Voucher Khách Sạn', html);
     },
 
-    // Popup 3: Giá tiền
+    // Popup 3: Bảng kê chi tiết tính tiền (HÓA ĐƠN)
     popupPrice: (id) => {
       const order = state.ordersCache.find(o => o.id === id);
       if (!order) return;
 
-      let flightCost = 0;
-      if (order.flight) {
-        // Ước tính giá vé (Logic tạm vì BE trả về tổng)
-        const seatStr = order.listSeats || "";
-        let seatCount = seatStr.split(',').filter(s => s.trim() !== '').length;
-        if (seatCount === 0) seatCount = order.numberOfPeople || 1;
-        flightCost = (order.flight.price || 0) * seatCount;
-      }
-      const hotelCost = Math.max(0, (order.totalPrice || 0) - flightCost);
+      // --- 1. TÍNH TOÁN DỮ LIỆU ---
+      let flightRows = '';
+      let flightTotal = 0;
+      let flightUnitPrice = 0;
 
+      if (order.flight) {
+        flightUnitPrice = order.flight.price || 0;
+        const seatStr = order.listSeats ? order.listSeats.trim() : "";
+        const seats = seatStr.length > 0 ? seatStr.split(/\s+/) : [];
+        const seatCount = seats.length > 0 ? seats.length : (order.numberOfPeople || 1);
+        flightTotal = flightUnitPrice * seatCount;
+        const isBusiness = order.flight.ticketClass === 'BUSINESS_CLASS';
+
+        if (seats.length > 0) {
+          flightRows = seats.map((seat) => `
+                <tr>
+                    <td>
+                        <div style="font-weight:500;"><i class="fas fa-chair"></i> Ghế: ${seat} ${isBusiness ? '<span style="color:#d35400">(VIP)</span>' : ''}</div>
+                        <div style="font-size:0.8em; color:#7f8c8d;">${order.flight.airlineName}</div>
+                    </td>
+                    <td class="text-right">${Utils.formatMoney(flightUnitPrice)}</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right font-weight-bold">${Utils.formatMoney(flightUnitPrice)}</td>
+                </tr>
+            `).join('');
+        } else {
+          flightRows = `<tr><td>Vé máy bay</td><td class="text-right">${Utils.formatMoney(flightUnitPrice)}</td><td class="text-center">${seatCount}</td><td class="text-right font-weight-bold">${Utils.formatMoney(flightTotal)}</td></tr>`;
+        }
+      }
+
+      // --- [FIX] TÍNH TIỀN KHÁCH SẠN (LOGIC MỚI: THEO PHÒNG, KHÔNG CHIA ĐÊM) ---
+      let hotelRows = '';
+      let hotelSubTotal = Math.max(0, (order.totalPrice || 0) - flightTotal);
+
+      if (order.hotel) {
+        const roomStr = order.listBedrooms ? order.listBedrooms.trim() : "";
+        const rooms = roomStr.length > 0 ? roomStr.split(/\s+/) : [];
+        const nights = Utils.calcNights(order.startHotel, order.endHotel);
+
+        // Tính giá trung bình cho 1 PHÒNG (Trọn gói cả chuyến đi)
+        // Không chia cho nights nữa để tránh bị chia nhỏ số tiền
+        const avgPricePerRoomPackage = rooms.length > 0 ? (hotelSubTotal / rooms.length) : hotelSubTotal;
+
+        if (rooms.length > 0) {
+          hotelRows = rooms.map(room => `
+                <tr>
+                    <td>
+                        <div style="font-weight:500;"><i class="fas fa-bed"></i> Phòng: ${room}</div>
+                        <div style="font-size:0.8em; color:#7f8c8d;">${order.hotel.hotelName} <span style="color:#e67e22; font-weight:bold;">(${nights} đêm)</span></div>
+                    </td>
+                    <td class="text-right">${Utils.formatMoney(avgPricePerRoomPackage)}</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right font-weight-bold">${Utils.formatMoney(avgPricePerRoomPackage)}</td>
+                </tr>`).join('');
+        } else {
+          hotelRows = `<tr><td>Phòng khách sạn (${nights} đêm)</td><td class="text-right">${Utils.formatMoney(hotelSubTotal)}</td><td class="text-center">1</td><td class="text-right font-weight-bold">${Utils.formatMoney(hotelSubTotal)}</td></tr>`;
+        }
+      }
+
+      // --- 2. RENDER HTML HÓA ĐƠN ---
       const html = `
         <div class="invoice-box">
-            <div class="inv-row">
-                <span><i class="fas fa-plane" style="color:#3498db"></i> Vé máy bay:</span>
-                <b>${Utils.formatMoney(flightCost)}</b>
+            <div class="invoice-meta">
+                <div><strong>Mã đơn:</strong> #${order.id}</div>
+                <div><strong>Khách:</strong> ${order.user ? order.user.fullName : 'Guest'}</div>
             </div>
-            <div class="inv-row">
-                <span><i class="fas fa-hotel" style="color:#e67e22"></i> Khách sạn:</span>
-                <b>${Utils.formatMoney(hotelCost)}</b>
+
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Hạng mục</th>
+                        <th class="text-right">Đơn giá</th>
+                        <th class="text-center">SL</th>
+                        <th class="text-right">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${flightRows}
+                    ${hotelRows}
+                </tbody>
+            </table>
+            
+            <div class="invoice-footer">
+                <span class="label">Tổng cộng</span>
+                <span class="total-price">${Utils.formatMoney(order.totalPrice)}</span>
             </div>
-            <div class="inv-divider"></div>
-            <div class="inv-note">(Đã bao gồm thuế & phí dịch vụ)</div>
-            <div class="inv-total">
-                <span>TỔNG THANH TOÁN</span>
-                <span>${Utils.formatMoney(order.totalPrice)}</span>
+            
+            <div class="invoice-note">
+                <i class="fas fa-info-circle"></i> 
+                <span>Giá hiển thị là giá trọn gói đã bao gồm thuế và phí.</span>
             </div>
         </div>`;
-      Render.customModal('Chi tiết Thanh toán', html);
+
+      Render.customModal('Hóa đơn chi tiết', html);
     },
 
     // Render Bảng chính
@@ -224,7 +303,6 @@
       }
 
       DOM.tableBody.innerHTML = orders.map(order => {
-        // Xử lý status
         let statusHtml = '<span style="color:#999">N/A</span>';
         if (order.payment) {
           const s = order.payment.status;
@@ -233,14 +311,12 @@
           else if (s === 'PAYMENT_FAILED') statusHtml = '<span class="status-unpaid">Thất bại</span>';
         }
 
-        // Xử lý hành trình
         let journey = `<span>${order.destination || 'N/A'}</span>`;
         if (order.flight) {
           journey = `
             <div style="font-size:0.8rem; color:#7f8c8d;">${order.flight.departureLocation}</div>
             <div style="font-weight:600; color:#2c3e50; font-size:0.9rem;">➝ ${order.flight.arrivalLocation}</div>`;
         }
-
         const people = order.numberOfPeople || 1;
 
         return `
@@ -248,33 +324,18 @@
             <td>#${order.id}</td>
             <td>${Utils.formatDate(order.orderDate)}</td>
             <td><strong>${order.user ? order.user.fullName : 'Khách vãng lai'}</strong></td>
-            
             <td class="text-center"><span class="badge-people">${people} <i class="fas fa-user"></i></span></td>
-            
             <td>${journey}</td>
-            
-            <td class="text-center">
-                ${order.flight ? `<button class="btn-eye" onclick="window.Action.viewFlight(${order.id})"><i class="fas fa-plane"></i></button>` : '<span style="color:#ccc">-</span>'}
-            </td>
-            
-            <td class="text-center">
-                ${order.hotel ? `<button class="btn-eye" onclick="window.Action.viewHotel(${order.id})"><i class="fas fa-hotel"></i></button>` : '<span style="color:#ccc">-</span>'}
-            </td>
-            
+            <td class="text-center">${order.flight ? `<button class="btn-eye" onclick="window.Action.viewFlight(${order.id})"><i class="fas fa-plane"></i></button>` : '<span style="color:#ccc">-</span>'}</td>
+            <td class="text-center">${order.hotel ? `<button class="btn-eye" onclick="window.Action.viewHotel(${order.id})"><i class="fas fa-hotel"></i></button>` : '<span style="color:#ccc">-</span>'}</td>
             <td>
               <div style="display:flex; align-items:center; gap:8px;">
                 <b style="color:#d35400;">${Utils.formatMoney(order.totalPrice)}</b>
                 <button class="btn-eye-price" onclick="window.Action.viewPrice(${order.id})"><i class="fas fa-info"></i></button>
               </div>
             </td>
-            
             <td>${statusHtml}</td>
-            
-            <td>
-              ${order.payment && order.payment.status === 'VERIFYING'
-            ? `<button class="confirm-btn btn-verify" onclick="window.Action.openVerify(${order.id})">Duyệt</button>`
-            : ''}
-            </td>
+            <td>${order.payment && order.payment.status === 'VERIFYING' ? `<button class="confirm-btn btn-verify" onclick="window.Action.openVerify(${order.id})">Duyệt</button>` : ''}</td>
           </tr>
         `;
       }).join('');
@@ -303,7 +364,6 @@
       DOM.pagination.appendChild(createBtn('<i class="fas fa-chevron-left"></i>', state.currentPage - 1, false, state.currentPage === 0));
 
       for (let i = 0; i < pages; i++) {
-        // Chỉ hiện tối đa 5 trang
         if (i === 0 || i === pages - 1 || Math.abs(state.currentPage - i) <= 1) {
           DOM.pagination.appendChild(createBtn(i + 1, i, i === state.currentPage));
         } else if (DOM.pagination.lastChild.innerText !== '...') {
@@ -365,7 +425,7 @@
   };
 
   // ============================================================
-  // 5. GLOBAL ACTIONS (Gắn vào window để gọi từ HTML onclick)
+  // 5. GLOBAL ACTIONS
   // ============================================================
   window.Action = {
     viewFlight: (id) => Render.popupFlight(id),
