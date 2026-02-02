@@ -1,6 +1,7 @@
 package com.java.web_travel.service;
 
 import com.java.web_travel.model.request.AssignGroupRequest;
+import com.java.web_travel.model.request.BulkUpdatePriceByListRequest;
 import com.java.web_travel.model.request.BulkUpdatePriceRequest;
 import com.java.web_travel.model.request.HotelDTO;
 import com.java.web_travel.model.response.HotelResponse;
@@ -45,5 +46,8 @@ public interface HotelService {
 
     void bulkUpdatePricePermanent(BulkUpdatePriceRequest request);
 
+    void bulkUpdatePriceByListIds(BulkUpdatePriceByListRequest request);
+
     Double calculateDynamicPrice(Long hotelId, LocalDate dateToCheck);
+
 }

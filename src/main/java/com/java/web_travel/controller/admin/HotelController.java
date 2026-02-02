@@ -2,6 +2,7 @@ package com.java.web_travel.controller.admin;
 
 import com.java.web_travel.entity.Order;
 import com.java.web_travel.model.request.AssignGroupRequest;
+import com.java.web_travel.model.request.BulkUpdatePriceByListRequest; // [MỚI] Import Request DTO
 import com.java.web_travel.model.request.BulkUpdatePriceRequest;
 import com.java.web_travel.model.request.HotelDTO;
 import com.java.web_travel.model.response.ApiResponse;
@@ -71,26 +72,22 @@ public class HotelController {
     // =========================================================================
 
     // --- 4. API GỢI Ý KHÁCH SẠN THEO ORDER (Logic Cũ - Chính xác) ---
-    // Dùng khi click vào đơn hàng để xem gợi ý
     @GetMapping("/hotel-in-destination")
     public ApiResponse<List<HotelResponse>> getHotelInDestination(@RequestParam Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()->new RuntimeException("Order not found"));
 
         ApiResponse<List<HotelResponse>> apiResponse = new ApiResponse<>();
-        // Gọi hàm cũ: Chỉ tìm theo destination của order
         apiResponse.setData(hotelService.getHotelsByDestination(order.getDestination()));
         apiResponse.setMessage("Success");
         return apiResponse;
     }
 
     // --- 4.1. [MỚI] API TÌM KIẾM ĐA NĂNG (Logic Mới - Thông minh) ---
-    // Dùng cho thanh Search Bar của Admin: Tìm Tên, Group, hoặc Địa chỉ
     @GetMapping("/search")
     public ApiResponse<List<HotelResponse>> searchHotels(@RequestParam String keyword) {
         log.info("Searching hotels with keyword: {}", keyword);
         ApiResponse<List<HotelResponse>> apiResponse = new ApiResponse<>();
-        // Gọi hàm mới: Tìm kiếm rộng
         apiResponse.setData(hotelService.searchHotels(keyword));
         apiResponse.setMessage("Tìm thấy kết quả");
         return apiResponse;
@@ -181,12 +178,21 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 11. API TĂNG GIÁ ---
+    // --- 11. API TĂNG GIÁ (THEO GROUP) ---
     @PostMapping("/bulk-update-price")
     public ApiResponse<String> bulkUpdatePrice(@RequestBody BulkUpdatePriceRequest request) {
         hotelService.bulkUpdatePricePermanent(request);
         ApiResponse<String> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("Đã cập nhật giá thành công!");
+        apiResponse.setMessage("Đã cập nhật giá Group thành công!");
+        return apiResponse;
+    }
+
+    // --- 12. [MỚI] API TĂNG GIÁ (THEO DANH SÁCH CHỌN) ---
+    @PostMapping("/bulk-update-price-list")
+    public ApiResponse<String> bulkUpdatePriceByList(@RequestBody BulkUpdatePriceByListRequest request) {
+        hotelService.bulkUpdatePriceByListIds(request);
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Cập nhật giá thành công cho " + request.getHotelIds().size() + " khách sạn!");
         return apiResponse;
     }
 }

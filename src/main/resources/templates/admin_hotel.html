@@ -48,7 +48,13 @@
         /* Chỉnh lại modal content để form đẹp hơn */
         .input-group { display: flex; align-items: center; }
         .input-suffix { background: #e9ecef; border: 1px solid #ced4da; border-left: 0; padding: 8px 12px; color: #495057; border-radius: 0 4px 4px 0; }
-        #policyPercent { border-radius: 4px 0 0 4px; }
+        #policyPercent, #bulkListPercent { border-radius: 4px 0 0 4px; }
+
+        /* Style cho nút cập nhật giá hàng loạt */
+        .btn-warning-action {
+            background-color: #ffc107; color: #212529; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 500;
+        }
+        .btn-warning-action:hover { background-color: #e0a800; }
     </style>
 </head>
 
@@ -110,8 +116,13 @@
 
                     <div id="bulkActions" style="display: none; align-items: center; margin-left: 10px;">
                         <span class="selected-text" style="margin-right: 10px; font-weight: 500;">Đã chọn: <b id="selectedCount" style="color: var(--primary);">0</b></span>
+
                         <button class="btn btn-info" onclick="openAssignGroupModal()">
                             <i class="fas fa-layer-group"></i> Vào nhóm
+                        </button>
+
+                        <button class="btn-warning-action" onclick="openBulkUpdateListModal()" style="margin-left: 5px;">
+                            <i class="fas fa-dollar-sign"></i> Cập nhật giá
                         </button>
                     </div>
                 </div>
@@ -358,6 +369,37 @@
         <div class="modal-footer">
             <button class="btn btn-cancel" onclick="closeModal('assignGroupModal')">Hủy</button>
             <button class="btn btn-create" onclick="submitAssignGroup()">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<div id="bulkUpdateListModal" class="modal">
+    <div class="modal-content" style="width: 450px;">
+        <div class="modal-header">
+            <h3>Cập nhật giá hàng loạt</h3>
+            <span class="close-btn" onclick="closeModal('bulkUpdateListModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="bulkListInfo" style="margin-bottom: 15px; font-size: 14px; color: #555;"></p>
+
+            <div class="form-group">
+                <label>Mức điều chỉnh (%) <span style="color: red">*</span></label>
+                <div class="input-group">
+                    <input type="number" id="bulkListPercent" class="form-control" placeholder="VD: 10 (Tăng) hoặc -10 (Giảm)" onkeyup="checkSafetyCondition()" onchange="checkSafetyCondition()">
+                    <span class="input-suffix">%</span>
+                </div>
+            </div>
+
+            <div style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; font-size: 13px; margin-top: 10px; border: 1px solid #ffeeba;">
+                <label style="display: flex; align-items: flex-start; cursor: pointer;">
+                    <input type="checkbox" id="safetyCheck" onchange="checkSafetyCondition()" style="margin-right: 10px; width: 18px; height: 18px; margin-top: 2px;">
+                    <span>Tôi xác nhận thay đổi giá vĩnh viễn cho các khách sạn đã chọn.</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('bulkUpdateListModal')">Hủy</button>
+            <button id="btnSubmitBulk" class="btn btn-create" onclick="submitBulkUpdateList()" disabled style="background: #ccc; cursor: not-allowed; border: none;">Lưu thay đổi</button>
         </div>
     </div>
 </div>

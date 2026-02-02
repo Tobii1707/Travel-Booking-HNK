@@ -1,6 +1,6 @@
 /* =========================================================
    SCOPED STYLES: BODY.HUST-ADMIN-HOTEL
-   (Đã đồng bộ Dropdown User/Logout giống trang Flight)
+   (Đã cập nhật để hỗ trợ Modal Cập nhật giá & Input Group)
    ========================================================= */
 
 body.hust-admin-hotel {
@@ -12,7 +12,7 @@ body.hust-admin-hotel {
   --bg-body: #f4f6f9;
   --white: #ffffff;
   --shadow-card: 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-dropdown: 0 5px 15px rgba(0,0,0,0.1); /* Đồng bộ shadow với Flight */
+  --shadow-dropdown: 0 5px 15px rgba(0,0,0,0.1);
   --radius: 8px;
 
   /* Màu thông báo */
@@ -90,24 +90,22 @@ body.hust-admin-hotel header .icons i {
 }
 body.hust-admin-hotel header .icons i:hover { color: var(--primary); }
 
-/* ================= USER DROPDOWN (ĐÃ ĐỒNG BỘ VỚI FLIGHT) ================= */
-/* Phần này đã được chỉnh sửa kích thước và vị trí giống hệt trang Flight */
+/* ================= USER DROPDOWN (GIỮ NGUYÊN) ================= */
 body.hust-admin-hotel .dropdown-menu {
-  display: none; /* Mặc định ẩn */
+  display: none;
   position: absolute;
-  top: 60px; /* Flight dùng 60px, Hotel cũ dùng 65px -> Chỉnh về 60px */
+  top: 60px;
   right: 5%;
   background-color: var(--white);
   border-radius: var(--radius);
   box-shadow: var(--shadow-dropdown);
-  width: 150px; /* Flight dùng 150px, Hotel cũ dùng 200px -> Chỉnh về 150px */
+  width: 150px;
   flex-direction: column;
   z-index: 1100;
   overflow: hidden;
-  border: none; /* Flight không có border viền ngoài */
+  border: none;
 }
 
-/* Class này giúp menu hiện ra khi JS thêm vào (giữ nguyên logic Active) */
 body.hust-admin-hotel .dropdown-menu.active {
   display: flex;
   animation: fadeIn 0.2s ease;
@@ -117,24 +115,24 @@ body.hust-admin-hotel .dropdown-menu.active {
 
 body.hust-admin-hotel .dropdown-menu a {
   display: block;
-  padding: 10px 15px; /* Chỉnh về 10px 15px giống Flight */
+  padding: 10px 15px;
   color: var(--text-dark);
   font-size: 0.9rem;
   border-bottom: 1px solid #eee;
   transition: all 0.2s;
-  gap: 10px; /* Nếu có icon */
+  gap: 10px;
 }
 
 body.hust-admin-hotel .dropdown-menu a:last-child { border-bottom: none; }
 
 body.hust-admin-hotel .dropdown-menu a:hover {
-  background-color: #f0f0f0; /* Màu hover nhẹ giống Flight */
+  background-color: #f0f0f0;
   color: var(--primary);
-  padding-left: 15px; /* Flight không đẩy chữ quá nhiều khi hover, giữ nguyên hoặc chỉnh nhẹ */
+  padding-left: 15px;
 }
 
 
-/* ================= CÁC PHẦN DƯỚI (INFO & TABS - GIỮ NGUYÊN HOTEL) ================= */
+/* ================= CÁC PHẦN DƯỚI (INFO & TABS) ================= */
 body.hust-admin-hotel .container-info {
   padding: 1.5rem 5% 0;
   display: flex; justify-content: space-between; align-items: center;
@@ -161,7 +159,7 @@ body.hust-admin-hotel .right-clock {
   border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
 }
 
-/* ================= MAIN CONTENT (GIỮ NGUYÊN STYLE CARD ĐẸP) ================= */
+/* ================= MAIN CONTENT ================= */
 body.hust-admin-hotel .main-content-wrapper { padding: 0 5% 50px; }
 body.hust-admin-hotel .card-box {
   background: var(--white); border-radius: 12px; box-shadow: var(--shadow-card);
@@ -195,6 +193,17 @@ body.hust-admin-hotel .btn:hover {
   filter: brightness(110%);
 }
 
+/* [MỚI] Trạng thái disabled cho button (nút xám không click được) */
+body.hust-admin-hotel .btn:disabled,
+body.hust-admin-hotel .btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #bdc3c7 !important; /* Xám */
+  box-shadow: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+
 /* 1. Nút Tạo mới */
 body.hust-admin-hotel .btn-create,
 body.hust-admin-hotel .btn-success {
@@ -220,6 +229,25 @@ body.hust-admin-hotel .btn-edit:hover {
   box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
 }
 
+/* [MỚI] Nút Cập nhật giá (màu vàng phẳng trong Bulk Action) */
+body.hust-admin-hotel .btn-warning-action {
+  background-color: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+body.hust-admin-hotel .btn-warning-action:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+}
+
 /* 3. Nút Thùng rác/Xóa */
 body.hust-admin-hotel .btn-danger,
 body.hust-admin-hotel .btn-delete {
@@ -234,7 +262,7 @@ body.hust-admin-hotel .btn-delete:hover {
   transform: translateY(-2px) scale(1.02);
 }
 
-/* 4. Nút Giá lễ / Cấu hình */
+/* 4. Nút Info/Vào nhóm */
 body.hust-admin-hotel .btn-holiday,
 body.hust-admin-hotel .btn-price,
 body.hust-admin-hotel .btn-info {
@@ -249,7 +277,7 @@ body.hust-admin-hotel .btn-info:hover {
   box-shadow: 0 6px 15px rgba(99, 102, 241, 0.6);
 }
 
-/* 5. Nút phụ (Secondary) - Dùng cho nút đóng hoặc Lịch sử */
+/* 5. Nút phụ (Secondary) */
 body.hust-admin-hotel .btn-secondary {
   background: linear-gradient(135deg, #6c757d, #495057);
   color: #fff;
@@ -260,14 +288,13 @@ body.hust-admin-hotel .btn-secondary:hover {
   box-shadow: 0 6px 15px rgba(108, 117, 125, 0.5);
 }
 
-
 /* Style cho phần Bulk Action */
 body.hust-admin-hotel #bulkActions {
   background: #e3f2fd; color: #1565c0; padding: 5px 10px; border-radius: 6px;
   display: flex; align-items: center; gap: 10px;
 }
 
-/* --- Table (GIỮ NGUYÊN) --- */
+/* --- Table --- */
 body.hust-admin-hotel .table-responsive { overflow-x: auto; }
 body.hust-admin-hotel table { width: 100%; border-collapse: collapse; }
 body.hust-admin-hotel th {
@@ -308,17 +335,15 @@ body.hust-admin-hotel .pagination button:hover:not(.active) { background: #eee; 
 }
 
 /* =========================================================
-   STYLE CHO MODAL VÀ FORM (ĐẦY ĐỦ)
+   STYLE CHO MODAL VÀ FORM
    ========================================================= */
 
-/* Nền Modal */
 body.hust-admin-hotel .modal {
   display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
   background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
   justify-content: center; align-items: center;
 }
 
-/* Hộp nội dung Modal */
 body.hust-admin-hotel .modal-content {
   background-color: white; border-radius: 12px; width: 500px; max-width: 90%;
   box-shadow: 0 15px 40px rgba(0,0,0,0.25); animation: modalZoom 0.3s; overflow: hidden;
@@ -327,26 +352,22 @@ body.hust-admin-hotel .modal-content {
 }
 @keyframes modalZoom { from {transform: scale(0.8); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
-/* Header của Modal */
 body.hust-admin-hotel .modal-header {
   padding: 15px 25px; background-color: #f8f9fa; border-bottom: 1px solid #eee;
   display: flex; justify-content: space-between; align-items: center;
   flex-shrink: 0;
 }
-/* Nút đóng X */
 body.hust-admin-hotel .close-btn {
   font-size: 1.5rem; color: #aaa; cursor: pointer; transition: 0.2s;
 }
 body.hust-admin-hotel .close-btn:hover { color: var(--danger); }
 
-/* Body của Modal - Thêm thanh cuộn */
 body.hust-admin-hotel .modal-body {
   padding: 25px;
   overflow-y: auto;
   flex-grow: 1;
 }
 
-/* Tùy chỉnh thanh cuộn cho Modal */
 body.hust-admin-hotel .modal-body::-webkit-scrollbar { width: 6px; }
 body.hust-admin-hotel .modal-body::-webkit-scrollbar-track { background: #f1f1f1; }
 body.hust-admin-hotel .modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
@@ -370,7 +391,6 @@ body.hust-admin-hotel select.form-control {
   background-size: 10px auto;
 }
 
-/* Footer của Modal */
 body.hust-admin-hotel .modal-footer {
   padding: 15px 25px; background-color: #fff; border-top: 1px solid #eee;
   text-align: right; display: flex; justify-content: flex-end; gap: 10px;
@@ -396,15 +416,31 @@ body.hust-admin-hotel label {
   display: block; margin-bottom: 6px; font-weight: 500; color: #444; font-size: 0.9rem;
 }
 
-/* 3. Input có đuôi (như dấu %) */
+/* 3. [QUAN TRỌNG] Input có đuôi (dấu %)
+   Đã sửa lại thành flex để hiển thị ô xám bên cạnh input thay vì đè lên
+*/
 body.hust-admin-hotel .input-group {
-  position: relative; display: flex; align-items: center;
+  display: flex;
+  align-items: stretch;
+  position: relative;
 }
 body.hust-admin-hotel .input-group input {
-  padding-right: 35px; /* Để chỗ cho chữ % */
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 body.hust-admin-hotel .input-suffix {
-  position: absolute; right: 12px; color: #666; font-weight: 600; pointer-events: none;
+  background: #e9ecef;
+  border: 1px solid #ddd;
+  border-left: 0;
+  padding: 0 15px;
+  color: #555;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 /* 4. Alert Box (Thông báo màu xanh/vàng) */
@@ -412,11 +448,9 @@ body.hust-admin-hotel .alert-box {
   padding: 12px 15px; border-radius: 8px; font-size: 0.9rem;
   display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; margin-bottom: 15px;
 }
-/* Màu xanh (Info) */
 body.hust-admin-hotel .alert-box.info {
   background-color: #e3f2fd; color: #0c5460; border-left: 4px solid #2196f3;
 }
-/* Màu vàng (Warning) */
 body.hust-admin-hotel .alert-box.warning {
   background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;
 }
@@ -440,10 +474,10 @@ body.hust-admin-hotel small {
 }
 
 /* =========================================================
-   STYLE MỚI: CHO BADGE, HISTORY MODAL & UTILITIES
+   STYLE CHO BADGE, HISTORY MODAL & UTILITIES
    ========================================================= */
 
-/* Badge cơ bản (dùng cho status) */
+/* Badge cơ bản */
 body.hust-admin-hotel .badge {
   display: inline-block;
   padding: 0.35em 0.65em;
@@ -456,22 +490,19 @@ body.hust-admin-hotel .badge {
   border-radius: 0.25rem;
 }
 
-/* Các loại màu Badge (Khớp với JS) */
 body.hust-admin-hotel .badge-success { color: #0f5132; background-color: #d1e7dd; }
 body.hust-admin-hotel .badge-danger { color: #842029; background-color: #f8d7da; }
 body.hust-admin-hotel .badge-info { color: #055160; background-color: #cff4fc; }
 body.hust-admin-hotel .badge-secondary { color: #41464b; background-color: #e2e3e5; }
-body.hust-admin-hotel .badge-active { background:#e3f2fd; color:#1976d2; } /* Badge cho tên Group */
+body.hust-admin-hotel .badge-active { background:#e3f2fd; color:#1976d2; }
 
-/* Tùy chỉnh riêng cho bảng lịch sử để chữ không bị sát lề */
+/* Tùy chỉnh riêng cho bảng lịch sử */
 body.hust-admin-hotel #historyTableBody td {
   padding: 10px 15px;
   font-size: 0.9rem;
 }
 
 /* --- UTILITIES CHO BẢNG POLICY --- */
-
-/* Các class căn chỉnh text */
 body.hust-admin-hotel .text-center { text-align: center !important; }
 body.hust-admin-hotel .text-right { text-align: right !important; }
 body.hust-admin-hotel .text-success { color: #28a745 !important; font-weight: bold; }
@@ -502,7 +533,6 @@ body.hust-admin-hotel .btn-sm {
   line-height: 1.5;
 }
 
-/* Nút Outline (Viền) dùng trong bảng Policy */
 body.hust-admin-hotel .btn-outline-primary {
   color: #0d6efd;
   border: 1px solid #0d6efd;

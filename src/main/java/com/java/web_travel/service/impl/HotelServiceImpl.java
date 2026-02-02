@@ -10,6 +10,7 @@ import com.java.web_travel.enums.OrderStatus;
 import com.java.web_travel.exception.AppException;
 import com.java.web_travel.model.request.AssignGroupRequest;
 import com.java.web_travel.model.request.BulkUpdatePriceRequest;
+import com.java.web_travel.model.request.BulkUpdatePriceByListRequest;
 import com.java.web_travel.model.request.HotelDTO;
 import com.java.web_travel.model.response.HotelResponse;
 import com.java.web_travel.repository.HolidayPolicyRepository;
@@ -324,5 +325,51 @@ public class HotelServiceImpl implements HotelService {
             room.setPrice(smartRoundPrice(oldRoomPrice * rate));
         }
         hotelBedroomRepository.saveAll(rooms);
+    }
+    // --- 12. CẬP NHẬT GIÁ THEO DANH SÁCH CHỌN (MỚI) ---
+    @Override
+    @Transactional
+    public void bulkUpdatePriceByListIds(BulkUpdatePriceByListRequest request) {
+        // 1. Kiểm tra dữ liệu đầu vào
+        if (request.getHotelIds() == null || request.getHotelIds().isEmpty()) {
+            throw new AppException(ErrorCode.HOTEL_NOT_FOUND);
+        }
+        if (request.getPercentage() == null) {
+            throw new RuntimeException("Vui lòng nhập phần trăm điều chỉnh!");
+        }
+        if (request.getPercentage() <= -100) {
+            throw new RuntimeException("Lỗi: Không thể giảm giá quá 100%!");
+        }
+
+        // 2. Lấy danh sách khách sạn
+        List<Hotel> hotels = hotelRepository.findAllById(request.getHotelIds());
+
+        // 3. Tính tỷ lệ (VD: 10% -> 1.1)
+        double rate = 1.0 + (request.getPercentage() / 100.0);
+
+        // 4. Duyệt và cập nhật
+        for (Hotel hotel : hotels) {
+            Double oldPrice = hotel.getHotelPriceFrom();
+            Double newPrice = smartRoundPrice(oldPrice * rate); // Dùng hàm làm tròn có sẵn
+
+            hotel.setHotelPriceFrom(newPrice);
+
+            // 5. Cập nhật giá các phòng con (Bedroom)
+            List<HotelBedroom> rooms = hotelBedroomRepository.findByHotelId(hotel.getId());
+            for (HotelBedroom room : rooms) {
+                double calculatedRoomPrice;
+                // Giữ logic VIP tăng gấp rưỡi
+                if ("Vip Room".equalsIgnoreCase(room.getRoomType())) {
+                    calculatedRoomPrice = newPrice * 1.5;
+                } else {
+                    calculatedRoomPrice = newPrice;
+                }
+                room.setPrice(smartRoundPrice(calculatedRoomPrice));
+            }
+            hotelBedroomRepository.saveAll(rooms);
+        }
+
+        // 6. Lưu lại tất cả khách sạn
+        hotelRepository.saveAll(hotels);
     }
 }

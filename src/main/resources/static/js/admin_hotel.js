@@ -16,7 +16,7 @@
   let hotelPage = 0;
   let hotelView = 'active';
   let allHotels = [];
-  let selectedHotelIds = []; // Danh sách ID đã chọn (Sẽ được giữ nguyên khi search)
+  let selectedHotelIds = []; // Danh sách ID đã chọn (Giữ nguyên khi chuyển trang)
   let currentSearchKeyword = '';
 
   // Group State
@@ -59,6 +59,7 @@
       }).showToast();
     } else {
       console.log(`[${type}] ${msg}`);
+      alert(msg); // Fallback nếu chưa cài Toastify
     }
   }
 
@@ -72,7 +73,7 @@
     document.getElementById(`tab-${tabName}`).style.display = 'block';
 
     if (tabName === 'hotels') {
-      // Khi chuyển tab lớn, ta mới reset danh sách chọn để tránh nhầm lẫn
+      // Khi chuyển tab lớn, ta reset danh sách chọn để tránh nhầm lẫn
       selectedHotelIds = [];
       document.getElementById('selectAllCb').checked = false;
       fetchHotels();
@@ -122,7 +123,7 @@
     const tbody = document.getElementById('hotelTableBody');
     tbody.innerHTML = '';
 
-    // [QUAN TRỌNG] Đã xóa dòng selectedHotelIds = []; ở đây để giữ lại các mục đã chọn
+    // Cập nhật UI nút thao tác hàng loạt
     updateBulkActionUI();
 
     if (!Array.isArray(allHotels) || allHotels.length === 0) {
@@ -136,7 +137,7 @@
     allHotels.slice(start, end).forEach(hotel => {
       const tr = document.createElement('tr');
 
-      // Kiểm tra xem khách sạn này có đang nằm trong danh sách đã chọn không
+      // Giữ trạng thái checked nếu ID có trong selectedHotelIds
       const isChecked = selectedHotelIds.includes(hotel.id) ? 'checked' : '';
 
       const checkbox = hotelView === 'active'
@@ -164,7 +165,7 @@
       tbody.appendChild(tr);
     });
 
-    // Kiểm tra trạng thái nút Select All của trang hiện tại
+    // Kiểm tra trạng thái Select All của trang này
     const pageIds = allHotels.slice(start, end).map(h => h.id);
     const allSelected = pageIds.length > 0 && pageIds.every(id => selectedHotelIds.includes(id));
     document.getElementById('selectAllCb').checked = allSelected;
@@ -174,7 +175,6 @@
 
   window.toggleSelectAll = function() {
     const mainCb = document.getElementById('selectAllCb');
-    // Chỉ tác động vào các checkbox đang hiển thị trên màn hình
     document.querySelectorAll('.hotel-cb').forEach(cb => {
       cb.checked = mainCb.checked;
       toggleHotelSelection(cb, false);
@@ -192,11 +192,10 @@
     if(updateUI) updateBulkActionUI();
   };
 
-  // [MỚI] Hàm xóa toàn bộ lựa chọn thủ công
   window.clearAllSelection = function() {
     selectedHotelIds = [];
     document.getElementById('selectAllCb').checked = false;
-    renderHotelTable(); // Vẽ lại để bỏ dấu tích
+    renderHotelTable();
   };
 
   function updateBulkActionUI() {
@@ -205,11 +204,80 @@
     const actionDiv = document.getElementById('bulkActions');
 
     if(countSpan) {
-      // Thêm nút (X) để người dùng có thể xóa nhanh các lựa chọn ẩn
       countSpan.innerHTML = `${count} <a href="javascript:void(0)" onclick="clearAllSelection()" style="color: #dc3545; margin-left:5px; text-decoration:none;" title="Bỏ chọn tất cả"><i class="fas fa-times-circle"></i></a>`;
     }
     if(actionDiv) actionDiv.style.display = count > 0 ? 'flex' : 'none';
   }
+
+  // --- [NEW] LOGIC CẬP NHẬT GIÁ HÀNG LOẠT (THEO DANH SÁCH CHỌN) ---
+
+  window.openBulkUpdateListModal = function() {
+    if (selectedHotelIds.length === 0) return showToast("Chưa chọn khách sạn nào!", "warning");
+
+    // UI Reset
+    const infoText = document.getElementById('bulkListInfo');
+    if(infoText) infoText.innerHTML = `Đang áp dụng cho: <b style="color:blue">${selectedHotelIds.length}</b> khách sạn.`;
+
+    document.getElementById('bulkListPercent').value = "";
+    document.getElementById('safetyCheck').checked = false;
+
+    // Reset trạng thái nút Lưu
+    checkSafetyCondition();
+
+    document.getElementById('bulkUpdateListModal').style.display = 'flex';
+  };
+
+  window.checkSafetyCondition = function() {
+    const percent = document.getElementById('bulkListPercent').value;
+    const isChecked = document.getElementById('safetyCheck').checked;
+    const btn = document.getElementById('btnSubmitBulk');
+
+    if (percent !== "" && isChecked) {
+      btn.disabled = false;
+      btn.style.background = "#28a745"; // Xanh
+      btn.style.cursor = "pointer";
+    } else {
+      btn.disabled = true;
+      btn.style.background = "#ccc"; // Xám
+      btn.style.cursor = "not-allowed";
+    }
+  };
+
+  window.submitBulkUpdateList = function() {
+    const percent = parseFloat(document.getElementById('bulkListPercent').value);
+
+    // Gọi API MỚI trong Controller (/bulk-update-price-list)
+    fetch(`${API_ADMIN}/bulk-update-price-list`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hotelIds: selectedHotelIds,
+        percentage: percent
+      })
+    })
+        .then(async res => {
+          if (res.ok) {
+            alert(`Thành công! Đã cập nhật giá cho ${selectedHotelIds.length} khách sạn.`);
+            closeModal('bulkUpdateListModal');
+            // Reload trang để thấy giá mới ngay lập tức
+            location.reload();
+          } else {
+            // Xử lý lỗi trả về từ Backend
+            let errorText = await res.text();
+            try {
+              const jsonErr = JSON.parse(errorText);
+              errorText = jsonErr.message || errorText;
+            } catch(e){}
+            alert("Lỗi: " + errorText);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Lỗi kết nối đến máy chủ!");
+        });
+  };
+
+  // -----------------------------------------------------------------
 
   window.openAssignGroupModal = function() {
     if(selectedHotelIds.length === 0) return;
@@ -303,7 +371,7 @@
     btn.innerHTML = hotelView === 'trash' ? '<i class="fas fa-list"></i> Quay lại' : '<i class="fas fa-trash-restore"></i> Thùng rác';
     btn.classList.toggle('btn-warning');
 
-    // Khi đổi chế độ xem (Rác <-> Hoạt động), cần reset search và selection để tránh lỗi logic
+    // Reset UI search và selection khi đổi view
     selectedHotelIds = [];
     document.getElementById('selectAllCb').checked = false;
 
