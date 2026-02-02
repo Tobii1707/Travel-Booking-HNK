@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate; // [MỚI]
-import java.time.format.DateTimeFormatter; // [MỚI]
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -66,17 +66,37 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 4. API GỢI Ý KHÁCH SẠN ---
+    // =========================================================================
+    //  PHÂN BIỆT 2 LOẠI TÌM KIẾM
+    // =========================================================================
+
+    // --- 4. API GỢI Ý KHÁCH SẠN THEO ORDER (Logic Cũ - Chính xác) ---
+    // Dùng khi click vào đơn hàng để xem gợi ý
     @GetMapping("/hotel-in-destination")
     public ApiResponse<List<HotelResponse>> getHotelInDestination(@RequestParam Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(()->new RuntimeException("Order not found"));
 
         ApiResponse<List<HotelResponse>> apiResponse = new ApiResponse<>();
+        // Gọi hàm cũ: Chỉ tìm theo destination của order
         apiResponse.setData(hotelService.getHotelsByDestination(order.getDestination()));
         apiResponse.setMessage("Success");
         return apiResponse;
     }
+
+    // --- 4.1. [MỚI] API TÌM KIẾM ĐA NĂNG (Logic Mới - Thông minh) ---
+    // Dùng cho thanh Search Bar của Admin: Tìm Tên, Group, hoặc Địa chỉ
+    @GetMapping("/search")
+    public ApiResponse<List<HotelResponse>> searchHotels(@RequestParam String keyword) {
+        log.info("Searching hotels with keyword: {}", keyword);
+        ApiResponse<List<HotelResponse>> apiResponse = new ApiResponse<>();
+        // Gọi hàm mới: Tìm kiếm rộng
+        apiResponse.setData(hotelService.searchHotels(keyword));
+        apiResponse.setMessage("Tìm thấy kết quả");
+        return apiResponse;
+    }
+
+    // =========================================================================
 
     // --- 5. API CẬP NHẬT ---
     @PutMapping("/updateHotel/{id}")
@@ -126,15 +146,12 @@ public class HotelController {
         return apiResponse;
     }
 
-    // =========================================================
-    // [QUAN TRỌNG] ĐÃ SỬA LẠI: NHẬN THAM SỐ NGÀY + TRUYỀN 2 THAM SỐ VÀO SERVICE
-    // =========================================================
+    // --- 9. API LẤY PHÒNG ---
     @GetMapping("/get-rooms/{hotelId}")
     public ApiResponse<List<com.java.web_travel.entity.HotelBedroom>> getRoomsByHotel(
             @PathVariable Long hotelId,
-            @RequestParam(required = false) String checkInDate // [1] Nhận tham số ngày
+            @RequestParam(required = false) String checkInDate
     ) {
-        // [2] Xử lý ngày (Parse String -> LocalDate)
         LocalDate date = null;
         if (checkInDate != null && !checkInDate.isEmpty()) {
             try {
@@ -147,7 +164,6 @@ public class HotelController {
             date = LocalDate.now();
         }
 
-        // [3] Gọi Service với ĐỦ 2 THAM SỐ (Fix lỗi Expected 2 arguments)
         List<com.java.web_travel.entity.HotelBedroom> rooms = hotelBedroomService.getRoomsByHotel(hotelId, date);
 
         ApiResponse<List<com.java.web_travel.entity.HotelBedroom>> apiResponse = new ApiResponse<>();

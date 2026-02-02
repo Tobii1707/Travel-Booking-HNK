@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
-    // --- CÁC CHỨC NĂNG CŨ (GIỮ NGUYÊN) ---
+    // --- CÁC CHỨC NĂNG CŨ (GIỮ NGUYÊN KHÔNG ĐỤNG CHẠM) ---
 
     @Query(value = "SELECT * FROM hotels h " +
             "WHERE LOWER(REPLACE(h.address, ' ', '')) " +
@@ -36,12 +36,26 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     List<Hotel> findAllByHotelGroupIdAndDeletedFalse(Long groupId);
 
     // 5. Update giá: Nhân theo tỷ lệ % (Dự phòng)
-    // VD: Tăng 10% -> rate = 1.1.
-    // Lưu ý: Hàm này chạy SQL trực tiếp nên sẽ ra số lẻ (VD: 1.087.230), không làm tròn đẹp được.
-    // Nếu muốn số đẹp, hãy dùng hàm số 3 (findAllByHotelGroupIdAndDeletedFalse) để xử lý bên Java.
     @Modifying
     @Transactional
     @Query("UPDATE Hotel h SET h.hotelPriceFrom = h.hotelPriceFrom * :rate " +
             "WHERE h.hotelGroup.id = :groupId AND h.deleted = false")
     void bulkMultiplyPriceByRate(@Param("groupId") Long groupId, @Param("rate") Double rate);
+
+    // =========================================================================
+    //  [MỚI] TÌM KIẾM ĐA NĂNG (TÊN + ĐỊA ĐIỂM/ĐỊA CHỈ + GROUP)
+    // =========================================================================
+    /**
+     * Tìm kiếm tổng hợp:
+     * 1. LEFT JOIN hotelGroup: Để tìm được cả trong tên nhóm (và không bỏ sót KS chưa có nhóm).
+     * 2. LOWER + CONCAT: Tìm gần đúng không phân biệt hoa thường.
+     * 3. Tìm trong: Tên KS, Địa điểm, Địa chỉ, Tên Nhóm.
+     */
+    @Query("SELECT h FROM Hotel h LEFT JOIN h.hotelGroup g WHERE " +
+            "h.deleted = false AND " +
+            "(:keyword IS NULL OR :keyword = '' OR " +
+            " LOWER(h.hotelName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            " LOWER(h.address) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            " LOWER(g.groupName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Hotel> searchByKeyword(@Param("keyword") String keyword);
 }

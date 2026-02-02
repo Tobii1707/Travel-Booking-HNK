@@ -38,28 +38,16 @@ public class HotelServiceImpl implements HotelService {
     @Autowired private HotelBedroomRepository hotelBedroomRepository;
 
     // =========================================================================
-    //  UTILITIES (ĐÃ NÂNG CẤP MẠNH HƠN)
+    //  UTILITIES
     // =========================================================================
 
-    /**
-     * [FIXED v2] Xử lý tên "Siêu mạnh":
-     * 1. Xóa ký tự trắng đặc biệt (Non-breaking space \u00A0).
-     * 2. Xóa bất kỳ cụm (...) nào ở cuối, bất chấp dấu cách thừa.
-     */
     private String appendGroupName(String currentName, String newGroupName) {
         if (currentName == null) return "";
-
-        // Bước 1: Chuẩn hóa chuỗi (Quan trọng: Xử lý Non-breaking space)
         String cleanName = currentName.replace('\u00A0', ' ').trim();
-
-        // Bước 2: REGEX NÂNG CAO
         cleanName = cleanName.replaceAll("\\s*\\([^)]*\\)\\s*$", "");
-
-        // Bước 3: Trả về tên sạch + Group mới
         return cleanName + " (" + newGroupName + ")";
     }
 
-    // [CẬP NHẬT] Thêm chốt chặn để giá không bao giờ bị ÂM
     private Double smartRoundPrice(Double rawPrice) {
         if (rawPrice == null) return 0.0;
         double rounded = Math.round(rawPrice / 10000.0) * 10000.0;
@@ -67,14 +55,13 @@ public class HotelServiceImpl implements HotelService {
     }
 
     // =========================================================================
-    //  CHỨC NĂNG CỐT LÕI
+    //  CHỨC NĂNG CỐT LÕI (CRUD)
     // =========================================================================
 
     // --- 1. TẠO MỚI ---
     @Override
     @Transactional
     public HotelResponse createHotel(HotelDTO hotelDTO) {
-        // Giá gốc khi tạo mới không được âm
         if(hotelDTO.getPriceFrom() < 0){
             throw new AppException(ErrorCode.PRICE_NOT_VALID);
         }
@@ -86,7 +73,6 @@ public class HotelServiceImpl implements HotelService {
                     .orElseThrow(() -> new RuntimeException("Group not found"));
 
             hotel.setHotelGroup(group);
-            // Logic mới sẽ tự động xử lý tên chuẩn
             hotel.setHotelName(appendGroupName(hotel.getHotelName(), group.getGroupName()));
         }
 
@@ -94,39 +80,28 @@ public class HotelServiceImpl implements HotelService {
         return hotelConverter.toHotelResponse(savedHotel);
     }
 
-    // --- 2. CHI TIẾT (ĐÃ FIX: NẠP PHÒNG THỦ CÔNG & ĐỒNG BỘ GIÁ) ---
+    // --- 2. CHI TIẾT ---
     @Override
     public HotelResponse getHotel(Long hotelId) {
-        // 1. Lấy thông tin từ DB (Giá gốc)
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
-        // 2. Convert sang Response
         HotelResponse response = hotelConverter.toHotelResponse(hotel);
-
-        // --- NẠP DANH SÁCH PHÒNG ---
         response.setHotelBedrooms(hotel.getHotelBedrooms());
 
-        // 3. Logic tính giá động (Holiday Policy)
+        // Tính giá động nếu có Policy
         if (hotel.getHotelGroup() != null) {
             LocalDate today = LocalDate.now();
-
-            // Tìm policy active
             List<HolidayPolicy> policies = holidayPolicyRepository
                     .findActivePolicies(hotel.getHotelGroup().getId(), today);
 
-            // Nếu hôm nay có Policy (Ngày lễ hoặc Khuyến mãi) -> Tính lại giá hiển thị
             if (!policies.isEmpty()) {
                 HolidayPolicy policy = policies.get(0);
-
-                // Tính tỷ lệ (Ví dụ: +20% -> 1.2 || -20% -> 0.8)
                 double rate = 1.0 + (policy.getIncreasePercentage() / 100.0);
 
-                // A. Cập nhật giá KHÁCH SẠN (Header)
                 Double oldHotelPrice = response.getHotelPriceFrom();
                 response.setHotelPriceFrom(smartRoundPrice(oldHotelPrice * rate));
 
-                // B. Cập nhật giá TỪNG PHÒNG
                 if (response.getHotelBedrooms() != null) {
                     for (var room : response.getHotelBedrooms()) {
                         Double oldRoomPrice = room.getPrice();
@@ -135,7 +110,6 @@ public class HotelServiceImpl implements HotelService {
                 }
             }
         }
-
         return response;
     }
 
@@ -166,34 +140,27 @@ public class HotelServiceImpl implements HotelService {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
-        // Lưu lại giá cũ và giá mới
         Double oldPrice = hotel.getHotelPriceFrom();
         Double newPrice = hotelDTO.getPriceFrom();
         boolean isPriceChanged = newPrice != null && !newPrice.equals(oldPrice);
 
-        // Update thông tin cơ bản
         hotel.setHotelName(hotelDTO.getHotelName());
         hotel.setHotelPriceFrom(newPrice);
         hotel.setAddress(hotelDTO.getAddress());
         hotel.setNumberFloor(hotelDTO.getNumberFloor());
         hotel.setNumberRoomPerFloor(hotelDTO.getNumberRoomPerFloor());
 
-        // Xử lý Group
         if (hotelDTO.getHotelGroupId() != null) {
             HotelGroup group = hotelGroupRepository.findById(hotelDTO.getHotelGroupId())
                     .orElseThrow(() -> new RuntimeException("Group not found"));
             hotel.setHotelGroup(group);
-
-            // Logic Regex sẽ xóa group cũ đi trước khi thêm group mới
             hotel.setHotelName(appendGroupName(hotel.getHotelName(), group.getGroupName()));
         }
 
         Hotel updatedHotel = hotelRepository.save(hotel);
 
-        // --- CẬP NHẬT GIÁ PHÒNG ---
         if (isPriceChanged) {
             List<HotelBedroom> rooms = hotelBedroomRepository.findByHotelId(hotelId);
-
             for (HotelBedroom room : rooms) {
                 double calculatedPrice;
                 if ("Vip Room".equalsIgnoreCase(room.getRoomType())) {
@@ -203,7 +170,6 @@ public class HotelServiceImpl implements HotelService {
                 }
                 room.setPrice(smartRoundPrice(calculatedPrice));
             }
-
             hotelBedroomRepository.saveAll(rooms);
         }
 
@@ -231,26 +197,48 @@ public class HotelServiceImpl implements HotelService {
         hotelRepository.save(hotel);
     }
 
-    // --- 6. TÌM KIẾM THEO ĐỊA ĐIỂM (ĐÃ FIX: CẬP NHẬT GIÁ ĐỘNG) ---
+    // =========================================================================
+    //  [TÁCH BIỆT] 2 LOGIC TÌM KIẾM THEO YÊU CẦU
+    // =========================================================================
+
+    // CASE 1: Gợi ý theo Order (Chính xác địa điểm)
     @Override
     public List<HotelResponse> getHotelsByDestination(String destination) {
+        // Dùng hàm findByDestination (cũ) của Repository để tìm đúng địa chỉ
         List<Hotel> hotels = hotelRepository.findByDestination(destination);
-        LocalDate today = LocalDate.now(); // 1. Lấy ngày hiện tại
+        LocalDate today = LocalDate.now();
 
         return hotels.stream()
-                .filter(h -> !h.isDeleted())
+                .filter(h -> !h.isDeleted()) // Đảm bảo không lấy ks đã xóa
                 .map(hotel -> {
-                    // 2. Convert sang Response
                     HotelResponse response = hotelConverter.toHotelResponse(hotel);
-
-                    // 3. [FIX] Tính lại giá động (Dynamic Price) - QUAN TRỌNG
                     Double dynamicPrice = calculateDynamicPrice(hotel.getId(), today);
                     response.setHotelPriceFrom(dynamicPrice);
-
                     return response;
                 })
                 .collect(Collectors.toList());
     }
+
+    // CASE 2: Tìm kiếm trên thanh Search (Đa năng: Tên, Group, Địa chỉ)
+    @Override
+    public List<HotelResponse> searchHotels(String keyword) {
+        // Dùng hàm searchByKeyword (mới) của Repository
+        List<Hotel> hotels = hotelRepository.searchByKeyword(keyword);
+        LocalDate today = LocalDate.now();
+
+        return hotels.stream()
+                .map(hotel -> {
+                    HotelResponse response = hotelConverter.toHotelResponse(hotel);
+                    Double dynamicPrice = calculateDynamicPrice(hotel.getId(), today);
+                    response.setHotelPriceFrom(dynamicPrice);
+                    return response;
+                })
+                .collect(Collectors.toList());
+    }
+
+    // =========================================================================
+    //  CÁC CHỨC NĂNG KHÁC
+    // =========================================================================
 
     // --- 7. THÙNG RÁC ---
     @Override
@@ -271,11 +259,7 @@ public class HotelServiceImpl implements HotelService {
         hotelRepository.save(hotel);
     }
 
-    // =========================================================================
-    //  CÁC CHỨC NĂNG MỚI (GROUP & GIÁ)
-    // =========================================================================
-
-    // --- 9. TÍNH GIÁ ĐỘNG (Helper function) ---
+    // --- 9. TÍNH GIÁ ĐỘNG (Helper) ---
     @Override
     public Double calculateDynamicPrice(Long hotelId, LocalDate dateToCheck) {
         Hotel hotel = hotelRepository.findById(hotelId).orElse(null);
@@ -306,7 +290,6 @@ public class HotelServiceImpl implements HotelService {
 
         for (Hotel hotel : hotels) {
             hotel.setHotelGroup(group);
-            // Logic Regex sẽ xóa group cũ đi trước khi thêm group mới
             hotel.setHotelName(appendGroupName(hotel.getHotelName(), group.getGroupName()));
         }
         hotelRepository.saveAll(hotels);
@@ -320,7 +303,6 @@ public class HotelServiceImpl implements HotelService {
             throw new RuntimeException("Lỗi: Không thể giảm giá quá 100%!");
         }
 
-        // 1. Lấy danh sách khách sạn
         List<Hotel> hotels = hotelRepository.findAllByHotelGroupIdAndDeletedFalse(request.getGroupId());
         if (hotels.isEmpty()) {
             throw new AppException(ErrorCode.HOTEL_NOT_FOUND);
@@ -328,25 +310,19 @@ public class HotelServiceImpl implements HotelService {
 
         double rate = 1.0 + (request.getPercentage() / 100.0);
 
-        // 2. Cập nhật giá KHÁCH SẠN
         for (Hotel hotel : hotels) {
             Double oldPrice = hotel.getHotelPriceFrom();
             hotel.setHotelPriceFrom(smartRoundPrice(oldPrice * rate));
         }
         hotelRepository.saveAll(hotels);
 
-        // 3. Cập nhật giá PHÒNG NGỦ
-        List<Long> hotelIds = hotels.stream()
-                .map(Hotel::getId)
-                .collect(Collectors.toList());
-
+        List<Long> hotelIds = hotels.stream().map(Hotel::getId).collect(Collectors.toList());
         List<HotelBedroom> rooms = hotelBedroomRepository.findByHotelIdIn(hotelIds);
 
         for (HotelBedroom room : rooms) {
             Double oldRoomPrice = room.getPrice();
             room.setPrice(smartRoundPrice(oldRoomPrice * rate));
         }
-
         hotelBedroomRepository.saveAll(rooms);
     }
 }

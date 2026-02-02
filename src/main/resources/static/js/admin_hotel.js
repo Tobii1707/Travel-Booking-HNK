@@ -16,13 +16,14 @@
   let hotelPage = 0;
   let hotelView = 'active';
   let allHotels = [];
-  let selectedHotelIds = [];
+  let selectedHotelIds = []; // Danh sách ID đã chọn (Sẽ được giữ nguyên khi search)
+  let currentSearchKeyword = '';
 
   // Group State
   let groupView = 'active';
   let allGroups = [];
 
-  // Policy State (QUẢN LÝ CHÍNH SÁCH)
+  // Policy State
   let editingPolicyId = null;
   let currentGroupPolicies = [];
 
@@ -71,6 +72,9 @@
     document.getElementById(`tab-${tabName}`).style.display = 'block';
 
     if (tabName === 'hotels') {
+      // Khi chuyển tab lớn, ta mới reset danh sách chọn để tránh nhầm lẫn
+      selectedHotelIds = [];
+      document.getElementById('selectAllCb').checked = false;
       fetchHotels();
       if(allGroups.length > 0) renderHotelTable();
     } else if (tabName === 'groups') {
@@ -83,7 +87,6 @@
     if (modal) modal.style.display = 'none';
   };
 
-  // Xử lý đóng modal khi click ra ngoài (giữ nguyên logic cũ)
   window.onclick = function(event) {
     if (event.target.classList.contains('modal')) event.target.style.display = 'none';
   };
@@ -92,10 +95,24 @@
   // 2. HOTEL LOGIC (KHÁCH SẠN)
   // ================================================================
 
+  window.triggerSearch = function(keyword) {
+    currentSearchKeyword = keyword.trim();
+    hotelPage = 0;
+    fetchHotels();
+  };
+
   function fetchHotels() {
-    const endpoint = (hotelView === 'active') ? `${API_ADMIN}/getAllHotels` : `${API_ADMIN}/trash`;
+    let endpoint = '';
+    if (hotelView === 'trash') {
+      endpoint = `${API_ADMIN}/trash`;
+    } else if (currentSearchKeyword.length > 0) {
+      endpoint = `${API_ADMIN}/search?keyword=${encodeURIComponent(currentSearchKeyword)}`;
+    } else {
+      endpoint = `${API_ADMIN}/getAllHotels`;
+    }
+
     fetch(endpoint).then(res => res.json()).then(data => {
-      const list = (data.code === 1000 || data.message === "Success" || Array.isArray(data.data)) ? data.data : [];
+      const list = (data.code === 1000 || data.message === "Success" || data.message === "Tìm thấy kết quả" || Array.isArray(data.data)) ? data.data : [];
       allHotels = Array.isArray(list) ? list : [];
       renderHotelTable();
     }).catch(console.error);
@@ -104,7 +121,8 @@
   function renderHotelTable() {
     const tbody = document.getElementById('hotelTableBody');
     tbody.innerHTML = '';
-    selectedHotelIds = [];
+
+    // [QUAN TRỌNG] Đã xóa dòng selectedHotelIds = []; ở đây để giữ lại các mục đã chọn
     updateBulkActionUI();
 
     if (!Array.isArray(allHotels) || allHotels.length === 0) {
@@ -117,7 +135,14 @@
 
     allHotels.slice(start, end).forEach(hotel => {
       const tr = document.createElement('tr');
-      const checkbox = hotelView === 'active' ? `<input type="checkbox" class="hotel-cb" value="${hotel.id}" onchange="toggleHotelSelection(this)">` : '';
+
+      // Kiểm tra xem khách sạn này có đang nằm trong danh sách đã chọn không
+      const isChecked = selectedHotelIds.includes(hotel.id) ? 'checked' : '';
+
+      const checkbox = hotelView === 'active'
+          ? `<input type="checkbox" class="hotel-cb" value="${hotel.id}" ${isChecked} onchange="toggleHotelSelection(this)">`
+          : '';
+
       let gName = '--';
       const gId = hotel.hotelGroupId || (hotel.hotelGroup?.id);
 
@@ -138,20 +163,40 @@
       tr.innerHTML = `<td>${checkbox}</td><td>${hotel.id}</td><td style="font-weight:600;">${hotel.hotelName || 'N/A'}</td><td>${badge}</td><td style="color:var(--primary); font-weight:bold;">${formatCurrency(hotel.hotelPriceFrom || 0)}</td><td>${hotel.address || ''}</td><td class="text-right">${actions}</td>`;
       tbody.appendChild(tr);
     });
+
+    // Kiểm tra trạng thái nút Select All của trang hiện tại
+    const pageIds = allHotels.slice(start, end).map(h => h.id);
+    const allSelected = pageIds.length > 0 && pageIds.every(id => selectedHotelIds.includes(id));
+    document.getElementById('selectAllCb').checked = allSelected;
+
     renderPagination('pagination', Math.ceil(allHotels.length / pageSize), hotelPage, (i) => { hotelPage = i; renderHotelTable(); });
   }
 
   window.toggleSelectAll = function() {
     const mainCb = document.getElementById('selectAllCb');
-    document.querySelectorAll('.hotel-cb').forEach(cb => { cb.checked = mainCb.checked; toggleHotelSelection(cb, false); });
+    // Chỉ tác động vào các checkbox đang hiển thị trên màn hình
+    document.querySelectorAll('.hotel-cb').forEach(cb => {
+      cb.checked = mainCb.checked;
+      toggleHotelSelection(cb, false);
+    });
     updateBulkActionUI();
   };
 
   window.toggleHotelSelection = function(cb, updateUI = true) {
     const val = parseInt(cb.value);
-    if(cb.checked) { if(!selectedHotelIds.includes(val)) selectedHotelIds.push(val); }
-    else { selectedHotelIds = selectedHotelIds.filter(id => id !== val); }
+    if(cb.checked) {
+      if(!selectedHotelIds.includes(val)) selectedHotelIds.push(val);
+    } else {
+      selectedHotelIds = selectedHotelIds.filter(id => id !== val);
+    }
     if(updateUI) updateBulkActionUI();
+  };
+
+  // [MỚI] Hàm xóa toàn bộ lựa chọn thủ công
+  window.clearAllSelection = function() {
+    selectedHotelIds = [];
+    document.getElementById('selectAllCb').checked = false;
+    renderHotelTable(); // Vẽ lại để bỏ dấu tích
   };
 
   function updateBulkActionUI() {
@@ -159,7 +204,10 @@
     const countSpan = document.getElementById('selectedCount');
     const actionDiv = document.getElementById('bulkActions');
 
-    if(countSpan) countSpan.innerText = count;
+    if(countSpan) {
+      // Thêm nút (X) để người dùng có thể xóa nhanh các lựa chọn ẩn
+      countSpan.innerHTML = `${count} <a href="javascript:void(0)" onclick="clearAllSelection()" style="color: #dc3545; margin-left:5px; text-decoration:none;" title="Bỏ chọn tất cả"><i class="fas fa-times-circle"></i></a>`;
+    }
     if(actionDiv) actionDiv.style.display = count > 0 ? 'flex' : 'none';
   }
 
@@ -178,7 +226,13 @@
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ groupId: parseInt(groupId), hotelIds: selectedHotelIds })
     }).then(async res => {
-      if (res.ok) { showToast(`Đã thêm ${selectedHotelIds.length} khách sạn vào nhóm!`); window.closeModal('assignGroupModal'); selectedHotelIds = []; document.getElementById('selectAllCb').checked = false; fetchHotels(); }
+      if (res.ok) {
+        showToast(`Đã thêm ${selectedHotelIds.length} khách sạn vào nhóm!`);
+        window.closeModal('assignGroupModal');
+        selectedHotelIds = []; // Reset sau khi thành công
+        document.getElementById('selectAllCb').checked = false;
+        fetchHotels();
+      }
       else { showToast(await res.text(), "error"); }
     }).catch(err => { console.error(err); showToast("Lỗi kết nối server", "error"); });
   };
@@ -242,11 +296,22 @@
 
   window.deleteHotel = function(id) { if(confirm("Bạn có chắc chắn muốn xóa?")) fetch(`${API_ADMIN}/${id}`, { method: 'DELETE' }).then(() => { showToast("Đã xóa"); fetchHotels(); }); };
   window.restoreHotel = function(id) { fetch(`${API_ADMIN}/restore/${id}`, { method: 'PUT' }).then(() => { showToast("Đã khôi phục"); fetchHotels(); }); };
+
   window.toggleHotelTrash = function() {
     hotelView = (hotelView === 'active') ? 'trash' : 'active';
     const btn = document.getElementById('toggleTrashBtn');
     btn.innerHTML = hotelView === 'trash' ? '<i class="fas fa-list"></i> Quay lại' : '<i class="fas fa-trash-restore"></i> Thùng rác';
     btn.classList.toggle('btn-warning');
+
+    // Khi đổi chế độ xem (Rác <-> Hoạt động), cần reset search và selection để tránh lỗi logic
+    selectedHotelIds = [];
+    document.getElementById('selectAllCb').checked = false;
+
+    if(hotelView === 'trash') {
+      currentSearchKeyword = '';
+      const searchInput = document.getElementById('searchInput');
+      if(searchInput) searchInput.value = '';
+    }
     fetchHotels();
   };
 
@@ -327,8 +392,6 @@
   // 4. ADVANCED FEATURES (Policy, Bulk Price, History)
   // ================================================================
 
-  // --- 4.1 POLICY MANAGEMENT (CHÍNH SÁCH GIÁ LỄ) ---
-
   window.loadPolicies = function(groupId) {
     const url = `${API_GROUP}/${groupId}?t=${Date.now()}`;
 
@@ -342,7 +405,6 @@
 
           let foundList = group.holidayPolicies || group.policies || group.holiday_policies || [];
 
-          // Tìm kiếm Fallback (đề phòng backend đổi tên trường)
           if (!foundList || foundList.length === 0) {
             for (const key in group) {
               if (Array.isArray(group[key]) && key !== 'hotels') {
@@ -362,19 +424,14 @@
         });
   }
 
-  // Mở modal: Chỉ reset form và gọi hàm load
   window.openPolicyModal = function(groupId) {
     document.getElementById('policyGroupId').value = groupId;
     editingPolicyId = null;
     resetPolicyForm();
-
-    // Gọi hàm load dữ liệu mới nhất
     window.loadPolicies(groupId);
-
     document.getElementById('policyModal').style.display = 'flex';
   };
 
-  // Render bảng danh sách chính sách trong Modal
   function renderPolicyTable(policies) {
     const tbody = document.getElementById('policyTableBody');
     if(!tbody) return;
@@ -441,7 +498,6 @@
           if(res.ok) {
             showToast(text);
             const groupId = document.getElementById('policyGroupId').value;
-            // Gọi hàm loadPolicies thay vì openPolicyModal
             window.loadPolicies(groupId);
           } else {
             showToast("Lỗi: " + text, "error");
@@ -492,7 +548,6 @@
     });
   };
 
-  // --- 4.2 Bulk Price (CẬP NHẬT GIÁ HÀNG LOẠT) ---
   window.openBulkPriceGroupModal = function(groupId) {
     document.getElementById('bulkPriceGroupId').value = groupId;
     document.getElementById('bulkPricePercent').value = "";
@@ -520,7 +575,6 @@
     } catch(e) { console.error(e); showToast("Lỗi kết nối", "error"); }
   };
 
-  // --- 4.3 History (LỊCH SỬ THAY ĐỔI) ---
   window.openHistoryModal = function(groupId) {
     const tbody = document.getElementById('historyTableBody');
     if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center">Đang tải dữ liệu...</td></tr>';
@@ -581,7 +635,6 @@
   // 5. SYSTEM UTILITIES
   // ================================================================
 
-  // 5.1 Đồng hồ
   function startRealtimeClock() {
     const dateEl = document.getElementById('currentDate');
     const timeEl = document.getElementById('currentTime');
@@ -598,19 +651,16 @@
     setInterval(update, 1000);
   }
 
-  // 5.2 Xử lý Dropdown User (ĐÃ CẬP NHẬT MỚI)
   function setupUserDropdown() {
     const userIcon = document.getElementById('user-icon');
     const userMenu = document.getElementById('user-menu');
 
     if (userIcon && userMenu) {
-      // Toggle menu khi click icon
       userIcon.addEventListener('click', function(e) {
-        e.stopPropagation(); // Ngăn sự kiện lan ra ngoài
+        e.stopPropagation();
         userMenu.classList.toggle('active');
       });
 
-      // Ẩn menu khi click ra ngoài
       document.addEventListener('click', function(e) {
         if (!userMenu.contains(e.target) && e.target !== userIcon) {
           userMenu.classList.remove('active');
@@ -618,7 +668,6 @@
       });
     }
 
-    // Xử lý nút Đăng xuất (xác nhận)
     const logoutBtn = document.querySelector('a[href="/user"]');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', function(e) {
@@ -630,12 +679,22 @@
     }
   }
 
-  // Khởi chạy khi load trang
   document.addEventListener('DOMContentLoaded', () => {
     fetchHotels();
     fetchGroups();
     startRealtimeClock();
-    setupUserDropdown(); // <--- Đã thêm hàm này để menu hoạt động
+    setupUserDropdown();
+
+    const searchInput = document.getElementById('searchInput');
+    if(searchInput) {
+      let timeout = null;
+      searchInput.addEventListener('keyup', function(e) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          window.triggerSearch(e.target.value);
+        }, 300);
+      });
+    }
   });
 
 })();

@@ -15,32 +15,35 @@ public interface HotelService {
 
     HotelResponse getHotel(Long hotelId);
 
-    // Hàm này sẽ chỉ lấy các khách sạn chưa xóa (deleted = false)
     List<HotelResponse> getAllHotels();
 
     HotelResponse updateHotel(HotelDTO hotelDTO, Long hotelId);
 
-    // Hàm này xóa mềm (đổi deleted thành true) hoặc xóa cứng nếu force=true
     void deleteHotel(Long hotelId, boolean force);
 
+    // =========================================================================
+    //  PHÂN BIỆT RÕ 2 CHỨC NĂNG TÌM KIẾM
+    // =========================================================================
+
+    // 1. Dùng để GỢI Ý KHÁCH SẠN tương ứng với địa điểm trong Order
+    // (Chỉ tìm chính xác theo địa danh/address)
     List<HotelResponse> getHotelsByDestination(String destination);
 
-    // --- CÁC HÀM QUẢN LÝ THÙNG RÁC (BẠN ĐÃ CÓ) ---
+    // 2. Dùng cho THANH TÌM KIẾM (Search Bar) của Admin
+    // (Tìm đa năng: Tên KS hoặc Địa chỉ hoặc Tên Group)
+    List<HotelResponse> searchHotels(String keyword);
 
-    // 1. Lấy danh sách khách sạn trong thùng rác (đã xóa)
+    // =========================================================================
+
+    // --- CÁC HÀM QUẢN LÝ THÙNG RÁC ---
     List<HotelResponse> getDeletedHotels();
 
-    // 2. Khôi phục khách sạn từ thùng rác
     void restoreHotel(Long hotelId);
 
-    // --- CÁC HÀM MỚI (LOGIC GROUP & GIÁ - VỪA VIẾT Ở IMPL) ---
-
-    // 3. Thêm nhiều khách sạn vào 1 nhóm (kèm đổi tên tự động)
+    // --- CÁC HÀM QUẢN LÝ GROUP & GIÁ ---
     void addHotelsToGroup(AssignGroupRequest request);
 
-    // 4. Tăng giá vĩnh viễn (Theo % và làm tròn số đẹp)
     void bulkUpdatePricePermanent(BulkUpdatePriceRequest request);
 
-    // 5. Tính giá động (Giá gốc + Phụ thu ngày lễ nếu có) - Dùng khi khách đặt phòng
     Double calculateDynamicPrice(Long hotelId, LocalDate dateToCheck);
 }
