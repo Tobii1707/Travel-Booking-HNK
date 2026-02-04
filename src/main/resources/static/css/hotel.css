@@ -296,14 +296,14 @@ body.hust-hotel-page .modal {
 body.hust-hotel-page .modal-content {
   background-color: var(--white);
   width: 95%;
-  max-width: 650px; /* Đã tăng chiều rộng để hiển thị sơ đồ đẹp hơn */
+  max-width: 800px; /* Tăng chiều rộng để hiển thị sơ đồ phòng thoải mái hơn */
   padding: 2.5rem;
   border-radius: 20px;
   box-shadow: 0 25px 50px rgba(0,0,0,0.25);
   position: relative;
   animation: hotelFadeIn 0.3s ease;
-  max-height: 90vh; /* Tránh modal dài quá màn hình */
-  overflow-y: auto; /* Cho phép cuộn nếu màn hình nhỏ */
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes hotelFadeIn {
@@ -375,10 +375,10 @@ body.hust-hotel-page #choose-room-btn:hover {
 }
 
 /* =========================================================
-   GIAO DIỆN SƠ ĐỒ KHÁCH SẠN (HOTEL FLOOR PLAN) - MỚI
+   GIAO DIỆN SƠ ĐỒ KHÁCH SẠN (HOTEL FLOOR PLAN) - ĐÃ CẬP NHẬT
    ========================================================= */
 
-/* Khung chứa toàn bộ danh sách phòng */
+/* Khung chứa danh sách phòng */
 body.hust-hotel-page #room-list {
   margin-top: 15px;
   max-height: 400px; /* Chiều cao cố định, có thanh cuộn */
@@ -389,134 +389,124 @@ body.hust-hotel-page #room-list {
   background: #fdfdfd;
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Khoảng cách giữa các tầng */
+  gap: 20px;
 }
 
-/* --- MỘT TẦNG (FLOOR ROW) --- */
+/* --- MỘT TẦNG --- */
 body.hust-hotel-page .hotel-floor {
   display: flex;
-  align-items: flex-start; /* Căn hàng theo cạnh trên */
-  border-bottom: 1px dashed #e0e0e0; /* Đường kẻ mờ ngăn cách các tầng */
-  padding-bottom: 20px;
+  align-items: flex-start;
+  border-bottom: 1px dashed #e0e0e0;
+  padding-bottom: 15px;
 }
 
 body.hust-hotel-page .hotel-floor:last-child {
-  border-bottom: none; /* Tầng cuối không cần gạch chân */
+  border-bottom: none;
 }
 
-/* Nhãn tên tầng (Cột bên trái) */
+/* Tên tầng */
 body.hust-hotel-page .floor-name {
-  width: 90px;
-  flex-shrink: 0; /* Không bị co lại */
+  width: 80px;
+  flex-shrink: 0;
   font-weight: 700;
   color: #555;
   background: #eaeaea;
   padding: 8px;
   border-radius: 6px;
   text-align: center;
-  margin-right: 20px;
-  font-size: 0.95rem;
-  align-self: center; /* Căn giữa theo chiều dọc */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  margin-right: 15px;
+  font-size: 0.9rem;
+  align-self: flex-start;
+  margin-top: 5px; /* Căn chỉnh cho đẹp với hàng phòng */
 }
 
-/* Container chứa các phòng trong tầng đó (Bên phải) */
+/* Container chứa các phòng */
 body.hust-hotel-page .floor-rooms {
   display: flex;
-  flex-wrap: wrap; /* Tự động xuống dòng nếu nhiều phòng */
-  gap: 12px; /* Khoảng cách giữa các ô phòng */
+  flex-wrap: wrap;
+  gap: 10px;
   flex-grow: 1;
 }
 
 /* --- Ô PHÒNG (ROOM BOX) --- */
+/* JS sẽ set width/height inline, CSS chỉ set style nền */
 body.hust-hotel-page .room-box {
-  width: 75px;
-  height: 75px;
   background: #fff;
-  border: 2px solid #e0e0e0; /* Viền mặc định */
-  border-radius: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
+  transition: all 0.2s ease;
   user-select: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Hiệu ứng Hover cho phòng trống */
-body.hust-hotel-page .room-box:not(.booked):hover {
-  transform: translateY(-4px);
+body.hust-hotel-page .room-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   border-color: var(--primary);
-  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.25);
 }
 
-/* Số phòng (To, đậm) */
-body.hust-hotel-page .room-box span.number {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #444;
+/* Số phòng (Span đầu tiên trong room-box do JS sinh ra) */
+body.hust-hotel-page .room-box span:first-child {
+  font-size: 1.1rem !important; /* Ghi đè style inline nếu cần */
+  font-weight: 800 !important;
+  color: #333;
 }
 
-/* Loại phòng (Nhỏ bên dưới) */
-body.hust-hotel-page .room-box span.type {
-  font-size: 0.65rem;
-  color: #888;
-  margin-top: 4px;
-  text-transform: uppercase;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  padding: 0 2px;
-}
-
-/* --- TRẠNG THÁI: ĐÃ CHỌN (SELECTED) --- */
-body.hust-hotel-page .room-box.selected {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-  transform: scale(1.05);
-  box-shadow: 0 0 0 3px rgba(41, 184, 98, 0.2);
-  z-index: 2;
-}
-
-body.hust-hotel-page .room-box.selected span.number,
-body.hust-hotel-page .room-box.selected span.type {
-  color: #fff;
-}
-
-/* --- TRẠNG THÁI: ĐÃ HẾT (BOOKED) --- */
-body.hust-hotel-page .room-box.booked {
-  background-color: #ffebee; /* Nền đỏ nhạt */
-  border-color: #ef9a9a;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-body.hust-hotel-page .room-box.booked span.number {
-  color: #c62828;
-  text-decoration: line-through;
-  font-size: 0.9rem;
-}
-
-body.hust-hotel-page .room-box.booked span.type {
-  display: none; /* Ẩn loại phòng */
-}
-
-/* Nhãn "Đã đặt" đè lên */
-body.hust-hotel-page .room-box.booked::after {
-  content: 'HẾT';
-  font-size: 0.7rem;
-  color: #c62828;
-  font-weight: 900;
+/* Giá phòng (Span thứ hai) */
+body.hust-hotel-page .room-box span:last-child {
+  font-size: 0.75rem !important;
+  color: #777;
   margin-top: 2px;
 }
 
+/* --- TRẠNG THÁI: PHÒNG ĐƯỢC CHỌN --- */
+/* JS set inline backgroundColor, CSS bổ trợ hiệu ứng viền/bóng */
+body.hust-hotel-page .room-box[style*="background-color: rgb(224, 247, 250)"],
+body.hust-hotel-page .room-box[style*="background-color: #e0f7fa"] {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(41, 184, 98, 0.3);
+  font-weight: bold;
+}
+
+/* --- TRẠNG THÁI: ĐÃ ĐẶT (BOOKED) --- */
+body.hust-hotel-page .room-box[style*="background-color: #ffcccc"] {
+  cursor: not-allowed !important;
+  opacity: 0.8;
+  border-color: #e57373 !important;
+}
+
 /* =========================================================
-   KẾT THÚC PHẦN SỬA ĐỔI
+   THÔNG TIN ĐÃ CHỌN (#selected-info) - MỚI
+   ========================================================= */
+body.hust-hotel-page #selected-info {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8fcf9 !important; /* Màu nền xanh rất nhạt */
+  border: 1px solid #c3e6cb !important;
+  border-radius: 8px;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+body.hust-hotel-page #selected-info div {
+  margin-bottom: 4px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   BUTTON SUBMIT
    ========================================================= */
 
 body.hust-hotel-page button[type="submit"] {
@@ -529,11 +519,13 @@ body.hust-hotel-page button[type="submit"] {
   font-weight: 600;
   font-size: 1.1rem;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: 15px;
+  transition: all 0.3s ease;
 }
 
 body.hust-hotel-page button[type="submit"]:hover {
   background: var(--primary-dark);
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.4);
 }
 
 /* ----- FOOTER ----- */
@@ -586,4 +578,14 @@ body.hust-hotel-page .credit span { color: var(--primary); }
 /* Responsive */
 @media (max-width: 1200px) {
   body.hust-hotel-page header { padding: 1rem 2rem; }
+}
+
+@media (max-width: 768px) {
+  body.hust-hotel-page .modal-content {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    padding: 1.5rem;
+  }
 }

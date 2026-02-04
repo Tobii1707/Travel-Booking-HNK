@@ -11,13 +11,13 @@ import com.java.web_travel.repository.HotelBedroomRepository;
 import com.java.web_travel.repository.HotelBookingRepository;
 import com.java.web_travel.repository.HotelRepository;
 import com.java.web_travel.service.HotelBedroomService;
-import org.springframework.beans.BeanUtils; // [FIX] Import thêm thư viện copy object
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList; // [FIX] Import ArrayList
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -88,7 +88,7 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         hotelBedroomRepository.delete(room);
     }
 
-    // --- [PHẦN ĐÃ SỬA LẠI AN TOÀN] ---
+    // --- [ĐÃ SỬA LẠI LOGIC TÍNH GIÁ ĐẦY ĐỦ] ---
     @Override
     public List<HotelBedroom> getRoomsByHotel(Long hotelId, LocalDate checkInDate) {
         // 1. Lấy thông tin Hotel
@@ -101,26 +101,41 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         // Tạo danh sách kết quả để trả về (chứa các bản copy)
         List<HotelBedroom> responseRooms = new ArrayList<>();
 
-        // 3. Logic tính giá
+        // 3. Logic tính giá (ĐÃ CẬP NHẬT CHECK CẢ 2 LOẠI POLICY)
         double rate = 1.0;
-        if (hotel.getHotelGroup() != null) {
-            LocalDate targetDate = (checkInDate != null) ? checkInDate : LocalDate.now();
-            List<HolidayPolicy> policies = holidayPolicyRepository
-                    .findActivePolicies(hotel.getHotelGroup().getId(), targetDate);
+        LocalDate targetDate = (checkInDate != null) ? checkInDate : LocalDate.now();
+        HolidayPolicy activePolicy = null;
 
-            if (!policies.isEmpty()) {
-                rate = 1.0 + (policies.get(0).getIncreasePercentage() / 100.0);
+        // A. Ưu tiên Group Policy
+        if (hotel.getHotelGroup() != null) {
+            List<HolidayPolicy> groupPolicies = holidayPolicyRepository
+                    .findActivePolicies(hotel.getHotelGroup().getId(), targetDate);
+            if (!groupPolicies.isEmpty()) {
+                activePolicy = groupPolicies.get(0);
             }
+        }
+
+        // B. Nếu không có Group Policy, tìm Individual Policy (PHẦN BẠN THIẾU)
+        if (activePolicy == null) {
+            List<HolidayPolicy> individualPolicies = holidayPolicyRepository
+                    .findActivePoliciesByHotel(hotelId, targetDate);
+            if (!individualPolicies.isEmpty()) {
+                activePolicy = individualPolicies.get(0);
+            }
+        }
+
+        // C. Chốt rate
+        if (activePolicy != null) {
+            rate = 1.0 + (activePolicy.getIncreasePercentage() / 100.0);
         }
 
         // 4. Loop và Copy
         for (HotelBedroom original : originalRooms) {
-            // [QUAN TRỌNG] Tạo object mới và copy dữ liệu sang
-            // Việc này giúp tách object ra khỏi Hibernate Session -> Không bị tự động Update vào DB
+            // [QUAN TRỌNG] Tạo object mới và copy dữ liệu sang để không ảnh hưởng DB
             HotelBedroom displayRoom = new HotelBedroom();
             BeanUtils.copyProperties(original, displayRoom);
 
-            // Tính toán giá trên object COPY (Giá gốc * rate)
+            // Tính toán giá trên object COPY
             displayRoom.setPrice(smartRoundPrice(original.getPrice() * rate));
 
             responseRooms.add(displayRoom);
@@ -134,24 +149,35 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         HotelBedroom original = hotelBedroomRepository.findById(roomId)
                 .orElseThrow(() -> new AppException(ErrorCode.ROOM_NOT_FOUND));
 
-        // [QUAN TRỌNG] Cũng phải copy ở hàm lẻ này
+        // [QUAN TRỌNG] Copy object
         HotelBedroom displayRoom = new HotelBedroom();
         BeanUtils.copyProperties(original, displayRoom);
 
+        // Tính toán lại giá cho 1 phòng lẻ (Cũng cập nhật logic đầy đủ)
         Hotel hotel = original.getHotel();
+        LocalDate today = LocalDate.now();
+        HolidayPolicy activePolicy = null;
+
+        // A. Check Group
         if (hotel != null && hotel.getHotelGroup() != null) {
-            LocalDate today = LocalDate.now();
-            List<HolidayPolicy> policies = holidayPolicyRepository
+            List<HolidayPolicy> groupPolicies = holidayPolicyRepository
                     .findActivePolicies(hotel.getHotelGroup().getId(), today);
-
-            if (!policies.isEmpty()) {
-                HolidayPolicy policy = policies.get(0);
-                double rate = 1.0 + (policy.getIncreasePercentage() / 100.0);
-
-                // Set giá trên bản copy
-                displayRoom.setPrice(smartRoundPrice(original.getPrice() * rate));
-            }
+            if (!groupPolicies.isEmpty()) activePolicy = groupPolicies.get(0);
         }
+
+        // B. Check Individual
+        if (activePolicy == null && hotel != null) {
+            List<HolidayPolicy> individualPolicies = holidayPolicyRepository
+                    .findActivePoliciesByHotel(hotel.getId(), today);
+            if (!individualPolicies.isEmpty()) activePolicy = individualPolicies.get(0);
+        }
+
+        // C. Apply Price
+        if (activePolicy != null) {
+            double rate = 1.0 + (activePolicy.getIncreasePercentage() / 100.0);
+            displayRoom.setPrice(smartRoundPrice(original.getPrice() * rate));
+        }
+
         return displayRoom;
     }
 

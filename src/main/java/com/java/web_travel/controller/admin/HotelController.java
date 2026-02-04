@@ -1,11 +1,15 @@
 package com.java.web_travel.controller.admin;
 
 import com.java.web_travel.entity.Order;
+import com.java.web_travel.model.request.AddPolicyToHotelsRequest;
 import com.java.web_travel.model.request.AssignGroupRequest;
-import com.java.web_travel.model.request.BulkUpdatePriceByListRequest; // [MỚI] Import Request DTO
+import com.java.web_travel.model.request.BulkUpdatePriceByListRequest;
 import com.java.web_travel.model.request.BulkUpdatePriceRequest;
 import com.java.web_travel.model.request.HotelDTO;
+import com.java.web_travel.model.request.UpdatePolicyListHotelRequest; // <--- [MỚI] Import request update policy
 import com.java.web_travel.model.response.ApiResponse;
+import com.java.web_travel.model.response.HolidayPolicyResponse;
+import com.java.web_travel.model.response.HotelHistoryResponse;
 import com.java.web_travel.model.response.HotelResponse;
 import com.java.web_travel.repository.HotelBedroomRepository;
 import com.java.web_travel.repository.OrderRepository;
@@ -14,6 +18,7 @@ import com.java.web_travel.service.HotelService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -178,7 +183,7 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 11. API TĂNG GIÁ (THEO GROUP) ---
+    // --- 11. API TĂNG GIÁ VĨNH VIỄN (THEO GROUP) ---
     @PostMapping("/bulk-update-price")
     public ApiResponse<String> bulkUpdatePrice(@RequestBody BulkUpdatePriceRequest request) {
         hotelService.bulkUpdatePricePermanent(request);
@@ -187,12 +192,55 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 12. [MỚI] API TĂNG GIÁ (THEO DANH SÁCH CHỌN) ---
+    // --- 12. API TĂNG GIÁ VĨNH VIỄN (THEO DANH SÁCH CHỌN) ---
     @PostMapping("/bulk-update-price-list")
     public ApiResponse<String> bulkUpdatePriceByList(@RequestBody BulkUpdatePriceByListRequest request) {
         hotelService.bulkUpdatePriceByListIds(request);
         ApiResponse<String> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Cập nhật giá thành công cho " + request.getHotelIds().size() + " khách sạn!");
+        return apiResponse;
+    }
+
+    // --- 13. [MỚI] API THÊM CHÍNH SÁCH GIÁ TẠM THỜI (THEO DANH SÁCH CHỌN) ---
+    @PostMapping("/add-policy-list")
+    public ApiResponse<String> addPolicyToSelectedHotels(@RequestBody AddPolicyToHotelsRequest request) {
+        hotelService.addPolicyToSelectedHotels(request);
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Đã thêm chính sách giá thành công cho " + request.getHotelIds().size() + " khách sạn!");
+        return apiResponse;
+    }
+
+    // --- 14. [FIX] API LẤY LỊCH SỬ ---
+    @GetMapping("/hotels/{hotelId}/policies")
+    public ApiResponse<List<HotelHistoryResponse>> getHotelPolicies(@PathVariable Long hotelId) {
+        log.info("Get history/policies for hotel id: {}", hotelId);
+        ApiResponse<List<HotelHistoryResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(hotelService.getPolicyHistoryByHotel(hotelId));
+        apiResponse.setMessage("Lấy lịch sử thay đổi giá thành công");
+        return apiResponse;
+    }
+
+    // =========================================================================
+    //  QUẢN LÝ CHÍNH SÁCH (SỬA / XÓA)
+    // =========================================================================
+
+    // --- 15. [MỚI] CẬP NHẬT CHÍNH SÁCH ---
+    @PutMapping("/policies/{id}")
+    public ApiResponse<String> updatePolicy(@PathVariable Long id, @RequestBody UpdatePolicyListHotelRequest request) {
+        log.info("Update policy id: {}, content: {}", id, request);
+        hotelService.updateHolidayPolicy(id, request);
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Cập nhật chính sách thành công!");
+        return apiResponse;
+    }
+
+    // --- 16. [MỚI] XÓA CHÍNH SÁCH ---
+    @DeleteMapping("/policies/{id}")
+    public ApiResponse<String> deletePolicy(@PathVariable Long id) {
+        log.info("Delete policy id: {}", id);
+        hotelService.deleteHolidayPolicy(id);
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Đã xóa chính sách thành công!");
         return apiResponse;
     }
 }

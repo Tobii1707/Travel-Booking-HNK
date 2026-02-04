@@ -25,8 +25,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // ĐÃ XÓA: private RoleRepository roleRepository; (Vì không dùng bảng Role nữa)
-
     @Autowired
     private SearchRepository searchRepository;
 

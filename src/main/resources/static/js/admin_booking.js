@@ -64,7 +64,7 @@
   // 3. UI RENDERER (Xử lý giao diện)
   // ============================================================
   const Render = {
-    // --- CẬP NHẬT QUAN TRỌNG: Render Modal khớp với CSS mới ---
+    // --- CẬP NHẬT QUAN TRỌNG: Render Modal (Đã FIX lỗi scroll/lướt) ---
     customModal: (title, contentHTML) => {
       // Xóa modal cũ nếu có
       const oldModal = document.querySelector('.custom-info-modal');
@@ -72,22 +72,24 @@
 
       const modal = document.createElement('div');
       modal.className = 'modal custom-info-modal';
-      modal.style.display = 'flex'; // Flex để căn giữa màn hình
+      // CSS Inline: Đảm bảo overlay full màn hình và căn giữa
+      modal.style.cssText = 'display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;';
 
-      // Cấu trúc HTML mới: Header sticky - Body scroll - Footer sticky
+      // Cấu trúc HTML mới: Flex column + Max Height + Overflow Auto
       modal.innerHTML = `
-        <div class="modal-content bounce-in">
-            <div class="modal-header-sticky">
-                <h3>${title}</h3>
-                <i class="fas fa-times" onclick="this.closest('.modal').remove()"></i>
+        <div class="modal-content bounce-in" style="display: flex; flex-direction: column; max-height: 90vh; background: #fff; width: 600px; max-width: 95%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);">
+            
+            <div class="modal-header-sticky" style="flex-shrink: 0; padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 8px 8px 0 0;">
+                <h3 style="margin:0; font-size:1.25rem;">${title}</h3>
+                <i class="fas fa-times" onclick="this.closest('.modal').remove()" style="cursor:pointer; font-size:1.2rem; color:#666;"></i>
             </div>
             
-            <div class="modal-body-content">
+            <div class="modal-body-content" style="flex-grow: 1; overflow-y: auto; padding: 20px;">
                 ${contentHTML}
             </div>
 
-            <div class="modal-btn-group">
-                <button class="modal-btn btn-close" onclick="this.closest('.modal').remove()" style="width:100px">Đóng</button>
+            <div class="modal-btn-group" style="flex-shrink: 0; padding: 15px; border-top: 1px solid #eee; background: #f9f9f9; border-radius: 0 0 8px 8px; text-align: right;">
+                <button class="modal-btn btn-close" onclick="this.closest('.modal').remove()" style="width:100px; padding:8px 0; cursor:pointer;">Đóng</button>
             </div>
         </div>`;
 

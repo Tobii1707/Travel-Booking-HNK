@@ -73,7 +73,6 @@
 
     try {
       // 1. Gọi API lấy tất cả phòng của khách sạn
-      // [QUAN TRỌNG] Đã sửa: Thêm tham số ?checkInDate=${checkIn} vào URL
       const roomsPromise = fetch(`/admin/rooms/${hotelId}?checkInDate=${checkIn}`).then(res => res.json());
 
       // 2. Gọi API kiểm tra phòng đã đặt (Nếu có ngày tháng)
@@ -113,17 +112,24 @@
       return numA - numB;
     });
 
-    // 2. Nhóm phòng theo tầng (Lấy ký tự đầu của số phòng)
+    // 2. Nhóm phòng theo tầng [ĐÃ SỬA LOGIC]
     const floors = {};
     rooms.forEach(room => {
-      let floorNum = String(room.roomNumber).substring(0, 1);
+      // Logic cũ: substring(0,1) -> Sai với phòng > 1000
+      // Logic mới: Chia cho 100
+      let cleanNumber = parseInt(String(room.roomNumber).replace(/\D/g, '')) || 0;
+      let floorNum = Math.floor(cleanNumber / 100);
+
+      // Nếu phòng số nhỏ (ví dụ 1, 2...) thì mặc định tầng 1
+      if (floorNum === 0) floorNum = 1;
+
       if (!floors[floorNum]) floors[floorNum] = [];
       floors[floorNum].push(room);
     });
 
     // 3. Vẽ HTML
-    // Sắp xếp tầng từ thấp đến cao
-    Object.keys(floors).sort().forEach(floorKey => {
+    // Sắp xếp tầng từ thấp đến cao (numeric sort)
+    Object.keys(floors).sort((a, b) => a - b).forEach(floorKey => {
       const floorRooms = floors[floorKey];
 
       const floorDiv = document.createElement('div');

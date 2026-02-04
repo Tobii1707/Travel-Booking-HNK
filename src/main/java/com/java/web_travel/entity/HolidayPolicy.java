@@ -29,4 +29,8 @@ public class HolidayPolicy {
     @JoinColumn(name = "group_id")
     @JsonIgnoreProperties("holidayPolicies") // Ngắt vòng lặp từ phía con trỏ về cha
     private HotelGroup targetGroup; // Tên biến này phải trùng với mappedBy bên HotelGroup
+
+    @ManyToOne
+    @JoinColumn(name = "hotel_id", nullable = true)
+    private Hotel hotel;
 }

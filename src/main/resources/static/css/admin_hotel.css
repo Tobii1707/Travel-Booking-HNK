@@ -1,31 +1,34 @@
 /* =========================================================
    SCOPED STYLES: BODY.HUST-ADMIN-HOTEL
-   (Đã cập nhật để hỗ trợ Modal Cập nhật giá & Input Group)
+   (Phiên bản: Header Đen + Table chữ to 15px + Support New Modals)
    ========================================================= */
 
 body.hust-admin-hotel {
   --primary: #29b862;
   --primary-hover: #1e8544;
-  --dark-header: rgba(0, 0, 0, 0.85);
-  --text-dark: #2c3e50;
-  --text-light: #6c757d;
-  --bg-body: #f4f6f9;
+  --secondary: #6c757d;
+  --danger: #dc3545;
+  --warning: #f39c12;
+  --edit-hover: #e67e22;
+  --info: #17a2b8;
+  --dark: #343a40;
+  --light: #f8f9fa;
   --white: #ffffff;
-  --shadow-card: 0 4px 12px rgba(0,0,0,0.05);
-  --shadow-dropdown: 0 5px 15px rgba(0,0,0,0.1);
-  --radius: 8px;
 
-  /* Màu thông báo */
-  --danger: #ef4444;
-  --warning: #e67e22;
-  --info: #2980b9;
-  --success: #10b981;
+  --bg-body: #f9f9f9;
+  --shadow-card: 0 5px 15px rgba(0,0,0,0.05);
+  --shadow-dropdown: 0 5px 15px rgba(0,0,0,0.1);
+  --radius: 12px;
 
   margin: 0;
   background-color: var(--bg-body);
   padding-top: 80px;
   font-family: 'Poppins', sans-serif;
-  color: var(--text-dark);
+  color: #2c3e50;
+
+  /* Font mặc định toàn trang 14px */
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 body.hust-admin-hotel *,
@@ -37,19 +40,15 @@ body.hust-admin-hotel *::after {
 body.hust-admin-hotel a { text-decoration: none; }
 body.hust-admin-hotel ul { list-style: none; }
 
-/* ================= HEADER (GIỮ NGUYÊN) ================= */
+/* ================= HEADER (Nền Đen - Chữ Trắng) ================= */
 body.hust-admin-hotel header {
-  position: fixed;
-  top: 0; left: 0; right: 0;
+  position: fixed; top: 0; left: 0; right: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85); /* Đen mờ đậm hơn chút để rõ chữ */
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 1rem 5%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.05);
 }
 
 body.hust-admin-hotel header .logo {
@@ -62,22 +61,16 @@ body.hust-admin-hotel header .logo span { color: var(--primary); }
 
 body.hust-admin-hotel header .bar { display: flex; gap: 20px; }
 
-/* --- MENU LINK --- */
 body.hust-admin-hotel header .bar a {
   font-size: 0.9rem;
   color: var(--white);
   font-weight: 500;
-  position: relative;
-  transition: all 0.3s;
-  padding: 5px 0;
-  opacity: 1;
+  transition: all 0.3s; padding: 5px 0;
 }
 
 body.hust-admin-hotel header .bar a:hover,
 body.hust-admin-hotel header .bar a.indam {
   color: var(--primary);
-  background: transparent;
-  border-radius: 0;
 }
 
 body.hust-admin-hotel header .icons { display: flex; align-items: center; }
@@ -85,66 +78,39 @@ body.hust-admin-hotel header .icons i {
   font-size: 1.1rem;
   color: var(--white);
   cursor: pointer;
-  transition: 0.3s;
-  margin-left: 15px;
+  transition: 0.3s; margin-left: 15px;
 }
 body.hust-admin-hotel header .icons i:hover { color: var(--primary); }
 
-/* ================= USER DROPDOWN (GIỮ NGUYÊN) ================= */
+/* User Dropdown */
 body.hust-admin-hotel .dropdown-menu {
-  display: none;
-  position: absolute;
-  top: 60px;
-  right: 5%;
-  background-color: var(--white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-dropdown);
-  width: 150px;
-  flex-direction: column;
-  z-index: 1100;
-  overflow: hidden;
-  border: none;
+  display: none; position: absolute; top: 65px; right: 5%;
+  background-color: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow-dropdown); width: 160px;
+  flex-direction: column; z-index: 1100; overflow: hidden; border: 1px solid #eee;
 }
-
-body.hust-admin-hotel .dropdown-menu.active {
-  display: flex;
-  animation: fadeIn 0.2s ease;
-}
-
+body.hust-admin-hotel .dropdown-menu.active { display: flex; animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 body.hust-admin-hotel .dropdown-menu a {
-  display: block;
-  padding: 10px 15px;
-  color: var(--text-dark);
-  font-size: 0.9rem;
-  border-bottom: 1px solid #eee;
-  transition: all 0.2s;
-  gap: 10px;
+  display: block; padding: 10px 15px;
+  color: #333; font-size: 14px;
+  border-bottom: 1px solid #eee; transition: 0.2s;
 }
+body.hust-admin-hotel .dropdown-menu a:hover { background-color: #f8f9fa; color: var(--primary); }
 
-body.hust-admin-hotel .dropdown-menu a:last-child { border-bottom: none; }
-
-body.hust-admin-hotel .dropdown-menu a:hover {
-  background-color: #f0f0f0;
-  color: var(--primary);
-  padding-left: 15px;
-}
-
-
-/* ================= CÁC PHẦN DƯỚI (INFO & TABS) ================= */
+/* ================= TOP TABS & CLOCK ================= */
 body.hust-admin-hotel .container-info {
-  padding: 1.5rem 5% 0;
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 25px;
+  padding: 1.5rem 5% 0; display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
 }
 body.hust-admin-hotel .left-tabs {
-  display: flex; background: #e9ecef;
-  padding: 4px; border-radius: 8px;
+  display: flex; background: #e9ecef; padding: 4px; border-radius: 8px;
 }
 body.hust-admin-hotel .tab-btn {
-  padding: 8px 20px; border: none; background: transparent;
-  font-size: 0.95rem; font-weight: 500; color: #666;
+  padding: 8px 20px;
+  border: none; background: transparent;
+  font-size: 14px; font-weight: 500; color: #666;
   cursor: pointer; border-radius: 6px; transition: all 0.3s;
   display: flex; align-items: center; gap: 8px;
 }
@@ -154,403 +120,293 @@ body.hust-admin-hotel .tab-btn.active {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 body.hust-admin-hotel .right-clock {
-  font-size: 0.9rem; color: #777;
-  background: var(--white); padding: 8px 16px;
-  border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  font-size: 13px; color: #777; background: var(--white);
+  padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
 }
 
-/* ================= MAIN CONTENT ================= */
+/* ================= MAIN CONTENT LAYOUT ================= */
 body.hust-admin-hotel .main-content-wrapper { padding: 0 5% 50px; }
+
 body.hust-admin-hotel .card-box {
-  background: var(--white); border-radius: 12px; box-shadow: var(--shadow-card);
-  padding: 20px; min-height: 400px; animation: slideUp 0.3s ease-out;
+  background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-card);
+  padding: 20px; min-height: 500px; animation: slideUp 0.3s ease-out;
 }
 @keyframes slideUp { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
 
+/* --- HEADER ACTION BAR (Fixed Layout) --- */
 body.hust-admin-hotel .card-header-action {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+  display: flex !important; /* Force flex to keep line */
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+  flex-wrap: nowrap !important; /* Không xuống dòng */
+  gap: 15px;
 }
-body.hust-admin-hotel .search-wrap { position: relative; width: 300px; }
-body.hust-admin-hotel .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; }
+
+/* Search Box */
+body.hust-admin-hotel .search-wrap {
+  position: relative;
+  width: 300px !important; /* Cố định width */
+  flex-shrink: 0 !important; /* Không bị co lại */
+}
+body.hust-admin-hotel .search-wrap i {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #999; font-size: 14px;
+}
 body.hust-admin-hotel .table-search {
-  width: 100%; padding: 10px 10px 10px 38px; border: 1px solid #ddd;
+  width: 100%; padding: 8px 10px 8px 35px; border: 1px solid #ddd;
   border-radius: 6px; outline: none; font-family: inherit; transition: 0.3s;
+  font-size: 14px;
 }
-body.hust-admin-hotel .table-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(41, 184, 98, 0.1); }
+body.hust-admin-hotel .table-search:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(41, 184, 98, 0.1);
+}
 
-/* --- STYLE BUTTON CHUNG --- */
+/* Nhóm nút bên phải */
+body.hust-admin-hotel .action-buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px;
+  flex-wrap: nowrap !important;
+}
+
+/* ================= BUTTON STYLES ================= */
 body.hust-admin-hotel .btn {
-  padding: 9px 16px; border-radius: 6px; border: none; color: white;
-  font-size: 0.9rem; font-weight: 500; cursor: pointer;
+  height: 38px;
+  padding: 0 16px; border-radius: 6px; border: none;
+  color: white; font-size: 14px; font-weight: 500; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  letter-spacing: 0.3px;
+  transition: all 0.2s; white-space: nowrap; outline: none;
 }
-body.hust-admin-hotel .btn:hover {
-  transform: translateY(-2px);
-  filter: brightness(110%);
-}
+body.hust-admin-hotel .btn:hover { transform: translateY(-2px); filter: brightness(110%); }
+body.hust-admin-hotel .btn:active { transform: translateY(0); }
+body.hust-admin-hotel .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; background: #ccc !important; color: #666 !important; }
 
-/* [MỚI] Trạng thái disabled cho button (nút xám không click được) */
-body.hust-admin-hotel .btn:disabled,
-body.hust-admin-hotel .btn[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: #bdc3c7 !important; /* Xám */
-  box-shadow: none !important;
-  transform: none !important;
-  filter: none !important;
-}
+/* Các loại nút chính */
+body.hust-admin-hotel .btn-create { background-color: var(--primary); }
+body.hust-admin-hotel .btn-danger { background-color: var(--danger); }
+body.hust-admin-hotel .btn-secondary { background-color: var(--secondary); }
+body.hust-admin-hotel .btn-info { background-color: var(--info); color: white; }
 
-/* 1. Nút Tạo mới */
-body.hust-admin-hotel .btn-create,
-body.hust-admin-hotel .btn-success {
-  background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-}
-body.hust-admin-hotel .btn-create:hover,
-body.hust-admin-hotel .btn-success:hover {
-  background: linear-gradient(135deg, #059669, #10b981);
-  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
-}
-
-/* 2. Nút Sửa */
+/* Nút Warning/Edit (Cam) */
 body.hust-admin-hotel .btn-warning,
 body.hust-admin-hotel .btn-edit {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+  background-color: var(--warning);
+  color: #ffffff !important;
+  box-shadow: 0 3px 6px rgba(243, 156, 18, 0.15);
 }
 body.hust-admin-hotel .btn-warning:hover,
 body.hust-admin-hotel .btn-edit:hover {
-  background: linear-gradient(135deg, #d97706, #f59e0b);
-  box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+  background-color: var(--edit-hover);
 }
+body.hust-admin-hotel .btn-warning i,
+body.hust-admin-hotel .btn-edit i { color: #ffffff; }
 
-/* [MỚI] Nút Cập nhật giá (màu vàng phẳng trong Bulk Action) */
+/* Nút nhỏ trong Bulk Actions (Fix Layout) */
+body.hust-admin-hotel .btn-blue-action {
+  background-color: #17a2b8; color: white; border: none;
+  padding: 0 12px; border-radius: 4px; cursor: pointer;
+  font-weight: 500; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 5px; height: 32px;
+}
+body.hust-admin-hotel .btn-blue-action:hover { background-color: #138496; }
+
 body.hust-admin-hotel .btn-warning-action {
-  background-color: #ffc107;
-  color: #212529;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s;
+  background-color: var(--warning); color: #212529; border: none;
+  padding: 0 12px; border-radius: 4px; cursor: pointer;
+  font-weight: 500; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 5px; height: 32px;
 }
-body.hust-admin-hotel .btn-warning-action:hover {
-  background-color: #e0a800;
-  transform: translateY(-1px);
-}
+body.hust-admin-hotel .btn-warning-action:hover { background-color: #e0a800; }
 
-/* 3. Nút Thùng rác/Xóa */
-body.hust-admin-hotel .btn-danger,
-body.hust-admin-hotel .btn-delete {
-  background: linear-gradient(135deg, #ff416c, #ff4b2b);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(255, 65, 108, 0.4);
-}
-body.hust-admin-hotel .btn-danger:hover,
-body.hust-admin-hotel .btn-delete:hover {
-  background: linear-gradient(135deg, #ff4b2b, #ff416c);
-  box-shadow: 0 6px 15px rgba(255, 65, 108, 0.6);
-  transform: translateY(-2px) scale(1.02);
-}
-
-/* 4. Nút Info/Vào nhóm */
-body.hust-admin-hotel .btn-holiday,
-body.hust-admin-hotel .btn-price,
-body.hust-admin-hotel .btn-info {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
-}
-body.hust-admin-hotel .btn-holiday:hover,
-body.hust-admin-hotel .btn-price:hover,
-body.hust-admin-hotel .btn-info:hover {
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
-  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.6);
-}
-
-/* 5. Nút phụ (Secondary) */
-body.hust-admin-hotel .btn-secondary {
-  background: linear-gradient(135deg, #6c757d, #495057);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
-}
-body.hust-admin-hotel .btn-secondary:hover {
-  background: linear-gradient(135deg, #495057, #343a40);
-  box-shadow: 0 6px 15px rgba(108, 117, 125, 0.5);
-}
-
-/* Style cho phần Bulk Action */
+/* Container Bulk Actions (Quan trọng cho JS toggle) */
 body.hust-admin-hotel #bulkActions {
-  background: #e3f2fd; color: #1565c0; padding: 5px 10px; border-radius: 6px;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; /* Mặc định là flex khi hiện */
+  align-items: center; gap: 5px;
+  background: #e3f2fd; padding: 3px 10px; border-radius: 6px;
+  margin-left: 10px; height: 38px;
+  animation: fadeInRight 0.3s ease;
+}
+/* Hỗ trợ khi JS set style="display: block" */
+body.hust-admin-hotel #bulkActions[style*="display: block"],
+body.hust-admin-hotel #bulkActions[style*="display: flex"] {
+  display: flex !important;
 }
 
-/* --- Table --- */
-body.hust-admin-hotel .table-responsive { overflow-x: auto; }
-body.hust-admin-hotel table { width: 100%; border-collapse: collapse; }
+@keyframes fadeInRight { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* ================= TABLES (Font 15px) ================= */
+body.hust-admin-hotel .table-responsive { overflow-x: auto; width: 100%; }
+
+body.hust-admin-hotel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px; /* Giữ size 15px */
+}
+
 body.hust-admin-hotel th {
-  background-color: #f8f9fa; color: #444; font-weight: 600;
-  padding: 14px 16px; text-align: left; border-bottom: 2px solid #eee; white-space: nowrap;
+  background-color: var(--primary);
+  color: #ffffff; font-weight: 500;
+  padding: 12px 15px;
+  text-align: left; border-bottom: 1px solid #eee;
+  white-space: nowrap;
 }
 body.hust-admin-hotel td {
-  padding: 14px 16px; border-bottom: 1px solid #f1f1f1; color: #555; vertical-align: middle;
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+  color: #444; vertical-align: middle; /* Căn giữa chiều dọc cho nút */
 }
-body.hust-admin-hotel tr:hover td { background-color: #fafafa; }
+body.hust-admin-hotel tr:hover td { background-color: #f1f8ff; }
 
-/* Chỉnh lại nút trong bảng nhỏ gọn hơn */
-body.hust-admin-hotel td .btn {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  margin-left: 4px;
-  border-radius: 6px;
-}
+/* Checkbox column */
+body.hust-admin-hotel input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 
-/* --- Pagination --- */
-body.hust-admin-hotel .pagination { display: flex; justify-content: center; margin-top: 25px; gap: 6px; }
+/* Pagination */
+body.hust-admin-hotel .pagination { display: flex; justify-content: center; margin-top: 20px; gap: 5px; }
 body.hust-admin-hotel .pagination button {
-  width: 32px; height: 32px; border: 1px solid #ddd; background: white;
-  border-radius: 4px; cursor: pointer; color: #666; transition: 0.2s;
+  width: 32px; height: 32px;
+  border: 1px solid #dee2e6; background: white;
+  border-radius: 4px; cursor: pointer; color: #495057; font-size: 14px;
 }
 body.hust-admin-hotel .pagination button.active {
   background: var(--primary); border-color: var(--primary); color: white;
 }
-body.hust-admin-hotel .pagination button:hover:not(.active) { background: #eee; }
+body.hust-admin-hotel .pagination button:hover:not(.active) { background-color: #e9ecef; }
 
-/* --- Toastify --- */
-.toastify {
-  padding: 16px 28px !important; color: #ffffff !important; display: flex !important;
-  align-items: center !important; justify-content: space-between !important;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; border-radius: 8px !important;
-  font-family: 'Poppins', sans-serif !important; font-size: 1.05rem !important;
-  font-weight: 500 !important; max-width: 450px !important;
-}
-
-/* =========================================================
-   STYLE CHO MODAL VÀ FORM
-   ========================================================= */
-
+/* ================= MODALS & FORMS ================= */
 body.hust-admin-hotel .modal {
-  display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+  display: none; position: fixed; z-index: 2000; left: 0; top: 0;
+  width: 100%; height: 100%; overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px);
   justify-content: center; align-items: center;
 }
 
 body.hust-admin-hotel .modal-content {
-  background-color: white; border-radius: 12px; width: 500px; max-width: 90%;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.25); animation: modalZoom 0.3s; overflow: hidden;
-  max-height: 90vh; /* Tránh modal cao quá màn hình */
+  background-color: #fff; border-radius: 12px;
+  width: 500px; max-width: 95%; max-height: 90vh;
   display: flex; flex-direction: column;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  animation: modalZoom 0.25s ease-out;
 }
-@keyframes modalZoom { from {transform: scale(0.8); opacity: 0;} to {transform: scale(1); opacity: 1;} }
+@keyframes modalZoom { from {transform: scale(0.95); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
 body.hust-admin-hotel .modal-header {
-  padding: 15px 25px; background-color: #f8f9fa; border-bottom: 1px solid #eee;
+  padding: 15px 25px; border-bottom: 1px solid #e9ecef;
   display: flex; justify-content: space-between; align-items: center;
-  flex-shrink: 0;
 }
-body.hust-admin-hotel .close-btn {
-  font-size: 1.5rem; color: #aaa; cursor: pointer; transition: 0.2s;
-}
+body.hust-admin-hotel .modal-header h3 { font-size: 1.1rem; margin: 0; color: #333; font-weight: 600; }
+body.hust-admin-hotel .close-btn { font-size: 24px; color: #999; cursor: pointer; line-height: 1; }
 body.hust-admin-hotel .close-btn:hover { color: var(--danger); }
 
+/* Warning Header (Cho Modal Giá Gốc) */
+body.hust-admin-hotel .modal-header.warning-header {
+  background-color: #fff3cd; border-bottom: 1px solid #ffeeba;
+}
+body.hust-admin-hotel .modal-header.warning-header h3 { color: #856404; }
+
 body.hust-admin-hotel .modal-body {
-  padding: 25px;
-  overflow-y: auto;
-  flex-grow: 1;
-}
-
-body.hust-admin-hotel .modal-body::-webkit-scrollbar { width: 6px; }
-body.hust-admin-hotel .modal-body::-webkit-scrollbar-track { background: #f1f1f1; }
-body.hust-admin-hotel .modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
-body.hust-admin-hotel .modal-body::-webkit-scrollbar-thumb:hover { background: #bbb; }
-
-
-/* Form Elements */
-body.hust-admin-hotel .form-control {
-  width: 100%; padding: 10px 12px; border: 1px solid #ddd;
-  border-radius: 6px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s;
-  background-color: #fff;
-}
-body.hust-admin-hotel .form-control:focus { border-color: var(--primary); outline: none; }
-body.hust-admin-hotel select.form-control {
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.8-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px top 50%;
-  background-size: 10px auto;
+  padding: 20px 25px; overflow-y: auto; flex: 1;
 }
 
 body.hust-admin-hotel .modal-footer {
-  padding: 15px 25px; background-color: #fff; border-top: 1px solid #eee;
+  padding: 15px 25px; border-top: 1px solid #e9ecef;
   text-align: right; display: flex; justify-content: flex-end; gap: 10px;
-  flex-shrink: 0;
 }
-body.hust-admin-hotel .btn-cancel { background-color: #e2e8f0; color: #475569; box-shadow: none; }
-body.hust-admin-hotel .btn-cancel:hover { background-color: #cbd5e1; }
+body.hust-admin-hotel .btn-cancel { background-color: #e2e6ea; color: #495057; font-weight: 500; }
+body.hust-admin-hotel .btn-cancel:hover { background-color: #dae0e5; }
 
-/* --- CÁC PHẦN BỔ SUNG CHO HTML "CHÍNH SÁCH GIÁ" & "CẬP NHẬT GIÁ" --- */
-
-/* 1. Chia cột (Row/Col) */
-body.hust-admin-hotel .row {
-  display: flex; gap: 15px; margin-bottom: 15px;
-}
-body.hust-admin-hotel .col-half {
-  flex: 1;
-}
-
-/* 2. Tiện ích khoảng cách & Label */
-body.hust-admin-hotel .mt-3 { margin-top: 15px; }
+/* FORMS */
 body.hust-admin-hotel .form-group { margin-bottom: 15px; }
 body.hust-admin-hotel label {
-  display: block; margin-bottom: 6px; font-weight: 500; color: #444; font-size: 0.9rem;
+  display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: #333;
+}
+body.hust-admin-hotel .form-control {
+  width: 100%; padding: 8px 12px; border: 1px solid #ced4da;
+  border-radius: 6px; font-size: 14px;
+  transition: border-color 0.15s ease-in-out;
+  font-family: inherit;
+}
+body.hust-admin-hotel .form-control:focus {
+  border-color: #80bdff; outline: 0; box-shadow: 0 0 0 3px rgba(0,123,255,.15);
 }
 
-/* 3. [QUAN TRỌNG] Input có đuôi (dấu %)
-   Đã sửa lại thành flex để hiển thị ô xám bên cạnh input thay vì đè lên
-*/
-body.hust-admin-hotel .input-group {
-  display: flex;
-  align-items: stretch;
-  position: relative;
-}
-body.hust-admin-hotel .input-group input {
-  flex: 1;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+/* Row/Col Layout (Cho Date picker, Number inputs) */
+body.hust-admin-hotel .row { display: flex; gap: 15px; margin-bottom: 10px; }
+body.hust-admin-hotel .col-half { flex: 1; }
+
+/* Input Group (Cho phần %) */
+body.hust-admin-hotel .input-group { display: flex; position: relative; width: 100%; align-items: stretch; }
+body.hust-admin-hotel .input-group .form-control {
+  border-top-right-radius: 0; border-bottom-right-radius: 0; flex: 1;
 }
 body.hust-admin-hotel .input-suffix {
-  background: #e9ecef;
-  border: 1px solid #ddd;
-  border-left: 0;
-  padding: 0 15px;
-  color: #555;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 12px; background-color: #e9ecef; border: 1px solid #ced4da;
+  border-left: 0; border-radius: 0 6px 6px 0; color: #495057; font-weight: 600; font-size: 14px;
 }
 
-/* 4. Alert Box (Thông báo màu xanh/vàng) */
+/* Alert Box (Thông báo trong modal) */
 body.hust-admin-hotel .alert-box {
-  padding: 12px 15px; border-radius: 8px; font-size: 0.9rem;
-  display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; margin-bottom: 15px;
+  padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;
+  display: flex; align-items: flex-start;
 }
 body.hust-admin-hotel .alert-box.info {
-  background-color: #e3f2fd; color: #0c5460; border-left: 4px solid #2196f3;
+  background-color: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8;
 }
 body.hust-admin-hotel .alert-box.warning {
   background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;
 }
-body.hust-admin-hotel .alert-box i {
-  margin-top: 3px; font-size: 1.1rem;
-}
 
-/* 5. Header Cảnh báo (Màu vàng đậm cho Modal đổi giá hàng loạt) */
-body.hust-admin-hotel .modal-header.warning-header {
-  background: linear-gradient(135deg, #fff3cd, #ffecb3);
-  color: #856404;
-  border-bottom: 1px solid #ffeeba;
-}
-body.hust-admin-hotel .modal-header.warning-header h3 {
-  color: #856404;
-}
-
-/* 6. Chú thích nhỏ */
-body.hust-admin-hotel small {
-  font-size: 0.85rem; line-height: 1.4;
-}
-
-/* =========================================================
-   STYLE CHO BADGE, HISTORY MODAL & UTILITIES
-   ========================================================= */
-
-/* Badge cơ bản */
-body.hust-admin-hotel .badge {
-  display: inline-block;
-  padding: 0.35em 0.65em;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: baseline;
-  border-radius: 0.25rem;
-}
-
-body.hust-admin-hotel .badge-success { color: #0f5132; background-color: #d1e7dd; }
-body.hust-admin-hotel .badge-danger { color: #842029; background-color: #f8d7da; }
-body.hust-admin-hotel .badge-info { color: #055160; background-color: #cff4fc; }
-body.hust-admin-hotel .badge-secondary { color: #41464b; background-color: #e2e3e5; }
-body.hust-admin-hotel .badge-active { background:#e3f2fd; color:#1976d2; }
-
-/* Tùy chỉnh riêng cho bảng lịch sử */
-body.hust-admin-hotel #historyTableBody td {
-  padding: 10px 15px;
-  font-size: 0.9rem;
-}
-
-/* --- UTILITIES CHO BẢNG POLICY --- */
+/* ================= UTILITIES & EXTRAS ================= */
 body.hust-admin-hotel .text-center { text-align: center !important; }
 body.hust-admin-hotel .text-right { text-align: right !important; }
-body.hust-admin-hotel .text-success { color: #28a745 !important; font-weight: bold; }
-body.hust-admin-hotel .text-danger { color: #dc3545 !important; font-weight: bold; }
-body.hust-admin-hotel .font-weight-bold { font-weight: 700 !important; }
+body.hust-admin-hotel .text-success { color: #28a745 !important; }
+body.hust-admin-hotel .text-danger { color: #dc3545 !important; }
 body.hust-admin-hotel .text-muted { color: #6c757d !important; }
 
-/* Style riêng cho bảng nhỏ trong Modal (table-modal) */
+/* Table Modal (Dùng trong Policy Modal) */
 body.hust-admin-hotel .table-modal {
-  width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 0;
+  width: 100%; border-collapse: collapse; font-size: 13px;
 }
 body.hust-admin-hotel .table-modal th,
 body.hust-admin-hotel .table-modal td {
-  border: 1px solid #dee2e6; padding: 8px 10px; text-align: left; vertical-align: middle;
+  border: 1px solid #dee2e6; padding: 10px; text-align: left; vertical-align: middle;
 }
-body.hust-admin-hotel .table-modal th {
-  background-color: #f1f3f5; font-weight: 600; color: #495057;
-}
+body.hust-admin-hotel .table-modal th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
 
-/* Nút nhỏ (btn-sm) dùng trong bảng Policy */
+/* Badge (Dùng trong bảng Lịch sử) */
+body.hust-admin-hotel .badge {
+  display: inline-block; padding: 0.4em 0.8em; font-size: 11px; font-weight: 700;
+  line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline;
+  border-radius: 12px;
+}
+body.hust-admin-hotel .badge-success { color: #fff; background-color: #28a745; }
+body.hust-admin-hotel .badge-danger { color: #fff; background-color: #dc3545; }
+body.hust-admin-hotel .badge-info { color: #fff; background-color: #17a2b8; }
+body.hust-admin-hotel .badge-warning { color: #212529; background-color: #ffc107; }
+body.hust-admin-hotel .badge-secondary { color: #fff; background-color: #6c757d; }
+
+/* Small buttons (Nút Sửa/Xóa trong bảng lịch sử) */
 body.hust-admin-hotel .btn-sm {
-  padding: 4px 8px;
-  font-size: 12px;
-  margin-left: 2px;
-  cursor: pointer;
-  border-radius: 4px;
-  display: inline-block;
-  line-height: 1.5;
+  padding: 5px 10px; font-size: 12px; height: auto; border-radius: 4px;
+  margin: 0 2px; cursor: pointer; transition: all 0.2s;
+  display: inline-block; line-height: 1.2;
 }
-
 body.hust-admin-hotel .btn-outline-primary {
-  color: #0d6efd;
-  border: 1px solid #0d6efd;
-  background-color: transparent;
-  box-shadow: none;
+  color: #007bff; border: 1px solid #007bff; background: transparent;
 }
 body.hust-admin-hotel .btn-outline-primary:hover {
-  color: #fff;
-  background-color: #0d6efd;
+  color: #fff; background-color: #007bff;
 }
-
 body.hust-admin-hotel .btn-outline-danger {
-  color: #dc3545;
-  border: 1px solid #dc3545;
-  background-color: transparent;
-  box-shadow: none;
+  color: #dc3545; border: 1px solid #dc3545; background: transparent;
 }
 body.hust-admin-hotel .btn-outline-danger:hover {
-  color: #fff;
-  background-color: #dc3545;
+  color: #fff; background-color: #dc3545;
+}
+
+/* Toastify Override */
+.toastify {
+  font-family: 'Poppins', sans-serif !important; border-radius: 8px !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+  font-size: 14px !important; padding: 12px !important;
 }

@@ -58,6 +58,7 @@
     <div class="modal-content">
         <span class="close-modal">&times;</span>
         <h2>Hoàn tất đặt phòng</h2>
+
         <form id="hotel-form">
             <label for="checkin-date">Ngày nhận phòng</label>
             <input type="date" id="checkin-date" required>
@@ -70,8 +71,11 @@
 
             <div class="room-selection">
                 <button type="button" id="choose-room-btn">Chọn phòng</button>
+
                 <div id="room-list" class="room-list" style="display: none"></div>
             </div>
+
+            <div id="selected-info" style="margin-top: 15px; margin-bottom: 15px;"></div>
 
             <button type="submit">Xác nhận</button>
         </form>
@@ -115,6 +119,14 @@
     .chatbot-float:hover {
         transform: scale(1.1);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    /* Thêm style bổ trợ cho modal nếu css gốc chưa có */
+    .room-box {
+        transition: all 0.2s;
+    }
+    .room-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 </style>
 

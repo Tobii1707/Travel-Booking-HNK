@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 let hotelData = [];
 let selectedRooms = []; // Mảng toàn cục lưu các phòng đang chọn
+let currentHotelPolicies = []; // [MỚI] Lưu danh sách chính sách của khách sạn đang xem
 
 /* ================= CHỨC NĂNG CŨ (GIỮ NGUYÊN) ================= */
 
@@ -85,11 +86,8 @@ function bindHotelFormSubmit() {
     const endHotelISO = formatHotelDate(checkoutDate, true);
 
     // --- FIX QUAN TRỌNG: Map lại object để loại bỏ ByteBuddy Proxy ---
-    // Backend Spring Boot chỉ cần ID để map entity
     const cleanRoomList = selectedRooms.map(room => ({
       id: room.id
-      // Nếu Backend yêu cầu bắt buộc phải có price/roomNumber thì uncomment dòng dưới:
-      // , price: room.price, roomNumber: room.roomNumber
     }));
 
     const payload = {
@@ -107,7 +105,6 @@ function bindHotelFormSubmit() {
     })
         .then(async response => {
           if (!response.ok) {
-            // Cố gắng đọc lỗi text hoặc json
             const text = await response.text();
             try {
               const jsonError = JSON.parse(text);
@@ -133,7 +130,6 @@ function bindHotelFormSubmit() {
             const errJson = JSON.parse(error.message);
             alert("Lỗi: " + (errJson.message || "Hệ thống bận"));
           } catch(e) {
-            // Nếu lỗi là text raw (ví dụ stacktrace)
             alert("Lỗi hệ thống: " + error.message.substring(0, 100) + "...");
           }
         });
@@ -196,14 +192,56 @@ function showError(message) {
   if (hotelList) hotelList.innerHTML = `<p class="error-message">${message}</p>`;
 }
 
-/* ================= LOGIC MODAL & ROOM LIST ================= */
+/* ================= LOGIC MODAL & ROOM LIST (CẬP NHẬT) ================= */
 
-function openHotelModal(hotelId) {
+// [MỚI] Hàm hỗ trợ định dạng tiền tệ
+function formatCurrency(amount) {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+}
+
+// [MỚI] Hàm format ngày Việt Nam (dd/mm/yyyy)
+function formatDateVN(dateStr) {
+  if (!dateStr) return '...';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+// [MỚI] Hàm kiểm tra ngày có nằm trong khoảng chính sách không
+function isDateInPolicy(targetDateStr, startDateStr, endDateStr) {
+  if (!targetDateStr || !startDateStr || !endDateStr) return false;
+  const target = new Date(targetDateStr);
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+
+  // Reset giờ về 0 để so sánh ngày chính xác
+  target.setHours(0,0,0,0);
+  start.setHours(0,0,0,0);
+  end.setHours(0,0,0,0);
+
+  return target >= start && target <= end;
+}
+
+// [ĐÃ SỬA] Thêm logic fetch chính sách khi mở modal
+async function openHotelModal(hotelId) {
   const hotelIdInput = document.getElementById("hotel-id");
   if (hotelIdInput) hotelIdInput.value = hotelId;
 
   selectedRooms = [];
-  updateSelectedUI();
+  currentHotelPolicies = []; // Reset chính sách cũ
+
+  // 1. Fetch Chính sách giá từ API thật
+  try {
+    const policyRes = await fetch(`/admin/hotels/${hotelId}/policies`);
+    const policyData = await policyRes.json();
+    if (policyData.code === 1000 && policyData.data) {
+      currentHotelPolicies = policyData.data;
+      console.log("Đã tải chính sách KS:", currentHotelPolicies);
+    }
+  } catch (e) {
+    console.warn("Không tải được lịch sử chính sách:", e);
+  }
+
+  updateSelectedUI(); // Reset UI về trạng thái chưa chọn
 
   const modal = document.getElementById("hotel-modal");
   if (modal) modal.style.display = "flex";
@@ -251,6 +289,9 @@ function openHotelModal(hotelId) {
         if (Array.isArray(rooms) && rooms.length > 0) {
           renderRoomList(rooms, Array.isArray(bookedIds) ? bookedIds : []);
           chooseRoomBtn.textContent = "Cập nhật ngày";
+
+          // [QUAN TRỌNG] Gọi lại update UI để tính lại giá theo ngày mới
+          updateSelectedUI();
         } else {
           roomList.innerHTML = "<p class='error-message'>Khách sạn này chưa cập nhật danh sách phòng!</p>";
         }
@@ -274,8 +315,12 @@ function renderRoomList(rooms, bookedIds) {
   });
 
   const floors = {};
+
   rooms.forEach(room => {
-    let floorNum = String(room.roomNumber).substring(0, 1);
+    let cleanNumber = parseInt(String(room.roomNumber).replace(/\D/g, '')) || 0;
+    let floorNum = Math.floor(cleanNumber / 100);
+    if (floorNum === 0) floorNum = 1;
+
     if (!floors[floorNum]) floors[floorNum] = [];
     floors[floorNum].push(room);
   });
@@ -345,25 +390,149 @@ function toggleSelectRoom(room, element) {
   updateSelectedUI();
 }
 
+// [ĐÃ SỬA ĐẦY ĐỦ LOGIC + HIỂN THỊ CẢNH BÁO]
 function updateSelectedUI() {
   let infoDiv = document.getElementById("selected-info");
 
+  // Tạo div nếu chưa có
   if (!infoDiv) {
     const modalBody = document.querySelector("#hotel-modal .modal-content");
     if (modalBody) {
       infoDiv = document.createElement("div");
       infoDiv.id = "selected-info";
-      infoDiv.style.marginTop = "10px";
-      infoDiv.style.fontWeight = "bold";
-      infoDiv.style.color = "var(--primary-color)";
-      modalBody.insertBefore(infoDiv, document.getElementById("hotel-form"));
+      infoDiv.style.marginTop = "15px";
+      const hotelForm = document.getElementById("hotel-form");
+      if (hotelForm) {
+        modalBody.insertBefore(infoDiv, hotelForm);
+      } else {
+        modalBody.appendChild(infoDiv);
+      }
     } else return;
   }
 
+  // 1. Nếu chưa chọn phòng
   if (selectedRooms.length === 0) {
-    infoDiv.innerText = "Chưa chọn phòng nào.";
-  } else {
-    const total = selectedRooms.reduce((sum, r) => sum + r.price, 0);
-    infoDiv.innerText = `Đã chọn: ${selectedRooms.length} phòng. Tổng tạm tính: ${total.toLocaleString()} VND`;
+    infoDiv.innerHTML = '<div style="color: #666; text-align: center; padding: 10px;">Vui lòng chọn phòng trên sơ đồ</div>';
+    infoDiv.style.display = "block";
+    return;
   }
+  infoDiv.style.display = "block";
+
+  // 2. Tính tổng tiền hiện tại từ API (Đây là giá ĐÃ tính chính sách rồi)
+  const currentTotalFromApi = selectedRooms.reduce((sum, r) => sum + r.price, 0);
+
+  // 3. Tìm chính sách áp dụng
+  const checkInVal = document.getElementById("checkin-date").value;
+  let activePolicy = null;
+
+  if (checkInVal && currentHotelPolicies.length > 0) {
+    activePolicy = currentHotelPolicies.find(p => isDateInPolicy(checkInVal, p.startDate, p.endDate));
+  }
+
+  // 4. Logic hiển thị
+  let originalPrice = currentTotalFromApi;
+  let finalPrice = currentTotalFromApi;
+
+  let percentage = 0;
+  let isSurcharge = false;
+  let policyName = "";
+  let policyDateRange = ""; // [MỚI] Biến lưu chuỗi ngày
+
+  if (activePolicy) {
+    policyName = activePolicy.name || "Chính sách đặc biệt";
+
+    // [MỚI] Tạo chuỗi hiển thị ngày
+    const startStr = formatDateVN(activePolicy.startDate);
+    const endStr = formatDateVN(activePolicy.endDate);
+    policyDateRange = `${startStr} - ${endStr}`;
+
+    percentage = activePolicy.percentage !== undefined ? activePolicy.percentage : (activePolicy.adjustmentValue || 0);
+    isSurcharge = percentage > 0;
+
+    // Tính ngược lại giá gốc để hiển thị gạch ngang (Tránh Double Discount)
+    if (percentage !== 0) {
+      originalPrice = currentTotalFromApi / (1 + (percentage / 100));
+    }
+  }
+
+  // 5. Xây dựng HTML hiển thị
+  const colorTheme = isSurcharge ? '#dc3545' : '#29b862'; // Đỏ (Tăng) hoặc Xanh (Giảm)
+  const badgeText = percentage > 0 ? `+${percentage}%` : `${percentage}%`;
+  const iconClass = isSurcharge ? '↑' : '↓';
+
+  let htmlContent = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1rem;">
+            <span>Đã chọn:</span>
+            <strong>${selectedRooms.length} phòng</strong>
+        </div>
+    `;
+
+  // TRƯỜNG HỢP CÓ CHÍNH SÁCH
+  if (percentage !== 0) {
+    htmlContent += `
+            <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px dashed ${colorTheme}; position: relative; overflow: hidden; margin-bottom: 10px;">
+                
+                <div style="
+                    position: absolute; top: 0; right: 0; 
+                    background: ${colorTheme}; color: white; 
+                    font-size: 0.75rem; font-weight: bold; 
+                    padding: 3px 10px; border-bottom-left-radius: 8px;">
+                    ${policyName}
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 10px; font-size: 0.85rem; color: #555;">
+                    <i class="fa fa-calendar-check-o" aria-hidden="true"></i> Áp dụng: <strong>${policyDateRange}</strong>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <div style="font-size: 0.85rem; color: #888; margin-bottom: 2px;">Giá gốc (Ngày thường)</div>
+                        <div style="text-decoration: line-through; color: #999; font-size: 1.1rem;">
+                            ${formatCurrency(originalPrice)} 
+                        </div>
+                    </div>
+
+                    <div style="text-align: right;">
+                         <span style="
+                            display: inline-block;
+                            background: ${isSurcharge ? '#ffebee' : '#e8f5e9'}; 
+                            color: ${colorTheme};
+                            padding: 2px 8px; border-radius: 4px; 
+                            font-size: 0.9rem; font-weight: bold; margin-bottom: 4px;">
+                            ${badgeText} ${iconClass}
+                        </span>
+                        
+                        <div style="color: ${colorTheme}; font-size: 1.5rem; font-weight: 700; line-height: 1.2;">
+                            ${formatCurrency(finalPrice)}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="
+                    margin-top: 12px; 
+                    background-color: #fff3cd; 
+                    color: #856404; 
+                    padding: 8px; 
+                    border-radius: 4px; 
+                    font-size: 0.8rem; 
+                    border: 1px solid #ffeeba;">
+                    <strong>Lưu ý:</strong> Mức giá ${isSurcharge ? 'phụ thu' : 'ưu đãi'} trên chỉ áp dụng cho các đêm nằm trong khoảng thời gian chính sách. Các đêm nằm ngoài khoảng này sẽ tính theo giá gốc tại thời điểm đó.
+                </div>
+            </div>
+        `;
+  }
+  // TRƯỜNG HỢP KHÔNG CÓ CHÍNH SÁCH
+  else {
+    htmlContent += `
+            <div style="text-align: right; margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                <div style="font-size: 0.9rem; color: #666;">Tổng thanh toán</div>
+                <div style="color: #29b862; font-size: 1.5rem; font-weight: 700;">
+                    ${formatCurrency(finalPrice)}
+                </div>
+                <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">(Đang áp dụng giá tiêu chuẩn)</div>
+            </div>
+        `;
+  }
+
+  infoDiv.innerHTML = htmlContent;
 }
