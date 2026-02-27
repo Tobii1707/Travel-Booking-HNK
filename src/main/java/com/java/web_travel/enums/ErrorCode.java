@@ -55,6 +55,20 @@ public enum ErrorCode {
     SEAT_ALREADY_BOOKED(1048, "Ghế đã có người đặt", HttpStatus.BAD_REQUEST),
     CANNOT_UPDATE_BOOKED_FLIGHT(1049, "Không thể thay đổi ngày hoặc địa điểm của chuyến bay đã có người đặt", HttpStatus.BAD_REQUEST),
     CANNOT_DELETE_BOOKED_FLIGHT(1050, "Không thể xóa chuyến bay đã có người đặt vé", HttpStatus.BAD_REQUEST),
+    AIRLINE_NOT_FOUND(1051, "Không tìm thấy hãng bay", HttpStatus.NOT_FOUND),
+    AIRLINE_EXISTED(1052, "Tên hãng bay đã tồn tại", HttpStatus.BAD_REQUEST),
+    AIRLINE_IS_DELETED(1053, "Hãng bay đã ngừng hoạt động", HttpStatus.BAD_REQUEST),
+    CANNOT_DELETE_PAST_FLIGHT(1054, "Không thể xóa chuyến bay đã khởi hành để bảo toàn lịch sử.", HttpStatus.BAD_REQUEST),
+    CANNOT_UPDATE_PAST_FLIGHT(1055, "Không thể chỉnh sửa thông tin chuyến bay đã khởi hành.", HttpStatus.BAD_REQUEST),
+    REVIEW_ALREADY_EXISTS(1015, "Bạn đã đánh giá cho chuyến đi này rồi!", HttpStatus.BAD_REQUEST),
+    REVIEW_UNAUTHORIZED(1016, "Bạn không có quyền đánh giá đơn hàng của người khác!", HttpStatus.BAD_REQUEST),
+    ORDER_NOT_PAID(1017, "Bạn chỉ được đánh giá sau khi đơn hàng đã thanh toán thành công!", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_FOUND(1018, "Không tìm thấy đánh giá cho đơn hàng này", HttpStatus.NOT_FOUND),
+    INVALID_RATING(1021, "Điểm đánh giá phải nằm trong khoảng từ 1 đến 5", HttpStatus.BAD_REQUEST),
+    INVALID_COMMENT(1022, "Nội dung đánh giá không được để trống", HttpStatus.BAD_REQUEST),
+    COMMENT_TOO_LONG(1023, "Nội dung đánh giá không được vượt quá 1000 ký tự", HttpStatus.BAD_REQUEST),
+    DUPLICATE_DATA(1024, "Dữ liệu bị trùng lặp hoặc máy bay đã bị kẹt lịch!", HttpStatus.BAD_REQUEST),
+    LOCATION_NOT_VALID(1025, "Điểm khởi hành và điểm đến không được trùng nhau!", HttpStatus.BAD_REQUEST)
     ;
 
     private int code ;

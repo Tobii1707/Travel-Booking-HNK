@@ -1,3 +1,64 @@
+/* ==========================================================================
+   CSS CHO TRANG QUẢN LÝ CHUYẾN ĐI (PLAN TRIP)
+   ========================================================================== */
+
+/* Đảm bảo tiêu đề bảng không bị xuống dòng */
+#order-table th {
+  white-space: nowrap;
+  padding: 15px 10px;
+}
+
+/* Căn giữa tiêu đề cột icon */
+#order-table th.text-center { text-align: center; }
+
+/* Nút Chatbot Trôi nổi (Floating) */
+.chatbot-float {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  text-decoration: none;
+}
+.chatbot-float:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+/* Hiệu ứng rung nhẹ cho chatbot để thu hút chú ý */
+@keyframes floatShake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(10deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-10deg); }
+  100% { transform: rotate(0deg); }
+}
+.chatbot-float:hover i {
+  animation: floatShake 0.5s ease-in-out;
+}
+
+/* CSS bổ sung làm đẹp Modal Review */
+.review-modal-content { max-width: 500px; padding: 25px; }
+.rating-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #eee;}
+.rating-container:last-of-type { border-bottom: none; }
+.rating-container label { font-weight: 500; color: #333; }
+.star-rating i { font-size: 1.5rem; color: #ccc; cursor: pointer; transition: 0.2s; margin-left: 5px; }
+.star-rating i.active, .star-rating i.hover { color: #ffa500; }
+#review-comment { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Poppins', sans-serif; resize: none; margin-top: 5px; }
+#review-comment:focus { outline: none; border-color: #29b862; }
+
+
 /* Scoped: chỉ áp dụng cho trang có <body class="hust-payment-page"> */
 body.hust-payment-page {
   --primary: #29b862;
@@ -145,7 +206,7 @@ body.hust-payment-page .page-header {
   position: relative;
   height: 40vh;
   background-color: #333;
-  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/images/p-6.jpg');
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../images/p-6.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -191,7 +252,7 @@ body.hust-payment-page table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-  min-width: 1000px; /* Chỉ áp dụng cho bảng chính ở ngoài */
+  min-width: 1000px;
 }
 
 body.hust-payment-page table th,
@@ -205,7 +266,7 @@ body.hust-payment-page table th {
   background-color: var(--primary);
   color: var(--white);
   font-weight: 500;
-  white-space: nowrap;
+  white-space: nowrap; /* SỬA LỖI CHỮ TIÊU ĐỀ BẢNG */
 }
 
 body.hust-payment-page table tbody tr:hover {
@@ -231,6 +292,7 @@ body.hust-payment-page .btn {
   color: var(--white);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   transition: 0.3s;
+  white-space: nowrap; /* SỬA LỖI CHỮ TRÊN NÚT */
 }
 
 body.hust-payment-page .btn:hover {
@@ -306,13 +368,36 @@ body.hust-payment-page .modal-btn-group {
   justify-content: center;
 }
 
-/* --- FOOTER --- */
-body.hust-payment-page .footer { background: #222; color: #fff; padding: 4rem 7%; margin-top: auto; }
-body.hust-payment-page .footer-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
-body.hust-payment-page .footer-col h2 { font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--primary); }
+/* --- FOOTER (SỬA LỖI CHỮ LIÊN HỆ) --- */
+body.hust-payment-page .footer {
+  background: #222;
+  color: #fff;
+  padding: 4rem 7%;
+  margin-top: auto;
+}
+
+body.hust-payment-page .footer-container {
+  display: grid;
+  /* Tăng min-width lên 280px để tiêu đề không bị bóp nghẹt */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+body.hust-payment-page .footer-col h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary);
+  white-space: nowrap; /* GIỮ TIÊU ĐỀ LUÔN TRÊN 1 DÒNG */
+}
+
 body.hust-payment-page .footer-col ul li { list-style: none; margin-bottom: 10px; }
 body.hust-payment-page .footer-col ul li a,
-body.hust-payment-page .footer-col p { color: #bbb; font-size: 0.9rem; transition: 0.3s; }
+body.hust-payment-page .footer-col p {
+  color: #bbb;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  line-height: 1.6;
+}
 body.hust-payment-page .footer-col ul li a:hover { color: var(--primary); padding-left: 5px; }
 body.hust-payment-page .credit { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid #333; font-size: 1rem; }
 body.hust-payment-page .credit span { color: var(--primary); }
@@ -589,17 +674,17 @@ body.hust-payment-page .invoice-info-row {
 body.hust-payment-page .invoice-info-row .lbl { color: #888; margin-right: 5px; }
 body.hust-payment-page .invoice-info-row .val { font-weight: 600; }
 
-/* Bảng trong Invoice (khác với bảng chính bên ngoài) */
+/* Bảng trong Invoice */
 body.hust-payment-page .invoice-table {
   width: 100%; border-collapse: collapse; margin-bottom: 20px;
-  min-width: 100% !important; /* Đè min-width 1000px của bảng ngoài */
+  min-width: 100% !important;
 }
 body.hust-payment-page .invoice-table th {
   background: #f8f9fa; color: #555; font-weight: 600; text-transform: uppercase;
   font-size: 0.8rem; padding: 10px; border-bottom: 1px solid #ddd;
-  text-align: left; /* Mặc định căn trái */
+  text-align: left;
 }
-/* Override căn chỉnh cho cột cụ thể trong invoice */
+
 body.hust-payment-page .invoice-table th.text-center,
 body.hust-payment-page .invoice-table td.text-center { text-align: center; }
 
@@ -647,11 +732,13 @@ body.hust-payment-page .invoice-stamp.verifying { color: #f39c12; border-color: 
 @media (max-width: 1200px) {
   body.hust-payment-page header { padding: 1rem 2rem; }
 }
+@media (max-width: 768px) {
+  body.hust-payment-page .hero-content h1 { font-size: 2rem; }
+}
 @media (max-width: 600px) {
   body.hust-payment-page .modal-content { width: 95%; padding: 1.5rem; }
   body.hust-payment-page .route-visual { gap: 10px; }
   body.hust-payment-page .loc-code { font-size: 1.4rem; }
-  /* Responsive cho Invoice trên mobile */
   body.hust-payment-page .invoice-header-top { flex-direction: column; align-items: flex-start; gap: 5px; }
   body.hust-payment-page .invoice-stamp { font-size: 1rem; top: 10px; right: 10px; }
 }

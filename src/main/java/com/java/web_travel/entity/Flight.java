@@ -1,6 +1,7 @@
 package com.java.web_travel.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // Import thêm cái này
 import com.java.web_travel.enums.TicketClass;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,8 +17,9 @@ import java.util.List;
                 @Index(name = "idx_flight_check_in", columnList = "check_in_date"),
                 @Index(name = "idx_flight_check_out", columnList = "check_out_date"),
                 @Index(name = "idx_flight_ticket_class", columnList = "ticket_class"),
-                @Index(name = "idx_flight_airline", columnList = "airline_name"),
-                // Thêm index cho 2 trường mới để tìm kiếm nhanh hơn
+
+                @Index(name = "idx_flight_airline", columnList = "airline_id"),
+
                 @Index(name = "idx_flight_departure", columnList = "departure_location"),
                 @Index(name = "idx_flight_arrival", columnList = "arrival_location")
         }
@@ -33,6 +35,14 @@ public class Flight {
     @Column(name = "id")
     private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "airline_id", nullable = false)
+    @JsonIgnoreProperties("flights")
+    private Airline airline;
+
+    @Column(name = "airplane_name", length = 100)
+    private String airplaneName;
+
     @Column(name = "departure_location", nullable = false, length = 100)
     private String departureLocation;
 
@@ -42,9 +52,6 @@ public class Flight {
     @Enumerated(EnumType.STRING)
     @Column(name = "ticket_class", nullable = false, length = 30)
     private TicketClass ticketClass;
-
-    @Column(name = "airline_name", nullable = false, length = 200)
-    private String airlineName;
 
     @Column(name = "price", nullable = false)
     private double price;
@@ -76,4 +83,7 @@ public class Flight {
     @OneToMany(mappedBy = "flight", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<FlightSeat> seats;
+
+    @Column(name = "is_deleted")
+    private boolean deleted = false;
 }

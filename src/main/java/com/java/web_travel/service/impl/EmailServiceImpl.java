@@ -52,14 +52,13 @@ public class EmailServiceImpl implements EmailService {
         EmailDTO emailDTO = new EmailDTO();
 
         emailDTO.setToEmail(order.getUser().getEmail());
-        // Đổi tên tại tiêu đề
         String subject = "Cảm ơn quý ông/bà " + order.getUser().getFullName() + " đã đặt chuyến đi của VIVUTRAVEL";
         emailDTO.setSubject(subject);
 
         String orderDetails = generateOrderInfoHtml(order);
         String body = orderDetails +
                 "<i>Vui lòng sớm thanh toán để có một chuyến đi tuyệt vời.</i><br>" +
-                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên phần footer
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>";
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -76,7 +75,7 @@ public class EmailServiceImpl implements EmailService {
         String orderDetails = generateOrderInfoHtml(order);
         String body = "------------------<b>XÁC NHẬN THANH TOÁN THÀNH CÔNG</b>------------------<br>" +
                 orderDetails +
-                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>";
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -92,9 +91,9 @@ public class EmailServiceImpl implements EmailService {
 
         String orderDetails = generateOrderInfoHtml(order);
         String body = "------------------<b>THANH TOÁN THẤT BẠI</b>------------------<br>" +
-                "---------------<b>VIVUTRAVEL rất tiếc khi phải thông báo rằng bạn đã thanh toán không thành công, vui lòng kiểm tra lại</b><br>" + // Đổi tên
+                "---------------<b>VIVUTRAVEL rất tiếc khi phải thông báo rằng bạn đã thanh toán không thành công, vui lòng kiểm tra lại</b><br>" +
                 orderDetails +
-                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>";
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -110,10 +109,10 @@ public class EmailServiceImpl implements EmailService {
 
         String orderDetails = generateOrderInfoHtml(order);
         String body = "------------------<b>HỦY CHUYẾN THÀNH CÔNG</b>------------------<br>" +
-                "---------------<b>VIVUTRAVEL rất tiếc khi không thể đồng hành cùng bạn trong chuyến đi lần này!</b><br>" + // Đổi tên
+                "---------------<b>VIVUTRAVEL rất tiếc khi không thể đồng hành cùng bạn trong chuyến đi lần này!</b><br>" +
                 "Hẹn quý khách trong một tương lai gần nhất<br>" +
                 orderDetails +
-                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>"; // Đổi tên
+                "<b>VIVUTRAVEL TRÂN TRỌNG CẢM ƠN!</b>";
 
         emailDTO.setBody(body);
         return sendEmail(emailDTO);
@@ -123,17 +122,17 @@ public class EmailServiceImpl implements EmailService {
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setToEmail(toEmail);
-        emailDTO.setSubject("Yêu cầu đặt lại mật khẩu - VIVUTRAVEL"); // Đổi tên
+        emailDTO.setSubject("Yêu cầu đặt lại mật khẩu - VIVUTRAVEL");
 
         String body = "<h3>Xin chào,</h3>" +
-                "<p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản VivuTravel của mình.</p>" + // Đổi tên
+                "<p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản VivuTravel của mình.</p>" +
                 "<p>Vui lòng nhấp vào liên kết bên dưới để đổi mật khẩu:</p>" +
                 "<p><a href=\"" + resetLink + "\">BẤM VÀO ĐÂY ĐỂ ĐẶT LẠI MẬT KHẨU</a></p>" +
                 "<br>" +
                 "<p>Link này sẽ hết hạn sau 1 giờ.</p>" +
                 "<p>Nếu bạn không yêu cầu thay đổi này, vui lòng bỏ qua email này.</p>" +
                 "<br>" +
-                "<b>VIVUTRAVEL TEAM</b>"; // Đổi tên
+                "<b>VIVUTRAVEL TEAM</b>";
 
         emailDTO.setBody(body);
         sendEmail(emailDTO);
@@ -152,25 +151,47 @@ public class EmailServiceImpl implements EmailService {
         return localDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
-    // --- ĐÃ SỬA PHẦN NÀY ---
     private String generateOrderInfoHtml(Order order) {
         String userName = order.getUser().getFullName();
-        String destination = order.getDestination();           // Điểm đến
-        String currentLocation = order.getCurrentLocation();   // Điểm xuất phát (Sửa dòng này)
-
+        String destination = order.getDestination();
+        String currentLocation = order.getCurrentLocation();
         int numberOfPeople = order.getNumberOfPeople();
-        String hotelName = order.getHotel() != null ? order.getHotel().getHotelName() : "N/A";
-        String flightName = order.getFlight() != null ? order.getFlight().getAirlineName() : "N/A";
-        String flightClass = order.getFlight() != null ? order.getFlight().getTicketClass().toString() : "";
+
+        // Xử lý Hotel (Kiểm tra null)
+        String hotelName = (order.getHotel() != null) ? order.getHotel().getHotelName() : "N/A";
+
+        // Xử lý Flight và Airline (Kiểm tra null kỹ càng)
+        String flightName = "N/A";
+        String flightClass = "";
+
+        if (order.getFlight() != null) {
+            // Lấy hạng vé
+            if (order.getFlight().getTicketClass() != null) {
+                flightClass = order.getFlight().getTicketClass().toString();
+            }
+
+            // Lấy tên hãng bay từ object Airline
+            if (order.getFlight().getAirline() != null) {
+                flightName = order.getFlight().getAirline().getAirlineName();
+            } else {
+                flightName = "Chưa cập nhật hãng";
+            }
+
+            // Nếu bạn muốn hiển thị thêm tên máy bay:
+            // if (order.getFlight().getAirplaneName() != null) {
+            //    flightName += " (" + order.getFlight().getAirplaneName() + ")";
+            // }
+        }
+
         String totalPrice = String.valueOf(order.getTotalPrice());
 
         return "---------<b>Thông Tin Chi Tiết Chuyến Đi</b>--------- <br>" +
                 "<b>Người đặt:</b> " + userName + "<br>" +
-                "<b>Điểm xuất phát:</b> " + currentLocation + "<br>"+ // Sửa label
-                "<b>Điểm đến:</b> " + destination + "<br>" +        // Sửa label
+                "<b>Điểm xuất phát:</b> " + currentLocation + "<br>" +
+                "<b>Điểm đến:</b> " + destination + "<br>" +
                 "<b>Số người:</b> " + numberOfPeople + "<br>" +
-                "<b>Tên hãng bay:</b> " + flightName + " - Hạng: " + flightClass + "<br>" +
-                "<b>Tên khách sạn:</b> " + hotelName + "<br>" +
-                "<b>Tổng Chi Phí:</b> " + totalPrice + "<br><br>";
+                "<b>Hãng bay:</b> " + flightName + " - Hạng: " + flightClass + "<br>" +
+                "<b>Khách sạn:</b> " + hotelName + "<br>" +
+                "<b>Tổng Chi Phí:</b> " + totalPrice + " VNĐ<br><br>";
     }
 }

@@ -101,12 +101,33 @@ body.hust-admin-hotel .dropdown-menu a:hover { background-color: #f8f9fa; color:
 
 /* ================= TOP TABS & CLOCK ================= */
 body.hust-admin-hotel .container-info {
-  padding: 1.5rem 5% 0; display: flex; justify-content: space-between; align-items: center;
+  padding: 1.5rem 5% 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px; /* Giảm margin một chút để ôm sát vào Tabs bên dưới */
+}
+
+/* Định dạng cho Tiêu đề trang */
+body.hust-admin-hotel .container-info .left p {
+  font-size: 16px;
+  margin: 0;
+  color: #2c3e50;
+}
+
+/* Wrapper bọc các nút gạt */
+body.hust-admin-hotel .tabs-wrapper {
+  padding: 0 5%;
   margin-bottom: 20px;
 }
+
 body.hust-admin-hotel .left-tabs {
-  display: flex; background: #e9ecef; padding: 4px; border-radius: 8px;
+  display: inline-flex;
+  background: #e9ecef;
+  padding: 4px;
+  border-radius: 8px;
 }
+
 body.hust-admin-hotel .tab-btn {
   padding: 8px 20px;
   border: none; background: transparent;
@@ -119,6 +140,7 @@ body.hust-admin-hotel .tab-btn.active {
   background-color: var(--white); color: var(--primary); font-weight: 600;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
+
 body.hust-admin-hotel .right-clock {
   font-size: 13px; color: #777; background: var(--white);
   padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);

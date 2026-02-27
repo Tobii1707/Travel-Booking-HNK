@@ -9,51 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
     <link rel="stylesheet" href="/css/plan_trip.css">
-
-    <style>
-        /* Đảm bảo tiêu đề bảng không bị xuống dòng */
-        #order-table th { white-space: nowrap; }
-
-        /* Căn giữa tiêu đề cột icon */
-        #order-table th.text-center { text-align: center; }
-
-        /* Nút Chatbot Trôi nổi (Floating) */
-        .chatbot-float {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            text-decoration: none;
-        }
-        .chatbot-float:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-        }
-
-        /* Hiệu ứng rung nhẹ cho chatbot để thu hút chú ý */
-        @keyframes floatShake {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(10deg); }
-            50% { transform: rotate(0deg); }
-            75% { transform: rotate(-10deg); }
-            100% { transform: rotate(0deg); }
-        }
-        .chatbot-float:hover i {
-            animation: floatShake 0.5s ease-in-out;
-        }
-    </style>
 </head>
 
 <body class="hust-payment-page">
@@ -100,7 +55,9 @@
                 <th width="5%">Chọn</th>
                 <th width="5%">Mã</th>
                 <th width="20%">Hành trình (Đi - Đến)</th>
-                <th width="10%" class="text-center">Khách sạn</th> <th width="10%" class="text-center">Máy bay</th>   <th width="20%">Tổng tiền</th>
+                <th width="10%" class="text-center">Khách sạn</th>
+                <th width="10%" class="text-center">Máy bay</th>
+                <th width="20%">Tổng tiền</th>
                 <th width="15%">Trạng thái</th>
                 <th width="10%">Đánh giá</th>
             </tr>
@@ -139,38 +96,58 @@
 
 <div id="review-modal" class="modal">
     <div class="modal-content review-modal-content">
-        <h2 id="review-modal-title">Viết Đánh giá</h2>
+        <h2 id="review-modal-title" style="text-align: center; margin-bottom: 5px;">Viết Đánh giá</h2>
+        <p style="text-align: center; color: #666; font-size: 0.9em; margin-bottom: 20px;">Đơn hàng: <strong id="review-order-display-id"></strong></p>
 
         <input type="hidden" id="review-order-id">
         <input type="hidden" id="review-id">
-        <input type="hidden" id="review-hotel-name">
 
-        <div class="review-hotel-info">
-            <p>Khách sạn: <strong id="review-hotel-display"></strong></p>
+        <div class="rating-container">
+            <label>Khách sạn:</label>
+            <div class="star-rating" data-target="review-hotel-rating">
+                <i class="fas fa-star active" data-val="1"></i>
+                <i class="fas fa-star active" data-val="2"></i>
+                <i class="fas fa-star active" data-val="3"></i>
+                <i class="fas fa-star active" data-val="4"></i>
+                <i class="fas fa-star active" data-val="5"></i>
+            </div>
+            <input type="hidden" id="review-hotel-rating" value="5">
         </div>
 
         <div class="rating-container">
-            <label>Điểm đánh giá:</label>
-            <div class="star-rating">
-                <i class="fas fa-star" data-rating="1"></i>
-                <i class="fas fa-star" data-rating="2"></i>
-                <i class="fas fa-star" data-rating="3"></i>
-                <i class="fas fa-star" data-rating="4"></i>
-                <i class="fas fa-star" data-rating="5"></i>
+            <label>Chuyến bay:</label>
+            <div class="star-rating" data-target="review-flight-rating">
+                <i class="fas fa-star active" data-val="1"></i>
+                <i class="fas fa-star active" data-val="2"></i>
+                <i class="fas fa-star active" data-val="3"></i>
+                <i class="fas fa-star active" data-val="4"></i>
+                <i class="fas fa-star active" data-val="5"></i>
             </div>
-            <input type="hidden" id="review-rating" value="0">
+            <input type="hidden" id="review-flight-rating" value="5">
         </div>
 
-        <div class="comment-container">
-            <label>Nội dung đánh giá:</label>
-            <textarea id="review-comment" placeholder="Chia sẻ trải nghiệm của bạn về khách sạn này..." maxlength="1000" rows="4"></textarea>
-            <small style="color: #999; margin-top: 5px; display: block; text-align: right;">Tối đa 1000 ký tự</small>
+        <div class="rating-container" style="border-bottom: none;">
+            <label>Trải nghiệm đặt vé:</label>
+            <div class="star-rating" data-target="review-website-rating">
+                <i class="fas fa-star active" data-val="1"></i>
+                <i class="fas fa-star active" data-val="2"></i>
+                <i class="fas fa-star active" data-val="3"></i>
+                <i class="fas fa-star active" data-val="4"></i>
+                <i class="fas fa-star active" data-val="5"></i>
+            </div>
+            <input type="hidden" id="review-website-rating" value="5">
         </div>
 
-        <div class="modal-btn-group">
-            <button id="submit-review-btn" class="btn pay">Gửi đánh giá</button>
+        <div class="comment-container" style="margin-top: 10px;">
+            <label style="font-weight: 500;">Nhận xét chi tiết:</label>
+            <textarea id="review-comment" placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ..." maxlength="1000" rows="4"></textarea>
+            <small style="color: #999; display: block; text-align: right;">Tối đa 1000 ký tự</small>
+        </div>
+
+        <div class="modal-btn-group" style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="submit-review-btn" class="btn pay" style="flex: 1;">Gửi đánh giá</button>
             <button id="delete-review-btn" class="btn cancel" style="display:none; background-color: #c0392b;">Xóa</button>
-            <button id="close-review-modal-btn" class="btn cancel">Hủy</button>
+            <button id="close-review-modal-btn" class="btn cancel" style="flex: 1;">Hủy</button>
         </div>
     </div>
 </div>

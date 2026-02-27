@@ -1,17 +1,18 @@
 package com.java.web_travel.controller.admin;
 
-// Import các class cần thiết (Entity, DTO, Response Wrapper, Service...)
 import com.java.web_travel.entity.Flight;
+import com.java.web_travel.entity.FlightPriceHistory;
 import com.java.web_travel.model.request.FlightDTO;
 import com.java.web_travel.model.response.ApiResponse;
 import com.java.web_travel.service.FlightService;
 import jakarta.validation.Valid;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/flight")
@@ -21,75 +22,153 @@ public class FlightController {
     @Autowired
     private FlightService flightService;
 
-    // --- API 1: TẠO MỚI CHUYẾN BAY (GIỮ NGUYÊN) ---
+    // --- 1. TẠO MỚI (Admin chọn hãng từ Dropdown -> gửi airlineId) ---
     @PostMapping("/create")
     public ApiResponse<Flight> createFlight(@Valid @RequestBody FlightDTO flightDTO) {
-        log.info("Create flightDTO: {}", flightDTO);
+        log.info("Create flight request with Airline ID: {}", flightDTO.getAirlineId());
         ApiResponse<Flight> apiResponse = new ApiResponse<>();
         Flight flight = flightService.createFlight(flightDTO);
         apiResponse.setData(flight);
-        apiResponse.setMessage("Flight created");
-        log.info("Flight created successfully: {}", flight);
+        apiResponse.setMessage("Flight created successfully");
         return apiResponse;
     }
 
-    // --- API 2: XÓA CHUYẾN BAY (GIỮ NGUYÊN) ---
+    // --- 2. XÓA (Xóa mềm) ---
     @DeleteMapping("/delete/{id}")
-    public ApiResponse<Flight> deleteFlight(@PathVariable Long id) {
-        log.info("Delete flight id = : {}", id);
-        ApiResponse<Flight> apiResponse = new ApiResponse<>();
+    public ApiResponse<Void> deleteFlight(@PathVariable Long id) {
         flightService.deleteFlight(id);
-        apiResponse.setMessage("Flight deleted");
-        log.info("Flight deleted successfully id = : {}", id);
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Flight moved to trash successfully");
         return apiResponse;
     }
 
-    // --- API 3: CẬP NHẬT CHUYẾN BAY (GIỮ NGUYÊN) ---
+    // --- 3. CẬP NHẬT ---
     @PatchMapping("/update/{id}")
     public ApiResponse<Flight> updateFlight(@PathVariable Long id, @Valid @RequestBody FlightDTO flightDTO) {
-        log.info("Update flight id = {}", id);
         ApiResponse<Flight> apiResponse = new ApiResponse<>();
         apiResponse.setData(flightService.updateFlight(id, flightDTO));
-        apiResponse.setMessage("Flight updated");
-        log.info("Flight updated successfully id = {}", id);
+        apiResponse.setMessage("Flight updated successfully");
         return apiResponse;
     }
 
-    // --- API 4: LẤY DANH SÁCH TẤT CẢ (GIỮ NGUYÊN) ---
+    // --- 4. LẤY TẤT CẢ (Dành cho ADMIN - Xem cả chuyến đã bay và chưa bay) ---
     @GetMapping("/getAll")
     public ApiResponse<List<Flight>> getAllFlights() {
-        log.info("Get all flights");
         ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
         apiResponse.setData(flightService.getAllFlights());
         apiResponse.setMessage("success");
-        log.info("Get all success");
         return apiResponse;
     }
 
-    // --- API 5: GỢI Ý CHUYẾN BAY THEO ĐỊA ĐIỂM (MỚI THÊM VÀO) ---
-    // URL mẫu: /flight/suggest?from=Hà Nội&to=Đà Nẵng
+    // --- 5. GỢI Ý CHUYẾN BAY (Cho khách hàng) ---
     @GetMapping("/suggest")
     public ApiResponse<List<Flight>> suggestFlights(
-            @RequestParam String from, // Lấy tham số 'from' trên URL
-            @RequestParam String to    // Lấy tham số 'to' trên URL
+            @RequestParam String from,
+            @RequestParam String to
     ) {
-        log.info("Request suggest flight from: {} to: {}", from, to);
+        List<Flight> flights = flightService.getSuggestedFlights(from, to);
+        ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(flights);
+        apiResponse.setMessage(flights.isEmpty() ? "No flights found" : "Found " + flights.size() + " flights");
+        return apiResponse;
+    }
+
+    // --- 6. TÌM KIẾM CHUYẾN BAY DÀNH CHO ADMIN (ĐÃ TỐI ƯU GỌI XUỐNG DB) ---
+    @GetMapping("/admin-search")
+    public ApiResponse<List<Flight>> searchFlightAdmin(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String departure,
+            @RequestParam(required = false) String arrival,
+            @RequestParam(required = false) Long airlineId
+    ) {
+        log.info("Admin search flights with keyword: {}, departure: {}, arrival: {}, airlineId: {}",
+                keyword, departure, arrival, airlineId);
+
+        // Gọi thẳng xuống Service, DB sẽ đảm nhiệm việc lọc dữ liệu
+        List<Flight> searchResults = flightService.searchFlightsForAdmin(keyword, departure, arrival, airlineId);
+
+        ApiResponse<List<Flight>> response = new ApiResponse<>();
+        response.setData(searchResults);
+        response.setMessage(searchResults.isEmpty() ? "No flights found" : "Found " + searchResults.size() + " flights");
+        return response;
+    }
+
+    // --- 7. LẤY DANH SÁCH TRONG THÙNG RÁC (Cho Admin) ---
+    @GetMapping("/trash")
+    public ApiResponse<List<Flight>> getDeletedFlights() {
+        ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(flightService.getDeletedFlights());
+        apiResponse.setMessage("Fetched trash successfully");
+        return apiResponse;
+    }
+
+    // --- 8. KHÔI PHỤC CHUYẾN BAY (Cho Admin) ---
+    @PatchMapping("/restore/{id}")
+    public ApiResponse<Flight> restoreFlight(@PathVariable Long id) {
+        ApiResponse<Flight> apiResponse = new ApiResponse<>();
+        apiResponse.setData(flightService.restoreFlight(id));
+        apiResponse.setMessage("Flight restored successfully");
+        return apiResponse;
+    }
+
+    // --- 9. LẤY DANH SÁCH CHUYẾN BAY SẮP TỚI (Cho trang chủ/Trang đặt vé của Khách) ---
+    @GetMapping("/upcoming")
+    public ApiResponse<List<Flight>> getUpcomingFlights() {
+        ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(flightService.getUpcomingFlightsForUser());
+        apiResponse.setMessage("success");
+        return apiResponse;
+    }
+
+    // --- 10. TẠO NHIỀU CHUYẾN BAY CÙNG LÚC (BATCH CREATE) ---
+    @PostMapping("/create-batch/{airlineId}")
+    public ApiResponse<List<Flight>> createMultipleFlights(
+            @PathVariable Long airlineId,
+            @Valid @RequestBody List<FlightDTO> flightDTOs) {
+        log.info("Create multiple flights request with Airline ID: {} and size: {}", airlineId, flightDTOs.size());
+
+        List<Flight> createdFlights = flightService.createMultipleFlights(airlineId, flightDTOs);
 
         ApiResponse<List<Flight>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(createdFlights);
+        apiResponse.setMessage("Successfully created " + createdFlights.size() + " flights");
+        return apiResponse;
+    }
 
-        // Gọi hàm Service mới viết để lấy danh sách
-        List<Flight> flights = flightService.getSuggestedFlights(from, to);
+    // --- 11. ĐIỀU CHỈNH GIÁ VĨNH VIỄN CHO CÁC CHUYẾN BAY ĐƯỢC CHỌN (BATCH UPDATE) ---
 
-        apiResponse.setData(flights);
+    // Tạo Class DTO nhỏ để hứng dữ liệu từ Frontend
+    @Getter
+    @Setter
+    public static class PriceAdjustmentRequest {
+        private List<Long> flightIds;
+        private double percentage;
+    }
 
-        // Thông báo kết quả cho rõ ràng
-        if(flights.isEmpty()){
-            apiResponse.setMessage("No suitable flights found (future flights only)");
-        } else {
-            apiResponse.setMessage("Found " + flights.size() + " flights");
-        }
+    @PatchMapping("/adjust-price-batch")
+    public ApiResponse<Void> adjustPriceForSelectedFlights(@RequestBody PriceAdjustmentRequest request) {
+        log.info("Admin request to adjust prices for {} flights by {}%",
+                request.getFlightIds() != null ? request.getFlightIds().size() : 0,
+                request.getPercentage());
 
-        log.info("Suggest flight success, found: {}", flights.size());
+        flightService.adjustPriceForSelectedFlights(request.getFlightIds(), request.getPercentage());
+
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        String action = request.getPercentage() > 0 ? "increased" : "decreased";
+        apiResponse.setMessage("Flight prices successfully " + action + " by " + Math.abs(request.getPercentage()) + "%");
+        return apiResponse;
+    }
+
+    // --- 12. XEM LỊCH SỬ THAY ĐỔI GIÁ CỦA CHUYẾN BAY ---
+    @GetMapping("/price-history/{id}")
+    public ApiResponse<List<FlightPriceHistory>> getFlightPriceHistory(@PathVariable Long id) {
+        log.info("Admin fetch price history for flight ID: {}", id);
+
+        List<FlightPriceHistory> historyList = flightService.getFlightPriceHistory(id);
+
+        ApiResponse<List<FlightPriceHistory>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(historyList);
+        apiResponse.setMessage(historyList.isEmpty() ? "No history found" : "Fetched history successfully");
         return apiResponse;
     }
 }

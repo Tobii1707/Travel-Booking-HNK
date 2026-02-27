@@ -168,7 +168,7 @@ body.hust-flight-page .hero-content p { font-size: 1.2rem; font-weight: 300; opa
 
 body.hust-flight-page .container { padding: 0 7% 4rem; }
 
-/* --- THÊM MỚI: SEARCH BOX CSS --- */
+/* --- SEARCH BOX CSS --- */
 body.hust-flight-page .search-box {
   background: var(--white);
   padding: 20px 30px;
@@ -177,7 +177,7 @@ body.hust-flight-page .search-box {
   display: flex;
   align-items: flex-end;
   gap: 20px;
-  margin-top: -80px; /* Đẩy lên đè vào hero section */
+  margin-top: -80px;
   margin-bottom: 40px;
   position: relative;
   z-index: 10;
@@ -216,7 +216,7 @@ body.hust-flight-page .search-box button {
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  height: 46px; /* Bằng chiều cao input */
+  height: 46px;
 }
 body.hust-flight-page .search-box button:hover { background: var(--primary-dark); }
 
@@ -235,105 +235,167 @@ body.hust-flight-page .section-heading h1 {
 }
 body.hust-flight-page .section-heading span { color: var(--secondary); }
 
+
 /* =========================================
-   FLIGHT LIST
+   FLIGHT LIST (ĐÃ CẬP NHẬT GIAO DIỆN MỚI 2 CỘT)
    ========================================= */
 body.hust-flight-page .flight-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
-}
-
-body.hust-flight-page .flight-list > div {
-  background: var(--white);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  transition: 0.3s;
   display: flex;
   flex-direction: column;
-  position: relative;
-  border: 1px solid #e1e8ed;
-  max-height: 480px; /* Tăng chiều cao để chứa thêm lộ trình */
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--secondary) transparent;
+  gap: 20px;
+  padding-bottom: 30px;
 }
 
-body.hust-flight-page .flight-list > div:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(52, 152, 219, 0.2);
+body.hust-flight-page .flight-item {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  padding: 20px 25px;
+  display: grid;
+  grid-template-columns: 1fr auto; /* Chia 2 cột */
+  gap: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #e1e8ed;
+}
+
+body.hust-flight-page .flight-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(52, 152, 219, 0.15);
   border-color: var(--secondary);
 }
 
-body.hust-flight-page .flight-list > div::before {
-  content: '';
-  display: block;
-  min-height: 80px;
-  height: 80px;
-  background: linear-gradient(to right, var(--secondary), #2980b9);
-  width: 100%;
-  position: sticky; top: 0; left: 0; z-index: 0;
-  flex-shrink: 0;
-}
-
-body.hust-flight-page .flight-list > div:not(:has(img))::after {
-  content: '\f5af';
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  position: absolute;
-  top: 20px; right: 20px;
-  font-size: 2.5rem;
-  color: rgba(255,255,255,0.3);
-  z-index: 1;
-}
-
-body.hust-flight-page .flight-list > div .airline-name {
-  position: relative; z-index: 1;
-  color: var(--white);
-  margin: -55px 20px 15px 20px;
-  font-size: 1.4rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-body.hust-flight-page .flight-list > div p,
-body.hust-flight-page .flight-list > div div:not(.airline-name):not(.route-info) {
-  padding: 5px 20px;
-  color: var(--text-light);
-  font-size: 0.95rem;
+/* Cột Trái: Thông tin */
+body.hust-flight-page .flight-info-left {
   display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+body.hust-flight-page .airline-badge {
+  display: inline-flex;
   align-items: center;
   gap: 10px;
 }
-
-body.hust-flight-page .flight-list > div .price {
-  color: var(--primary) !important;
+body.hust-flight-page .airline-name-txt {
+  font-size: 1.1rem;
   font-weight: 700;
-  font-size: 1.2rem;
-  margin-top: 10px;
+  color: var(--text-dark);
+  text-transform: uppercase;
+}
+body.hust-flight-page .airplane-code {
+  background: var(--bg-light);
+  color: var(--text-light);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #eee;
 }
 
-body.hust-flight-page .flight-list > div button {
-  margin: 20px;
-  padding: 14px;
-  background: var(--white);
-  color: var(--secondary);
-  border: 2px solid var(--secondary);
-  border-radius: 50px;
-  font-weight: 700;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: 0.3s;
+/* Box thời gian & lộ trình */
+body.hust-flight-page .route-time-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-light);
+  padding: 15px 20px;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+body.hust-flight-page .time-point {
   text-align: center;
 }
-
-body.hust-flight-page .flight-list > div button:hover {
-  background: var(--secondary);
-  color: var(--white);
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+body.hust-flight-page .huge-time {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1;
 }
+body.hust-flight-page .location-code {
+  font-weight: 600;
+  color: var(--secondary);
+  margin-top: 5px;
+  font-size: 0.95rem;
+}
+body.hust-flight-page .route-arrow-visual {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px;
+}
+body.hust-flight-page .route-line {
+  width: 100%;
+  height: 2px;
+  background: #cbd5e1;
+  position: relative;
+  margin-top: 5px;
+}
+body.hust-flight-page .route-line::after {
+  content: '\f0fb';
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  right: -8px;
+  top: -11px;
+  font-size: 16px;
+  color: var(--secondary);
+}
+
+/* Thông tin phụ */
+body.hust-flight-page .secondary-details {
+  display: flex;
+  gap: 20px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  flex-wrap: wrap;
+}
+body.hust-flight-page .detail-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Cột Phải: Giá và Nút bấm */
+body.hust-flight-page .flight-action-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding-left: 20px;
+  border-left: 2px dashed #eee;
+  min-width: 180px;
+}
+
+body.hust-flight-page .price-tag-huge {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--danger);
+  margin-bottom: 5px;
+}
+body.hust-flight-page .price-unit {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+body.hust-flight-page .choose-flight-btn {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+  margin-top: 15px;
+  font-size: 0.95rem;
+}
+body.hust-flight-page .choose-flight-btn:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 5px 15px rgba(41, 184, 98, 0.3);
+}
+
 
 /* =========================================
    SEAT SELECTION MODAL
@@ -535,16 +597,47 @@ body.hust-flight-page .credit {
 body.hust-flight-page .credit span { color: var(--primary); }
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE (Đã tích hợp responsive cho giao diện vé 2 cột)
    ========================================= */
 @media (max-width: 1200px) {
   body.hust-flight-page header { padding: 1rem 2rem; }
 }
+
 @media (max-width: 768px) {
   body.hust-flight-page .seat-grid { grid-template-columns: repeat(4, 1fr); }
   body.hust-flight-page .search-box { margin-top: 20px; }
+
+  /* Chuyển layout vé thành 1 cột trên Mobile */
+  body.hust-flight-page .flight-item {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  body.hust-flight-page .flight-action-right {
+    border-left: none;
+    border-top: 2px dashed #eee;
+    padding-left: 0;
+    padding-top: 15px;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  body.hust-flight-page .choose-flight-btn {
+    width: auto;
+    margin-top: 0;
+  }
 }
+
 @media (max-width: 480px) {
   body.hust-flight-page .seat-grid { grid-template-columns: repeat(3, 1fr); }
   body.hust-flight-page .seat-modal-content { width: 95%; }
+
+  /* Xử lý hiển thị giá trên màn hình siêu nhỏ */
+  body.hust-flight-page .flight-action-right {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  body.hust-flight-page .choose-flight-btn {
+    width: 100%;
+  }
 }

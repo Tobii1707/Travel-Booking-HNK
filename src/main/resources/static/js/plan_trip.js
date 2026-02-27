@@ -86,7 +86,7 @@ function loadOrders(pageNo, pageSize) {
       });
 }
 
-// --- RENDER BẢNG (ĐÃ CẬP NHẬT LOGIC MỚI NHẤT) ---
+// --- RENDER BẢNG ---
 function renderOrders(orders) {
   const tbody = document.querySelector('#order-table tbody');
   if (!tbody) return;
@@ -103,12 +103,12 @@ function renderOrders(orders) {
     row.dataset.order = JSON.stringify(order);
 
     // 1. Checkbox
-    const checkboxHtml = `<td><input type="checkbox" value="${order.id}"></td>`;
+    const checkboxHtml = `<td class="text-center"><input type="checkbox" value="${order.id}"></td>`;
 
     // 2. Mã đơn
-    const idHtml = `<td>${order.id}</td>`;
+    const idHtml = `<td class="text-center">${order.id}</td>`;
 
-    // 3. Hành trình (LOGIC THÔNG MINH: ƯU TIÊN MÁY BAY ĐỂ TRÁNH LỖI "HÀ NỘI -> HÀ NỘI")
+    // 3. Hành trình (CẬP NHẬT: Thêm justify-content:center để căn giữa ô)
     let startPoint = '...';
     let endPoint = '...';
 
@@ -132,8 +132,8 @@ function renderOrders(orders) {
     }
 
     const journeyHtml = `
-        <td>
-            <div style="display:flex; align-items:center; gap:5px; font-weight:500;">
+        <td class="text-center">
+            <div style="display:flex; align-items:center; justify-content:center; gap:5px; font-weight:500;">
                 <span style="color:#666">${startPoint}</span>
                 <i class="fas fa-arrow-right" style="font-size:0.8em; color:#bbb;"></i>
                 <span style="color:var(--primary); font-weight:bold;">${endPoint}</span>
@@ -152,11 +152,11 @@ function renderOrders(orders) {
         : `<span style="color:#ccc; font-size:1.2em;">-</span>`;
     const flightHtml = `<td class="text-center">${flightIcon}</td>`;
 
-    // 6. Giá (CẬP NHẬT: THÊM NÚT XEM CHI TIẾT GIÁ)
+    // 6. Giá
     const price = order.totalPrice ? order.totalPrice.toLocaleString('vi-VN') : '0';
     const priceHtml = `
         <td>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:5px;">
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
                 <span style="font-weight:bold;">${price} đ</span>
                 <button class="btn-icon-eye" style="color:#27ae60; background:rgba(39, 174, 96, 0.1); width:24px; height:24px; font-size:0.8em;" 
                         onclick="showPriceDetails(${order.id})" title="Xem chi tiết hóa đơn">
@@ -177,13 +177,13 @@ function renderOrders(orders) {
         statusText = 'Thanh toán lỗi'; statusColor = 'darkred';
       }
     }
-    const statusHtml = `<td style="color:${statusColor}; font-weight:600; font-size:0.9em;">${statusText}</td>`;
+    const statusHtml = `<td class="text-center" style="color:${statusColor}; font-weight:600; font-size:0.9em;">${statusText}</td>`;
 
     // 8. Review
     const canReview = order.hotel && order.payment && order.payment.status === 'PAID';
     const hotelName = order.hotel ? order.hotel.hotelName.replace(/'/g, "\\'") : '';
     const reviewHtml = `
-        <td>
+        <td class="text-center">
             ${canReview
         ? `<button class="btn review-btn" onclick="openReviewModal(${order.id}, '${hotelName}')"><i class="fas fa-star"></i></button>`
         : ''}
@@ -247,7 +247,7 @@ function showCustomModal(title, content) {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
-// --- POPUP: CHI TIẾT KHÁCH SẠN (GIAO DIỆN VOUCHER MỚI) ---
+// --- POPUP: CHI TIẾT KHÁCH SẠN ---
 window.showHotelDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order || !order.hotel) return;
@@ -310,34 +310,38 @@ window.showHotelDetails = (orderId) => {
   showCustomModal("Xác nhận đặt phòng", html);
 };
 
-// --- POPUP: CHI TIẾT MÁY BAY (GIAO DIỆN VÉ MÁY BAY MỚI) ---
+// --- POPUP: CHI TIẾT MÁY BAY ---
 window.showFlightDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order || !order.flight) return;
 
   const f = order.flight;
 
-  // Xử lý dữ liệu fallback
   const checkIn = f.checkInDate || f.startDate || f.departureTime;
   const checkOut = f.checkOutDate || f.endDate || f.arrivalTime;
 
-  // Tách địa điểm để lấy Mã sân bay giả định (3 chữ cái đầu hoặc tên)
   const depFull = f.departureLocation || f.departure || 'N/A';
   const destFull = f.arrivalLocation || f.destination || 'N/A';
 
   const depCode = depFull.split(',')[0].substring(0, 3).toUpperCase();
   const destCode = destFull.split(',')[0].substring(0, 3).toUpperCase();
 
-  // Ghế ngồi
   let seatDisplay = 'Chưa chọn';
   if (order.listSeats && order.listSeats.trim() !== "") seatDisplay = order.listSeats;
   else if (order.flightSeats && order.flightSeats.length > 0) seatDisplay = order.flightSeats.map(s => s.seatNumber).join(', ');
 
+  const tenHang = f.airline?.airlineName || f.airline?.name || f.airlineName || f.brand || 'Chưa rõ hãng bay';
+
+  let hangVe = f.ticketClass || 'Phổ thông';
+  if (hangVe === 'NORMAL_CLASS' || hangVe === 'ECONOMY') hangVe = 'Phổ thông';
+  else if (hangVe === 'BUSINESS') hangVe = 'Thương gia';
+  else if (hangVe === 'FIRST_CLASS') hangVe = 'Hạng nhất';
+
   const html = `
         <div class="flight-ticket">
             <div class="flight-header">
-                <div class="airline-brand"><i class="fas fa-plane-departure"></i> ${f.brand || 'Hãng bay'}</div>
-                <div class="flight-class">${f.ticketClass || 'Phổ thông'}</div>
+                <div class="airline-brand"><i class="fas fa-plane-departure"></i> ${tenHang}</div>
+                <div class="flight-class">${hangVe}</div>
             </div>
             
             <div class="flight-body">
@@ -367,7 +371,7 @@ window.showFlightDetails = (orderId) => {
                 <div class="flight-details-grid">
                     <div class="detail-item">
                         <span class="detail-label">SỐ HIỆU</span>
-                        <span class="detail-val">${f.flightNumber || 'VN-Default'}</span>
+                        <span class="detail-val">${f.flightNumber || f.airplaneName || 'VN-Default'}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">GHẾ NGỒI</span>
@@ -388,26 +392,40 @@ window.showFlightDetails = (orderId) => {
   showCustomModal("Vé Máy Bay Điện Tử", html);
 };
 
-// --- POPUP: CHI TIẾT HÓA ĐƠN (GIAO DIỆN INVOICE CHUYÊN NGHIỆP) ---
+// --- POPUP: CHI TIẾT HÓA ĐƠN ---
 window.showPriceDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order) return;
 
-  // --- 1. TÍNH TOÁN DỮ LIỆU ---
+  // --- LOGIC MỚI: TÌM TÊN KHÁCH HÀNG THÔNG MINH ---
+  let customerName = 'Khách hàng';
+
+  // 1. Ưu tiên lấy trực tiếp từ dữ liệu user của order (nếu API có trả về)
+  if (order.user) {
+    if (order.user.fullName) customerName = order.user.fullName;
+    else if (order.user.username) customerName = order.user.username;
+    else if (order.user.email) customerName = order.user.email.split('@')[0];
+  }
+  // 2. Nếu không có trong order, quét các key phổ biến trong LocalStorage
+  if (customerName === 'Khách hàng') {
+    const lsFullName = localStorage.getItem('fullName');
+    const lsUsername = localStorage.getItem('username');
+    const lsEmail = localStorage.getItem('email');
+
+    if (lsFullName && lsFullName !== 'null' && lsFullName !== 'undefined') customerName = lsFullName;
+    else if (lsUsername && lsUsername !== 'null' && lsUsername !== 'undefined') customerName = lsUsername;
+    else if (lsEmail && lsEmail !== 'null' && lsEmail !== 'undefined') customerName = lsEmail.split('@')[0];
+  }
 
   // A. VÉ MÁY BAY
   let flightHtml = '';
   let flightTotal = 0;
 
   if (order.flight) {
-    // Số lượng khách
     const paxCount = order.numberOfPeople || 1;
-    // Đơn giá vé
     const ticketPrice = order.flight.price || 0;
-    // Tổng tiền vé
     flightTotal = ticketPrice * paxCount;
 
-    // Thông tin hiển thị
     const brand = order.flight.brand || 'Hãng bay';
     const route = `${order.flight.departureLocation ? order.flight.departureLocation.split(',')[0] : 'Đi'} - ${order.flight.arrivalLocation ? order.flight.arrivalLocation.split(',')[0] : 'Đến'}`;
 
@@ -429,20 +447,15 @@ window.showPriceDetails = (orderId) => {
   let hotelTotal = 0;
 
   if (order.hotel) {
-    // Lấy tổng tiền đơn hàng (backend trả về)
     const grandTotal = order.totalPrice || 0;
-
-    // Tính tiền khách sạn = Tổng - Vé máy bay (Logic suy luận để khớp tổng)
     hotelTotal = grandTotal - flightTotal;
     if (hotelTotal < 0) hotelTotal = 0;
 
-    // Tính số đêm lưu trú
     const start = new Date(order.startHotel);
     const end = new Date(order.endHotel);
     let nights = Math.round((end - start) / (1000 * 60 * 60 * 24));
     if (nights < 1) nights = 1;
 
-    // Tính đơn giá trung bình 1 đêm (để khách tham khảo)
     const pricePerNight = hotelTotal / nights;
 
     hotelHtml = `
@@ -461,7 +474,6 @@ window.showPriceDetails = (orderId) => {
   // C. TỔNG CỘNG
   const finalTotal = (order.totalPrice || (flightTotal + hotelTotal));
 
-  // Trạng thái thanh toán để đóng dấu
   let paymentStatus = 'UNPAID';
   let stampHtml = '';
   if (order.payment) {
@@ -474,7 +486,7 @@ window.showPriceDetails = (orderId) => {
     }
   }
 
-  // --- 2. TẠO HTML GIAO DIỆN ---
+  // TẠO HTML GIAO DIỆN
   const html = `
     <div class="invoice-wrapper">
         ${stampHtml}
@@ -486,7 +498,7 @@ window.showPriceDetails = (orderId) => {
 
         <div class="invoice-info-row">
             <div>
-                <span class="lbl">Khách hàng:</span> <span class="val">${localStorage.getItem('username') || 'Khách'}</span>
+                <span class="lbl">Khách hàng:</span> <span class="val" style="color:var(--primary); font-weight:bold;">${customerName}</span>
             </div>
             <div>
                 <span class="lbl">Ngày tạo:</span> <span class="val">${new Date().toLocaleDateString('vi-VN')}</span>
@@ -594,87 +606,188 @@ function initActionButtons() {
 }
 
 // --- REVIEW LOGIC ---
+
 function initReviewUI() {
   reviewModal = document.getElementById('review-modal');
-  const starsEl = document.querySelectorAll('.star-rating i');
 
   if (!reviewModal) return;
 
-  starsEl.forEach(s => {
-    s.addEventListener('click', function() {
-      const r = parseInt(this.dataset.rating);
-      document.getElementById('review-rating').value = r;
-      updateStars(r);
+  // Hiệu ứng chọn Sao cho cả 3 tiêu chí
+  document.querySelectorAll(".star-rating").forEach(group => {
+    const stars = group.querySelectorAll("i");
+    const targetInputId = group.getAttribute("data-target");
+    const targetInput = document.getElementById(targetInputId);
+
+    stars.forEach(star => {
+      star.addEventListener("mouseover", function() {
+        const val = parseInt(this.getAttribute("data-val"));
+        stars.forEach(s => {
+          const sVal = parseInt(s.getAttribute("data-val"));
+          s.style.color = sVal <= val ? "#f1c40f" : "#ddd";
+        });
+      });
+
+      star.addEventListener("mouseout", function() {
+        stars.forEach(s => s.style.color = "");
+      });
+
+      star.addEventListener("click", function() {
+        const val = parseInt(this.getAttribute("data-val"));
+        if (targetInput) targetInput.value = val;
+
+        stars.forEach(s => {
+          const sVal = parseInt(s.getAttribute("data-val"));
+          if (sVal <= val) {
+            s.classList.add("active", "fas");
+            s.classList.remove("far");
+          } else {
+            s.classList.remove("active", "fas");
+            s.classList.add("far");
+          }
+        });
+      });
     });
   });
 
+  // Gắn sự kiện submit và đóng modal (Đã xóa dòng gắn sự kiện delete)
   document.getElementById('submit-review-btn')?.addEventListener('click', submitReview);
-  document.getElementById('delete-review-btn')?.addEventListener('click', deleteReview);
   document.getElementById('close-review-modal-btn')?.addEventListener('click', () => reviewModal.style.display = 'none');
 }
 
-function updateStars(rating) {
-  document.querySelectorAll('.star-rating i').forEach(s => {
-    s.classList.toggle('active', parseInt(s.dataset.rating) <= rating);
+// Hàm update giao diện sao
+function updateStarsMulti(hotelRate, flightRate, webRate) {
+  const rates = {
+    'review-hotel-rating': hotelRate || 5,
+    'review-flight-rating': flightRate || 5,
+    'review-website-rating': webRate || 5
+  };
+
+  document.querySelectorAll(".star-rating").forEach(group => {
+    const targetInputId = group.getAttribute("data-target");
+    const val = rates[targetInputId];
+
+    if(document.getElementById(targetInputId)) {
+      document.getElementById(targetInputId).value = val;
+    }
+
+    const stars = group.querySelectorAll("i");
+    stars.forEach(s => {
+      const sVal = parseInt(s.getAttribute("data-val"));
+      if (sVal <= val) {
+        s.classList.add("active", "fas");
+        s.classList.remove("far");
+      } else {
+        s.classList.remove("active", "fas");
+        s.classList.add("far");
+      }
+    });
   });
 }
 
+// Mở modal: Tự động check xem đã có review chưa để quyết định là "Thêm mới" hay "Cập nhật"
 window.openReviewModal = async function(orderId, hotelName) {
   if (!reviewModal) reviewModal = document.getElementById('review-modal');
-  document.getElementById('review-order-id').value = orderId;
-  document.getElementById('review-hotel-display').textContent = hotelName;
-  document.getElementById('review-rating').value = 0;
+
+  const orderIdInput = document.getElementById('review-order-id');
+  const orderDisplay = document.getElementById('review-order-display-id');
+
+  if(orderIdInput) orderIdInput.value = orderId;
+  if(orderDisplay) orderDisplay.textContent = `#${orderId} ${hotelName ? '('+hotelName+')' : ''}`;
+
   document.getElementById('review-comment').value = '';
-  updateStars(0);
+  updateStarsMulti(5, 5, 5); // Default 5 sao
 
   try {
-    const res = await fetch(`/review/order/${orderId}`).then(r => r.json());
-    if(res.code === 1000 && res.data) {
+    const response = await fetch(`/api/reviews/order/${orderId}`);
+
+    if (!response.ok) throw new Error("Chưa có review");
+
+    const reviewData = await response.json();
+
+    if(reviewData && reviewData.id) {
+      // TRƯỜNG HỢP: ĐÃ CÓ REVIEW -> CHUYỂN SANG CHẾ ĐỘ SỬA (UPDATE)
       document.getElementById('review-modal-title').textContent = 'Sửa đánh giá';
-      document.getElementById('review-id').value = res.data.id;
-      document.getElementById('review-rating').value = res.data.rating;
-      document.getElementById('review-comment').value = res.data.comment || '';
-      document.getElementById('delete-review-btn').style.display = 'inline-block';
-      updateStars(res.data.rating);
+      document.getElementById('review-id').value = reviewData.id;
+      document.getElementById('review-comment').value = reviewData.comment || '';
+      // Đã xóa dòng gọi hiển thị nút delete
+
+      updateStarsMulti(reviewData.hotelRating, reviewData.flightRating, reviewData.websiteRating);
     } else {
-      document.getElementById('review-modal-title').textContent = 'Viết đánh giá';
-      document.getElementById('review-id').value = '';
-      document.getElementById('delete-review-btn').style.display = 'none';
+      throw new Error("Dữ liệu rỗng");
     }
-  } catch(e) {}
+  } catch(e) {
+    // TRƯỜNG HỢP: CHƯA CÓ REVIEW -> CHẾ ĐỘ THÊM MỚI
+    document.getElementById('review-modal-title').textContent = 'Viết đánh giá';
+    document.getElementById('review-id').value = '';
+    // Đã xóa dòng ẩn nút delete
+  }
 
   reviewModal.style.display = 'flex';
 };
 
+// Hàm xử lý chung cho cả Tạo mới và Cập nhật
 async function submitReview() {
   const orderId = document.getElementById('review-order-id').value;
-  const reviewId = document.getElementById('review-id').value;
-  const rating = document.getElementById('review-rating').value;
-  const comment = document.getElementById('review-comment').value;
+  const reviewId = document.getElementById('review-id').value; // Sẽ rỗng nếu là thêm mới, có số nếu là update
 
-  if(rating < 1) return alert('Vui lòng chọn số sao!');
+  const hotelRating = document.getElementById('review-hotel-rating').value;
+  const flightRating = document.getElementById('review-flight-rating').value;
+  const websiteRating = document.getElementById('review-website-rating').value;
+  const comment = document.getElementById('review-comment').value.trim(); // Dùng trim() để loại bỏ khoảng trắng thừa
 
-  const url = reviewId ? `/review/${reviewId}/${userId}` : `/review/${orderId}/${userId}`;
-  const method = reviewId ? 'PUT' : 'POST';
+  // Validate Frontend
+  if(hotelRating < 1 || flightRating < 1 || websiteRating < 1) {
+    return alert('Vui lòng chọn đầy đủ số sao!');
+  }
+  if(!comment) {
+    return alert('Vui lòng nhập nội dung đánh giá!');
+  }
 
-  const res = await fetch(url, {
-    method: method,
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({rating, comment})
-  }).then(r => r.json());
+  // Quyết định URL và Method dựa vào việc reviewId có tồn tại không
+  const isEdit = !!reviewId;
+  const url = isEdit ? `/api/reviews/${reviewId}` : `/api/reviews/submit`;
+  const method = isEdit ? 'PUT' : 'POST';
 
-  if(res.code === 1000) { alert('Thành công!'); reviewModal.style.display = 'none'; }
-  else alert(res.message);
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'userId': userId // Biến userId này giả định bạn đã có sẵn ở global JS
+      },
+      body: JSON.stringify({
+        orderId: parseInt(orderId),
+        hotelRating: parseInt(hotelRating),
+        flightRating: parseInt(flightRating),
+        websiteRating: parseInt(websiteRating),
+        comment: comment
+      })
+    });
+
+    if(response.ok) {
+      const msg = await response.text();
+      alert(msg || (isEdit ? 'Cập nhật đánh giá thành công!' : 'Lưu đánh giá thành công!'));
+      reviewModal.style.display = 'none';
+      window.location.reload(); // Reload lại trang để thấy dữ liệu mới
+    } else {
+      // Bắt lỗi từ Backend (ví dụ: lỗi validation, lỗi chưa thanh toán...)
+      let errorMessage = 'Có lỗi xảy ra khi lưu đánh giá!';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch (err) {
+        const textMsg = await response.text();
+        if (textMsg) errorMessage = textMsg;
+      }
+      alert(errorMessage);
+    }
+  } catch(e) {
+    console.error(e);
+    alert('Lỗi kết nối đến server!');
+  }
 }
 
-async function deleteReview() {
-  if(!confirm('Xóa đánh giá này?')) return;
-  const id = document.getElementById('review-id').value;
-  const res = await fetch(`/review/${id}/${userId}`, {method: 'DELETE'}).then(r => r.json());
-  if(res.code === 1000) { alert('Đã xóa!'); reviewModal.style.display = 'none'; }
-}
-
-// --- CSS INJECT (Fallback cho Modal Styles) ---
+// --- CSS INJECT ---
 const style = document.createElement('style');
 style.innerHTML = `
     .btn-icon-eye {
@@ -692,10 +805,10 @@ style.innerHTML = `
       100% { transform: scale(1); opacity: 1; }
     }
 
-    /* Modal Specifics Override if needed */
+    /* Modal Specifics */
     .modal-content.detail-content { max-width: 600px; padding: 0; border-radius: 12px; overflow: hidden; }
     
-    /* Hotel Voucher Basic Styles (Fallback) */
+    /* Hotel Voucher */
     .hotel-header { background: #2c3e50; color: #fff; padding: 20px; text-align: center; }
     .hotel-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
     .hotel-stars { color: #f1c40f; margin-top: 5px; }
@@ -707,7 +820,7 @@ style.innerHTML = `
     .date-box .time { font-size: 0.85rem; color: #e67e22; }
     .info-list .info-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
     
-    /* Flight Ticket Basic Styles (Fallback) */
+    /* Flight Ticket */
     .flight-header { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
     .flight-body { padding: 25px; background: #fff; }
     .route-visual { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }

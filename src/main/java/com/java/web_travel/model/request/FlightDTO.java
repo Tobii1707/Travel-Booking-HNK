@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor; // Nên thêm cái này để tránh lỗi JSON parse
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -27,8 +27,11 @@ public class FlightDTO {
     @NotNull(message ="ARGUMENT_NOT_VALID" )
     private TicketClass ticketClass;
 
+    @NotNull(message = "ARGUMENT_NOT_VALID")
+    private Long airlineId;
+
     @NotBlank(message = "ARGUMENT_NOT_VALID")
-    private String airlineName ;
+    private String airplaneName;
 
     @Min(value = 0 ,message = "NUMBER_NOT_VALID")
     private double price;

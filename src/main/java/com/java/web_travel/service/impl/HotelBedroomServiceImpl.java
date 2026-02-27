@@ -41,7 +41,6 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         return Math.round(rawPrice / 10000.0) * 10000.0;
     }
 
-    // ... (Các hàm create, update, delete giữ nguyên) ...
     @Override
     @Transactional
     public HotelBedroom createRoom(HotelBedroomDTO dto) {
@@ -76,7 +75,6 @@ public class HotelBedroomServiceImpl implements HotelBedroomService {
         room.setRoomNumber(dto.getRoomNumber());
         room.setPrice(dto.getPrice());
         room.setRoomType(dto.getRoomType());
-        // Hàm này là Transactional nên save() sẽ update giá gốc vào DB -> Đúng logic update
         return hotelBedroomRepository.save(room);
     }
 

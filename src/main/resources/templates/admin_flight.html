@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Chuyến bay | VIVU TRAVEL</title>
+    <title>Quản lý Chuyến bay & Hãng bay | VIVU TRAVEL</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
     <link rel="stylesheet" href="/css/admin_flight.css">
 </head>
 
@@ -36,7 +35,7 @@
 
 <div class="container-info">
     <div class="left">
-        <p><b>Quản lý Chuyến bay</b></p>
+        <p><b>Quản lý Lịch trình & Hãng bay</b></p>
     </div>
     <div class="right">
         <span><i class="fas fa-calendar-alt"></i> <span id="currentDate"></span></span> |
@@ -44,34 +43,88 @@
     </div>
 </div>
 
-<div class="action-bar">
-    <button class="btn btn-create" onclick="openAddModal()">
-        <i class="fas fa-plus"></i> Thêm chuyến bay mới
+<div class="tab-container">
+    <button id="tabFlightBtn" class="tab-btn active" onclick="switchTab('flight')">
+        <i class="fas fa-plane"></i> Chuyến bay
+    </button>
+    <button id="tabAirlineBtn" class="tab-btn" onclick="switchTab('airline')">
+        <i class="fas fa-building"></i> Hãng bay
     </button>
 </div>
 
-<div class="table-wrapper">
-    <table id="flight-table">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Hạng vé</th>
-            <th>Hãng bay</th>
-            <th>Điểm đi</th>
-            <th>Điểm đến</th>
-            <th>Giá vé</th>
-            <th>Ngày đi</th>
-            <th>Ngày đến</th>
-            <th>Tổng ghế</th>
-            <th>Còn trống</th>
-            <th>Thao tác</th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+<div id="section-flight">
+    <div class="section-header-flex">
+        <h2 id="flight-section-title" class="section-title">Danh sách Chuyến bay</h2>
 
-    <div id="pagination" class="pagination"></div>
+        <div class="action-bar">
+            <button id="btnToggleTrash" class="btn btn-toggle-trash" onclick="toggleTrashMode()">
+                <i class="fas fa-trash-alt"></i> Xem thùng rác
+            </button>
+            <button class="btn btn-create btn-warning" onclick="openBatchPriceModal()">
+                <i class="fas fa-percentage"></i> Điều chỉnh giá
+            </button>
+            <button class="btn btn-create btn-primary" onclick="openModal('addBatchFlightModal')">
+                <i class="fas fa-layer-group"></i> Thêm nhiều chuyến bay
+            </button>
+            <button class="btn btn-create btn-success" onclick="openAddModal()">
+                <i class="fas fa-plus"></i> Thêm chuyến bay mới
+            </button>
+        </div>
+    </div>
+
+    <div class="search-filter-bar">
+        <input type="text" id="searchKeyword" class="form-control" placeholder="Tên / Số hiệu máy bay...">
+        <input type="text" id="searchDeparture" class="form-control" placeholder="Điểm đi...">
+        <input type="text" id="searchArrival" class="form-control" placeholder="Điểm đến...">
+        <select id="searchAirlineId" class="form-control">
+            <option value="">-- Tất cả hãng bay --</option>
+        </select>
+        <button class="btn btn-primary" onclick="searchFlightsForAdmin()">
+            <i class="fas fa-search"></i> Tìm kiếm
+        </button>
+        <button class="btn btn-reset" onclick="resetSearch()">
+            <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="flight-table">
+            <thead>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="pagination" class="pagination"></div>
+    </div>
+</div>
+
+<div id="section-airline" class="hidden-section">
+    <div class="section-header-flex">
+        <h2 id="airline-section-title" class="section-title">Danh sách Hãng bay</h2>
+
+        <div class="action-bar">
+            <button id="btnToggleAirlineTrash" class="btn btn-toggle-trash" onclick="toggleAirlineTrashMode()">
+                <i class="fas fa-trash-alt"></i> Xem thùng rác
+            </button>
+            <button class="btn btn-create btn-success" onclick="openModal('addAirlineModal')">
+                <i class="fas fa-plus"></i> Thêm hãng bay mới
+            </button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="airline-table" class="table-custom-width">
+            <thead>
+            <tr>
+                <th class="col-id">ID</th>
+                <th class="col-name">Tên Hãng bay</th>
+                <th class="col-desc">Mô tả</th>
+                <th class="col-action">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="pagination-airline" class="pagination"></div>
+    </div>
 </div>
 
 <div id="addFlightModal" class="modal">
@@ -84,15 +137,20 @@
             <div class="form-group">
                 <label>Hạng vé</label>
                 <select id="ticketClass" class="form-control">
-                    <option value="NORMAL_CLASS">Phổ thông (Normal Class)</option>
-                    <option value="BUSINESS_CLASS">Thương gia (Business Class)</option>
+                    <option value="ECONOMY">Phổ thông (Normal Class)</option>
+                    <option value="BUSINESS">Thương gia (Business Class)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Tên hãng bay</label>
-                <input type="text" id="airlineName" class="form-control" placeholder="VD: Vietnam Airlines">
+                <label>Hãng bay</label>
+                <select id="airlineId" class="form-control">
+                    <option value="">-- Đang tải danh sách hãng... --</option>
+                </select>
             </div>
-
+            <div class="form-group">
+                <label>Tên máy bay / Số hiệu</label>
+                <input type="text" id="airplaneName" class="form-control" placeholder="VD: Boeing 787 (VN-A868)">
+            </div>
             <div class="form-group">
                 <label>Điểm đi (Khởi hành)</label>
                 <input type="text" id="departureLocation" class="form-control" placeholder="VD: Hà Nội">
@@ -119,7 +177,63 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-create" onclick="createFlight()">Tạo chuyến bay</button>
+            <button class="btn btn-create btn-success" onclick="createFlight()">Tạo chuyến bay</button>
+        </div>
+    </div>
+</div>
+
+<div id="addBatchFlightModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm nhiều chuyến bay (Batch)</h3>
+            <span class="close-btn" onclick="closeModal('addBatchFlightModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Chọn Hãng bay</label>
+                <select id="batchAirlineId" class="form-control">
+                    <option value="">-- Đang tải danh sách hãng... --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Danh sách chuyến bay (Định dạng JSON)</label>
+                <textarea id="batchFlightJson" class="form-control" rows="8" placeholder='[
+  {
+    "ticketClass": "NORMAL_CLASS",
+    "airplaneName": "VN-A123",
+    "departureLocation": "Hà Nội",
+    "arrivalLocation": "Đà Nẵng",
+    "price": 1500000,
+    "checkInDate": "2026-12-01T08:00:00",
+    "checkOutDate": "2026-12-01T10:00:00",
+    "numberOfChairs": 100
+  }
+]'></textarea>
+                <small class="form-text text-muted">* Không cần nhập ID hãng bay vào JSON nữa, hệ thống sẽ tự động thêm dựa vào lựa chọn ở trên.</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-create btn-primary" onclick="
+                try {
+                    const aId = document.getElementById('batchAirlineId').value;
+                    const jsonStr = document.getElementById('batchFlightJson').value;
+
+                    if(!aId) { alert('Vui lòng chọn hãng bay!'); return; }
+                    if(!jsonStr.trim()) { alert('Vui lòng nhập dữ liệu JSON!'); return; }
+
+                    let list = JSON.parse(jsonStr);
+
+                    list = list.map(flight => ({
+                        ...flight,
+                        airlineId: parseInt(aId)
+                    }));
+
+                    window.createBatchFlights(aId, list);
+                    closeModal('addBatchFlightModal');
+                } catch(e) {
+                    alert('Lỗi định dạng JSON: ' + e.message);
+                }
+            ">Tạo hàng loạt</button>
         </div>
     </div>
 </div>
@@ -135,15 +249,20 @@
             <div class="form-group">
                 <label>Hạng vé</label>
                 <select id="updateTicketClass" class="form-control">
-                    <option value="NORMAL_CLASS">Phổ thông (Normal Class)</option>
-                    <option value="BUSINESS_CLASS">Thương gia (Business Class)</option>
+                    <option value="ECONOMY">Phổ thông (Normal Class)</option>
+                    <option value="BUSINESS">Thương gia (Business Class)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Tên hãng bay</label>
-                <input type="text" id="updateAirlineName" class="form-control">
+                <label>Hãng bay</label>
+                <select id="updateAirlineId" class="form-control">
+                    <option value="">-- Đang tải danh sách hãng... --</option>
+                </select>
             </div>
-
+            <div class="form-group">
+                <label>Tên máy bay / Số hiệu</label>
+                <input type="text" id="updateAirplaneName" class="form-control">
+            </div>
             <div class="form-group">
                 <label>Điểm đi</label>
                 <input type="text" id="updateDepartureLocation" class="form-control">
@@ -170,11 +289,123 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-create" onclick="saveUpdatedFlight()">Lưu thay đổi</button>
+            <button class="btn btn-create btn-success" onclick="saveUpdatedFlight()">Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+<div id="addAirlineModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm Hãng bay</h3>
+            <span class="close-btn" onclick="closeModal('addAirlineModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Tên Hãng bay</label>
+                <input type="text" id="newAirlineName" class="form-control" placeholder="VD: Vietnam Airlines">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="newAirlineDescription" class="form-control" rows="3" placeholder="Nhập mô tả hãng bay..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-create btn-success" onclick="createAirline()">Thêm hãng</button>
+        </div>
+    </div>
+</div>
+
+<div id="updateAirlineModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Cập nhật Hãng bay</h3>
+            <span class="close-btn" onclick="closeModal('updateAirlineModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="updateAirlineIdForm">
+            <div class="form-group">
+                <label>Tên Hãng bay</label>
+                <input type="text" id="updateAirlineName" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="updateAirlineDescription" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-create btn-success" onclick="saveUpdatedAirline()">Lưu thay đổi</button>
+        </div>
+    </div>
+</div>
+
+<div id="batchAdjustPriceModal" class="modal">
+    <div class="modal-content modal-md">
+        <div class="modal-header">
+            <h3><i class="fas fa-percentage icon-warning"></i> Điều chỉnh giá vé (%)</h3>
+            <span class="close-btn" onclick="closeModal('batchAdjustPriceModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+
+            <div class="alert-box alert-warning">
+                <i class="fas fa-exclamation-triangle alert-icon"></i>
+                <div class="alert-content">
+                    <strong>Thông báo quan trọng:</strong> Hành động này sẽ áp dụng mức giá mới <b>vĩnh viễn</b> cho <span id="selectedFlightCount" style="color:red; font-weight:bold; font-size: 1.1rem;">0</span> chuyến bay bạn vừa chọn ở bảng. Bạn có thể nhập số âm (VD: -10) để giảm giá.
+                </div>
+            </div>
+
+            <table class="table-adjust-price" style="width: 100%; margin-top: 15px;">
+                <tr class="row-border-bottom">
+                    <td class="col-label" style="padding: 10px 0;">Mức điều chỉnh (%):</td>
+                    <td class="col-value">
+                        <div class="input-group-percent" style="display: flex; align-items: center;">
+                            <input type="number" id="batchPricePercentage" class="form-control input-percent-highlight" placeholder="VD: 10" style="width: 100px; text-align: right; margin-right: 5px;">
+                            <span class="percent-symbol" style="font-weight: bold; font-size: 1.2rem;">%</span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+        <div class="modal-footer modal-footer-clean">
+            <button class="btn btn-create btn-warning btn-full-width" onclick="saveBatchPriceAdjustment()" style="width: 100%;">
+                <i class="fas fa-check-circle"></i> Xác nhận Lưu giá hàng loạt
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="priceHistoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-history" style="color: #3498db;"></i> Lịch sử cập nhật giá vé</h3>
+            <span class="close-btn" onclick="closeModal('priceHistoryModal')">&times;</span>
+        </div>
+        <div class="modal-body" style="display: block;"> <p id="historyFlightInfo" style="font-weight: bold; margin-bottom: 15px; color: #2c3e50;"></p>
+
+            <div class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                <table id="history-table" style="width: 100%;">
+                    <thead style="position: sticky; top: 0; z-index: 1;">
+                    <tr>
+                        <th style="width: 10%; text-align: center;">STT</th>
+                        <th>Giá Cũ</th>
+                        <th>Giá Mới</th>
+                        <th>Thời gian thay đổi</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-reset" onclick="closeModal('priceHistoryModal')">Đóng</button>
         </div>
     </div>
 </div>
 
 <script src="/js/admin_flight.js"></script>
+
 </body>
 </html>

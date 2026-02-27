@@ -32,10 +32,6 @@ public class HotelServiceImpl implements HotelService {
 
     @Autowired private PriceChangeHistoryRepository priceChangeHistoryRepository;
 
-    // =========================================================================
-    //  UTILITIES
-    // =========================================================================
-
     private String appendGroupName(String currentName, String newGroupName) {
         if (currentName == null) return "";
         String cleanName = currentName.replace('\u00A0', ' ').trim();
@@ -86,9 +82,6 @@ public class HotelServiceImpl implements HotelService {
         }
     }
 
-    // =========================================================================
-    //  CHỨC NĂNG CỐT LÕI (CRUD)
-    // =========================================================================
 
     @Override
     @Transactional
@@ -279,17 +272,11 @@ public class HotelServiceImpl implements HotelService {
         return basePrice;
     }
 
-    // [ĐÃ XÓA] Hàm calculateTotalPrice và getPolicyForDate đã được xóa khỏi đây.
-
-    // =========================================================================
-    //  QUẢN LÝ GROUP & GIÁ
-    // =========================================================================
-
     @Override
     @Transactional
     public void addHotelsToGroup(AssignGroupRequest request) {
         HotelGroup group = hotelGroupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Group này!"));
         List<Hotel> hotels = hotelRepository.findAllById(request.getHotelIds());
         for (Hotel hotel : hotels) {
             hotel.setHotelGroup(group);
@@ -451,10 +438,6 @@ public class HotelServiceImpl implements HotelService {
         }
     }
 
-    // =========================================================================
-    //  [MỚI] LẤY LỊCH SỬ TỔNG HỢP (CHÍNH SÁCH + GIÁ VĨNH VIỄN)
-    // =========================================================================
-
     @Override
     public List<HotelHistoryResponse> getPolicyHistoryByHotel(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
@@ -495,9 +478,6 @@ public class HotelServiceImpl implements HotelService {
         return fullHistory;
     }
 
-    // =========================================================================
-    //  QUẢN LÝ CHÍNH SÁCH (UPDATE / DELETE)
-    // =========================================================================
 
     @Override
     @Transactional

@@ -10,6 +10,24 @@
     initFlightsPage();
   });
 
+  // ===== HELPER FUNCTIONS (Thêm vào để phục vụ giao diện mới) =====
+  function extractTime(isoString) {
+    if (!isoString) return '--:--';
+    const date = new Date(isoString);
+    return isNaN(date.getTime()) ? '--:--' : date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function formatDateNice(isoString) {
+    if (!isoString) return 'N/A';
+    const date = new Date(isoString);
+    return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('vi-VN');
+  }
+
+  function formatCurrency(amount) {
+    return Number(amount || 0).toLocaleString('vi-VN');
+  }
+  // ================================================================
+
   // ===== USER MENU =====
   function initUserMenu() {
     const userIcon = document.getElementById('user-icon');
@@ -39,7 +57,7 @@
   }
 
   // ===== FLIGHT LOGIC =====
-  let globalOrderId = null; // Lưu orderId để dùng chung
+  let globalOrderId = null;
 
   function initFlightsPage() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -53,8 +71,7 @@
   }
 
   function fetchFlights(orderId) {
-    // Mặc định gọi API lấy tất cả
-    fetch('/flight/getAll')
+    fetch('/flight/upcoming')
         .then(response => response.json())
         .then(result => {
           if (result.code === 1000 && result.data) {
@@ -66,7 +83,7 @@
         .catch(() => showError('Không thể tải danh sách chuyến bay!'));
   }
 
-  // --- THÊM MỚI: TÌM KIẾM CHUYẾN BAY ---
+  // --- TÌM KIẾM CHUYẾN BAY ---
   window.searchFlightsAPI = function() {
     const from = document.getElementById('searchFrom').value.trim();
     const to = document.getElementById('searchTo').value.trim();
@@ -79,7 +96,6 @@
     const flightList = document.getElementById('flight-list');
     flightList.innerHTML = '<div class="loading">Đang tìm chuyến bay phù hợp...</div>';
 
-    // Gọi API suggest mới thêm ở Backend
     fetch(`/flight/suggest?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
         .then(res => res.json())
         .then(result => {
@@ -95,10 +111,11 @@
   window.resetFlights = function() {
     document.getElementById('searchFrom').value = '';
     document.getElementById('searchTo').value = '';
-    initFlightsPage(); // Load lại tất cả
+    initFlightsPage();
   };
-  // -------------------------------------
 
+  // -------------------------------------
+  // HÀM RENDER ĐÃ ĐƯỢC CHỈNH SỬA CHO GIAO DIỆN NGUYÊN BẢN CỦA YÊU CẦU MỚI
   function renderFlights(flights, orderId) {
     const flightList = document.getElementById('flight-list');
     if (!flightList) return;
@@ -111,27 +128,72 @@
     }
 
     flights.forEach(flight => {
+      // Dữ liệu cho giao diện
+      const tenHang = flight.airline?.airlineName || flight.airline?.name || flight.airlineName || 'Chưa rõ hãng bay';
+      const soHieu = flight.airplaneName || null;
+      const gioDi = extractTime(flight.checkInDate);
+      const gioDen = extractTime(flight.checkOutDate);
+      const ngayDiFormatted = formatDateNice(flight.checkInDate);
+
+      // --- XỬ LÝ DỊCH HẠNG VÉ ---
+      let hangVe = flight.ticketClass || 'Phổ thông';
+      if (hangVe === 'NORMAL_CLASS' || hangVe === 'ECONOMY') hangVe = 'Phổ thông';
+      else if (hangVe === 'BUSINESS') hangVe = 'Thương gia';
+      else if (hangVe === 'FIRST_CLASS') hangVe = 'Hạng nhất';
+      // --------------------------
+
       const flightItem = document.createElement('div');
       flightItem.classList.add('flight-item');
 
-      // --- CẬP NHẬT: HIỂN THỊ ĐIỂM ĐI -> ĐIỂM ĐẾN ---
+      // Cấu trúc HTML theo CSS Flex/Grid chia 2 cột (Trái: Info, Phải: Nút Chọn)
       flightItem.innerHTML = `
-        <div class="airline-name">${flight.airlineName}</div>
-        
-        <div class="route-info" style="color: #333; font-weight: bold; margin: 10px 20px; font-size: 1.1rem;">
-             <i class="fas fa-plane-departure" style="color: var(--primary);"></i> ${flight.departureLocation || 'N/A'} 
-             &nbsp; <i class="fas fa-long-arrow-alt-right"></i> &nbsp; 
-             <i class="fas fa-plane-arrival" style="color: var(--primary);"></i> ${flight.arrivalLocation || 'N/A'}
+        <div class="flight-info-left">
+            <div class="airline-badge">
+                <i class="fas fa-plane-departure" style="color: var(--primary);"></i>
+                <span class="airline-name-txt">${tenHang}</span>
+                ${soHieu ? `<span class="airplane-code">${soHieu}</span>` : ''}
+            </div>
+
+            <div class="route-time-container">
+                <div class="time-point dept">
+                    <div class="huge-time">${gioDi}</div>
+                    <div class="location-code">${flight.departureLocation || 'N/A'}</div>
+                </div>
+
+                <div class="route-arrow-visual">
+                    <div class="route-line"></div>
+                </div>
+
+                <div class="time-point arr">
+                    <div class="huge-time">${gioDen}</div>
+                    <div class="location-code">${flight.arrivalLocation || 'N/A'}</div>
+                </div>
+            </div>
+
+            <div class="secondary-details">
+                <div class="detail-tag" title="Ngày khởi hành">
+                    <i class="far fa-calendar-alt"></i> ${ngayDiFormatted}
+                </div>
+                <div class="detail-tag" title="Hạng vé">
+                    <i class="fas fa-ticket-alt"></i> ${hangVe}
+                </div>
+                <div class="detail-tag" title="Số ghế còn lại" style="color: ${flight.seatAvailable < 10 ? '#e74c3c' : 'inherit'}">
+                    <i class="fas fa-chair"></i> Còn ${flight.seatAvailable} ghế
+                </div>
+            </div>
         </div>
 
-        <div class="ticket-class">${flight.ticketClass}</div>
-        <div class="price">${Number(flight.price || 0).toLocaleString()} VND</div>
-        <div class="check-in-date">Ngày đi: ${formatDate(flight.checkInDate)}</div>
-        <div class="check-out-date">Ngày về: ${formatDate(flight.checkOutDate)}</div>
-        <div class="seat-available">Số ghế còn lại: ${flight.seatAvailable}</div>
-        <button class="choose-flight" data-flight-id="${flight.id}" data-order-id="${orderId || ''}" data-flight='${JSON.stringify(flight)}'>
-          Chọn chuyến bay
-        </button>
+        <div class="flight-action-right">
+            <div class="price-tag-huge">
+                ${formatCurrency(flight.price)} <span class="price-unit">VND</span>
+            </div>
+            <button class="choose-flight-btn choose-flight" 
+                    data-flight-id="${flight.id}" 
+                    data-order-id="${orderId || ''}" 
+                    data-flight='${JSON.stringify(flight)}'>
+                Chọn chuyến bay <i class="fas fa-arrow-right" style="margin-left: 5px; font-size: 0.9em;"></i>
+            </button>
+        </div>
       `;
 
       flightList.appendChild(flightItem);
@@ -146,7 +208,6 @@
     });
   }
 
-  // Fallback function: Dùng khi chuyến bay không hỗ trợ chọn ghế
   function chooseFlightOldWay(orderId, flightId) {
     if (!orderId) {
       showError('Không tìm thấy orderId. Vui lòng đặt tour trước!');
@@ -181,7 +242,7 @@
     return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
   }
 
-  // ===== SEAT SELECTION MODAL (GIỮ NGUYÊN) =====
+  // ===== SEAT SELECTION MODAL =====
   let selectedSeats = [];
   let currentOrderId = null;
   let currentFlightId = null;
@@ -199,7 +260,6 @@
     currentFlightData = flightData;
     selectedSeats = [];
 
-    // Lấy thông tin số người từ Order
     fetch(`/order/single/${orderId}`)
         .then(response => response.json())
         .then(result => {
@@ -214,7 +274,6 @@
   }
 
   function loadAvailableSeats(flightId, flightData) {
-    // Gọi API lấy danh sách ghế (bao gồm cả ghế đã đặt)
     fetch(`/flight-seats/all/${flightId}`)
         .then(response => response.json())
         .then(data => {
@@ -243,10 +302,17 @@
     const modal = document.createElement('div');
     modal.id = 'seatSelectionModal';
     modal.className = 'seat-modal';
+
+    // Xử lý tiêu đề Modal đẹp hơn
+    const tenHangModal = flightData.airline?.airlineName || flightData.airline?.name || flightData.airlineName || 'Chưa rõ hãng bay';
+    const soHieuModal = flightData.airplaneName ? `<span style="font-size: 0.9rem; color: #555; font-weight: normal; background: #eee; padding: 2px 8px; border-radius: 12px; margin-left: 8px;">Tàu bay: ${flightData.airplaneName}</span>` : '';
+
     modal.innerHTML = `
       <div class="seat-modal-content">
         <div class="seat-modal-header">
-          <h3>Chọn ${requiredSeats} ghế - ${flightData.airlineName}</h3>
+          <h3 style="display: flex; align-items: center; justify-content: center; width: 100%;">
+            Chọn ${requiredSeats} ghế - ${tenHangModal} ${soHieuModal}
+          </h3>
           <span class="seat-close-btn">&times;</span>
         </div>
         <div class="seat-modal-body">
@@ -342,62 +408,49 @@
     selectedSeats = [];
   };
 
-  // --- HÀM XỬ LÝ ĐẶT VÉ (ĐÃ SỬA LỖI) ---
   window.confirmSeatSelection = function() {
-    // 1. Kiểm tra xem người dùng chọn đủ ghế chưa
     if (selectedSeats.length !== requiredSeats) {
       alert(`Vui lòng chọn đủ ${requiredSeats} ghế để tiếp tục.`);
       return;
     }
 
-    // 2. [QUAN TRỌNG] Kiểm tra dữ liệu rỗng trước khi gửi
-    // Nếu orderId hoặc flightId bị thiếu, không gọi API để tránh lỗi 500
     if (!currentOrderId || !currentFlightId) {
       console.error("Lỗi dữ liệu: Thiếu OrderId hoặc FlightId", { currentOrderId, currentFlightId });
       alert("Lỗi hệ thống: Không tìm thấy mã đơn hàng. Vui lòng tải lại trang và thử lại.");
       return;
     }
 
-    // Tạo gói dữ liệu gửi đi
     const payload = {
-      orderId: parseInt(currentOrderId),   // Ép kiểu về số nguyên
-      flightId: parseInt(currentFlightId), // Ép kiểu về số nguyên
+      orderId: parseInt(currentOrderId),
+      flightId: parseInt(currentFlightId),
       seatNumbers: selectedSeats
     };
 
     console.log("Đang gửi dữ liệu lên server:", payload);
 
-    // Gọi API
     fetch(`/order/chooseFlightWithSeats/${currentOrderId}/${currentFlightId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
         .then(response => {
-          // Nếu Server vẫn trả về lỗi 500 (mặc dù đã chặn ở trên), ném lỗi ra catch
           if (!response.ok) {
             throw new Error(`Lỗi kết nối Server (Mã lỗi: ${response.status})`);
           }
           return response.json();
         })
         .then(result => {
-          // Xử lý kết quả trả về từ Backend
           if (result.code === 1000) {
             alert('Đặt vé thành công!');
             closeSeatModal();
-            // Gửi email xác nhận
             fetch(`/api/v1/email/${currentOrderId}/announce`, { method: 'POST' }).catch(console.error);
 
-            // Chuyển trang sau 0.5 giây
             setTimeout(() => {
               window.location.href = '/plan-trip';
             }, 500);
           }
-          // Code 1048 hoặc 7777: Lỗi logic (ví dụ ghế vừa bị người khác đặt)
           else if (result.code === 1048 || result.code === 7777) {
             alert('Thông báo: ' + (result.message || 'Có lỗi xảy ra khi đặt ghế.'));
-
-            // Nếu là lỗi ghế trùng, tải lại danh sách ghế
             if(result.code === 1048) {
               selectedSeats = [];
               updateSelectionDisplay();

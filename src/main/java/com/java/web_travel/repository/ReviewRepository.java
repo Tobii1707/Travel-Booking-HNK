@@ -4,26 +4,24 @@ import com.java.web_travel.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    Page<Review> findByHotel_Id(Long hotelId, Pageable pageable);
+    // (Đã có) Kiểm tra xem Order đã được đánh giá chưa
+    boolean existsByOrderId(Long orderId);
 
-    Page<Review> findByUser_Id(Long userId, Pageable pageable);
+    // 1. Lấy tất cả đánh giá của 1 User cụ thể (Dành cho chức năng xem lịch sử của mình)
+    List<Review> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    Optional<Review> findByOrder_Id(Long orderId);
+    // 2. Lấy đánh giá dựa trên Order ID
+    Optional<Review> findByOrderId(Long orderId);
 
-    boolean existsByOrder_Id(Long orderId);
-
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.hotel.id = :hotelId")
-    Double calculateAverageRating(@Param("hotelId") Long hotelId);
-
-    @Query("SELECT COUNT(r) FROM Review r WHERE r.hotel.id = :hotelId")
-    Long countByHotelId(@Param("hotelId") Long hotelId);
+    // 3. Lấy tất cả đánh giá công khai có phân trang (Cho người khác xem)
+    // Phân trang rất quan trọng vì sau này lượng Review sẽ rất lớn
+    Page<Review> findAll(Pageable pageable);
 }

@@ -1,6 +1,6 @@
 package com.java.web_travel.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,25 +13,22 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "hotel_group")
-public class HotelGroup {
+@Table(name = "airline")
+public class Airline {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String groupName;
+    private String airlineName;
 
     private String description;
 
     @Column(name = "is_deleted", columnDefinition = "boolean default false")
     private boolean deleted = false;
 
-    @OneToMany(mappedBy = "hotelGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("hotelGroup")
-    private List<Hotel> hotels;
+    @OneToMany(mappedBy = "airline", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Flight> flights;
 
-    @OneToMany(mappedBy = "targetGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("targetGroup")
-    private List<HolidayPolicy> holidayPolicies;
 }

@@ -1,7 +1,7 @@
 package com.java.web_travel.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // <--- 1. IMPORT CÁI NÀY
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,7 +38,6 @@ public class Hotel {
     @Column(name = "number_floor", nullable = false)
     private int numberFloor;
 
-    // Sửa thêm: Ngắt vòng lặp cho Bedroom nếu có lỗi tương tự
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("hotel")
     private List<HotelBedroom> hotelBedrooms;
