@@ -1,7 +1,9 @@
 package com.java.web_travel.service;
 
 import com.java.web_travel.entity.Flight;
+import com.java.web_travel.entity.FlightHolidayPolicy;
 import com.java.web_travel.entity.FlightPriceHistory;
+import com.java.web_travel.model.request.AddPolicyToFlightsRequest;
 import com.java.web_travel.model.request.FlightDTO;
 
 import java.util.List;
@@ -29,4 +31,12 @@ public interface FlightService {
     List<Flight> searchFlightsForAdmin(String keyword, String departure, String arrival, Long airlineId);
 
     List<FlightPriceHistory> getFlightPriceHistory(Long flightId);
+
+    void addPolicyToSelectedFlights(AddPolicyToFlightsRequest request);
+
+    List<FlightHolidayPolicy> getAllHolidayPolicies();
+
+    FlightHolidayPolicy updateHolidayPolicy(Long id, AddPolicyToFlightsRequest request);
+
+    void deleteHolidayPolicy(Long id);
 }

@@ -292,6 +292,9 @@ body.hust-admin-flight table {
 body.hust-admin-flight #flight-table { min-width: 1100px; }
 body.hust-admin-flight #airline-table { min-width: 600px; }
 
+/* 👉 [MỚI]: Bảng Chính sách cần không gian để hiển thị rõ các cột */
+body.hust-admin-flight #policy-table { min-width: 800px; }
+
 /* Set cứng độ rộng cột cho bảng Hãng bay */
 body.hust-admin-flight .table-custom-width .col-id { width: 10%; }
 body.hust-admin-flight .table-custom-width .col-name { width: 30%; }
@@ -307,6 +310,9 @@ body.hust-admin-flight th {
   font-size: 0.8rem;
   letter-spacing: 0.5px;
 }
+
+/* 👉 [MỚI]: Đổi màu Header Bảng Chính sách sang Tím để phân biệt với bảng thường */
+body.hust-admin-flight #policy-table th { background-color: #8e44ad; }
 
 body.hust-admin-flight td {
   padding: 15px;
@@ -393,14 +399,22 @@ body.hust-admin-flight .modal-body {
   gap: 15px;
 }
 
-/* Xử lý Grid layout cho các form đặc thù chiếm 2 cột */
+/* ========================================================== */
+/* 👉 Xử lý Grid layout cho các form đặc thù chiếm 2 cột */
+/* ========================================================== */
 body.hust-admin-flight .modal-body .full-width,
 body.hust-admin-flight #addAirlineModal .modal-body .form-group,
 body.hust-admin-flight #updateAirlineModal .modal-body .form-group,
 body.hust-admin-flight #addBatchFlightModal .modal-body .form-group,
-body.hust-admin-flight #adjustPriceModal .modal-body > * {
+body.hust-admin-flight #adjustPriceModal .modal-body > *,
+body.hust-admin-flight #batchAdjustPriceModal .modal-body > *,
+body.hust-admin-flight #holidayPolicyModal .modal-body .alert-box,
+body.hust-admin-flight #holidayPolicyModal .modal-body div.form-group:nth-of-type(1), /* Tên sự kiện */
+body.hust-admin-flight #holidayPolicyModal .modal-body div.form-group:nth-of-type(2)  /* Mức % điều chỉnh */ {
   grid-column: span 2;
 }
+
+/* Các trường Ngày Bắt đầu & Kết thúc sẽ tự động nằm ở 1 cột (Span 1) bên cạnh nhau */
 
 body.hust-admin-flight #addFlightModal .modal-body div.form-group:nth-of-type(1),
 body.hust-admin-flight #addFlightModal .modal-body div.form-group:nth-of-type(6),
@@ -444,7 +458,6 @@ body.hust-admin-flight .modal-footer {
   text-align: right;
 }
 
-
 /* ========================================================== */
 /* --- UI: ĐIỀU CHỈNH GIÁ & UTILITIES --- */
 /* ========================================================== */
@@ -465,6 +478,12 @@ body.hust-admin-flight .alert-warning {
   background-color: #fff3cd;
   border-left: 5px solid #ffc107;
 }
+
+body.hust-admin-flight .alert-info {
+  background-color: #e8f4f8;
+  border-left: 5px solid var(--info);
+}
+
 body.hust-admin-flight .alert-icon {
   font-size: 1.5rem;
   color: #d35400;
@@ -520,7 +539,7 @@ body.hust-admin-flight .percent-symbol {
 }
 
 /* ========================================================== */
-/* --- 👉 [MỚI] UI: BẢNG LỊCH SỬ GIÁ --- */
+/* --- BẢNG LỊCH SỬ GIÁ --- */
 /* ========================================================== */
 
 body.hust-admin-flight #history-table {
@@ -598,7 +617,9 @@ body.hust-admin-flight #priceHistoryModal .table-wrapper::-webkit-scrollbar-thum
   }
 
   body.hust-admin-flight .modal-body .form-group,
-  body.hust-admin-flight .modal-body > * {
+  body.hust-admin-flight .modal-body > *,
+  body.hust-admin-flight #holidayPolicyModal .modal-body div.form-group:nth-of-type(3),
+  body.hust-admin-flight #holidayPolicyModal .modal-body div.form-group:nth-of-type(4) {
     grid-column: span 1 !important;
   }
 }

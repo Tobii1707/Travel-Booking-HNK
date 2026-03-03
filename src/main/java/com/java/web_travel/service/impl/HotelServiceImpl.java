@@ -123,9 +123,12 @@ public class HotelServiceImpl implements HotelService {
         return hotels.stream()
                 .map(hotel -> {
                     HotelResponse response = hotelConverter.toHotelResponse(hotel);
-                    if(response.getHotelBedrooms() == null || response.getHotelBedrooms().isEmpty()) {
-                        response.setHotelBedrooms(hotel.getHotelBedrooms());
-                    }
+
+                    // 👉 ĐÃ COMMENT LẠI ĐỂ TRÁNH N+1 QUERY VÀ TỐI ƯU API
+                    // if(response.getHotelBedrooms() == null || response.getHotelBedrooms().isEmpty()) {
+                    //     response.setHotelBedrooms(hotel.getHotelBedrooms());
+                    // }
+
                     applyDynamicPriceToResponse(response, hotel);
                     return response;
                 })
@@ -213,7 +216,10 @@ public class HotelServiceImpl implements HotelService {
                 .filter(h -> !h.isDeleted())
                 .map(hotel -> {
                     HotelResponse response = hotelConverter.toHotelResponse(hotel);
-                    if(response.getHotelBedrooms() == null) response.setHotelBedrooms(hotel.getHotelBedrooms());
+
+                    // 👉 ĐÃ COMMENT LẠI ĐỂ TRÁNH N+1 QUERY
+                    // if(response.getHotelBedrooms() == null) response.setHotelBedrooms(hotel.getHotelBedrooms());
+
                     applyDynamicPriceToResponse(response, hotel);
                     return response;
                 })
@@ -226,7 +232,10 @@ public class HotelServiceImpl implements HotelService {
         return hotels.stream()
                 .map(hotel -> {
                     HotelResponse response = hotelConverter.toHotelResponse(hotel);
-                    if(response.getHotelBedrooms() == null) response.setHotelBedrooms(hotel.getHotelBedrooms());
+
+                    // 👉 ĐÃ COMMENT LẠI ĐỂ TRÁNH N+1 QUERY
+                    // if(response.getHotelBedrooms() == null) response.setHotelBedrooms(hotel.getHotelBedrooms());
+
                     applyDynamicPriceToResponse(response, hotel);
                     return response;
                 })

@@ -62,19 +62,31 @@
   function switchTab(tabName) {
     const sectionFlight = document.getElementById('section-flight');
     const sectionAirline = document.getElementById('section-airline');
+    const sectionPolicy = document.getElementById('section-policy');
+
     const btnFlight = document.getElementById('tabFlightBtn');
     const btnAirline = document.getElementById('tabAirlineBtn');
+    const btnPolicy = document.getElementById('tabPolicyBtn');
 
+    // Reset hết
+    if(sectionFlight) sectionFlight.style.display = 'none';
+    if(sectionAirline) sectionAirline.style.display = 'none';
+    if(sectionPolicy) sectionPolicy.style.display = 'none';
+
+    if(btnFlight) btnFlight.classList.remove('active');
+    if(btnAirline) btnAirline.classList.remove('active');
+    if(btnPolicy) btnPolicy.classList.remove('active');
+
+    // Bật tab tương ứng
     if (tabName === 'flight') {
       if(sectionFlight) sectionFlight.style.display = 'block';
-      if(sectionAirline) sectionAirline.style.display = 'none';
       if(btnFlight) btnFlight.classList.add('active');
-      if(btnAirline) btnAirline.classList.remove('active');
-    } else {
-      if(sectionFlight) sectionFlight.style.display = 'none';
+    } else if (tabName === 'airline') {
       if(sectionAirline) sectionAirline.style.display = 'block';
-      if(btnFlight) btnFlight.classList.remove('active');
       if(btnAirline) btnAirline.classList.add('active');
+    } else if (tabName === 'policy') {
+      if(sectionPolicy) sectionPolicy.style.display = 'block';
+      if(btnPolicy) btnPolicy.classList.add('active');
     }
   }
   window.switchTab = switchTab;
@@ -83,6 +95,8 @@
   // ===== STATE =====
   let allFlights = [];
   let allAirlines = [];
+  let allPolicies = [];
+
   let currentPage = 0;
   const pageSize = 5;
 
@@ -92,15 +106,13 @@
   let isTrashMode = false;
   let isAirlineTrashMode = false;
 
-  // 👉 [QUAN TRỌNG MỚI]: BỘ NHỚ LƯU CÁC DẤU TÍCH XUYÊN SUỐT
   let selectedFlightIds = new Set();
 
-  // MỚI: Hàm xử lý khi người dùng tích hoặc bỏ tích 1 ô
   window.handleCheckboxChange = function(checkbox, flightId) {
     if (checkbox.checked) {
-      selectedFlightIds.add(flightId); // Thêm vào bộ nhớ
+      selectedFlightIds.add(flightId);
     } else {
-      selectedFlightIds.delete(flightId); // Xóa khỏi bộ nhớ
+      selectedFlightIds.delete(flightId);
     }
   };
 
@@ -210,7 +222,6 @@
     }
   }
 
-  // 👉 SỬA LẠI: Nút chọn tất cả sẽ cập nhật cả giao diện lẫn Bộ Nhớ
   window.toggleAllCheckboxes = function(source) {
     const checkboxes = document.querySelectorAll('.flight-checkbox');
     checkboxes.forEach(cb => {
@@ -236,8 +247,6 @@
     }
 
     tableBody.innerHTML = '';
-
-    // Kiểm tra xem tất cả các chuyến bay trên trang này có đang được chọn không để check ô Select All
     let allOnPageSelected = true;
 
     flights.forEach(flight => {
@@ -256,21 +265,20 @@
       if (isTrashMode) {
         actionButtons = `<button class="btn btn-edit" style="background-color: #27ae60;" onclick="restoreFlight(${flight.id})">Restore</button>`;
       } else {
-        // 👉 CẬP NHẬT: Kiểm tra xem chuyến bay có nằm trong "bộ nhớ" không để tự động check
         const isChecked = selectedFlightIds.has(flight.id);
-        if(!isChecked) allOnPageSelected = false; // Nếu có 1 cái chưa check thì bỏ check ô Select All
+        if(!isChecked) allOnPageSelected = false;
 
         const checkedAttr = isChecked ? 'checked' : '';
         checkboxTd = `<td style="text-align: center;">
             <input type="checkbox" class="flight-checkbox" value="${flight.id}" ${checkedAttr} onchange="handleCheckboxChange(this, ${flight.id})">
         </td>`;
 
-        // 👉 [MỚI]: Thêm nút xem lịch sử giá
+        // 👉 [ĐÃ CẬP NHẬT LẠI VỊ TRÍ NÚT]: Edit -> Delete -> Lịch sử giá
         actionButtons = `
-          <button class="btn btn-edit" style="background-color: #3498db; margin-bottom: 4px;" onclick="openPriceHistoryModal(${flight.id})">Lịch sử giá</button>
-          <br>
           <button class="btn btn-edit" style="margin-bottom: 4px;" onclick="openUpdateModal(${flight.id})">Edit</button>
-          <button class="btn btn-delete" onclick="deleteFlight(${flight.id})">Delete</button>
+          <button class="btn btn-delete" style="margin-bottom: 4px;" onclick="deleteFlight(${flight.id})">Delete</button>
+          <br>
+          <button class="btn btn-edit" style="background-color: #3498db; margin-top: 4px;" onclick="openPriceHistoryModal(${flight.id})">Lịch sử giá gốc</button>
         `;
       }
 
@@ -285,19 +293,17 @@
         <td>${formatDateShow(flight.checkOutDate)}</td>
         <td>${flight.numberOfChairs ?? ''}</td>
         <td>${flight.seatAvailable ?? ''}</td>
-        <td>${actionButtons}</td>
+        <td style="text-align: center;">${actionButtons}</td>
       `;
       tableBody.appendChild(row);
     });
 
-    // Cập nhật trạng thái của ô "Chọn tất cả" trên header
     const selectAllCb = document.getElementById('selectAllFlights');
     if (selectAllCb && flights.length > 0) {
       selectAllCb.checked = allOnPageSelected;
     }
   }
 
-  // ===== PAGINATION CHUYẾN BAY =====
   function renderPagination(totalPages) {
     const container = document.getElementById('pagination');
     if (!container) return;
@@ -506,7 +512,6 @@
     const arrival = document.getElementById('searchArrival')?.value || '';
     const airlineId = document.getElementById('searchAirlineId')?.value || '';
 
-    // Xây dựng chuỗi query string
     const params = new URLSearchParams();
     if (keyword) params.append('keyword', keyword);
     if (departure) params.append('departure', departure);
@@ -520,7 +525,6 @@
             allFlights = data.data;
             currentPage = 0;
             renderCurrentPage();
-            // KHÔNG xoá selectedFlightIds ở đây để giữ kết quả tích cũ khi tìm kiếm
           } else {
             allFlights = [];
             renderCurrentPage();
@@ -539,29 +543,25 @@
     if (document.getElementById('searchArrival')) document.getElementById('searchArrival').value = '';
     if (document.getElementById('searchAirlineId')) document.getElementById('searchAirlineId').value = '';
 
-    // Tùy chọn: Xóa các dấu tích cũ khi reset tìm kiếm. Nếu bạn muốn giữ lại thì xóa dòng lệnh dưới đây
     selectedFlightIds.clear();
     fetchFlights();
   }
   window.resetSearch = resetSearch;
 
-  // 👉 CẬP NHẬT: Lấy danh sách ID từ Bộ Nhớ thay vì chỉ quét trên HTML
   function openBatchPriceModal() {
     if (selectedFlightIds.size === 0) {
       alert("Vui lòng tick chọn ít nhất 1 chuyến bay (hoặc từ các trang tìm kiếm khác nhau) để điều chỉnh giá!");
       return;
     }
 
-    // Reset và gán giá trị hiển thị cho modal
     document.getElementById('batchPricePercentage').value = '';
     const countEl = document.getElementById('selectedFlightCount');
-    if(countEl) countEl.innerText = selectedFlightIds.size; // Hiện chính xác tổng số đã chọn
+    if(countEl) countEl.innerText = selectedFlightIds.size;
 
     openModal('batchAdjustPriceModal');
   }
   window.openBatchPriceModal = openBatchPriceModal;
 
-  // 👉 CẬP NHẬT: Gửi danh sách ID từ Bộ Nhớ
   function saveBatchPriceAdjustment() {
     if (selectedFlightIds.size === 0) return;
     const flightIds = Array.from(selectedFlightIds);
@@ -604,10 +604,7 @@
         })
         .then(data => {
           alert(`Đã áp dụng ${actionText} giá thành công cho các chuyến bay!`);
-
-          // Sau khi thay đổi giá thành công, ta xoá sạch bộ nhớ
           selectedFlightIds.clear();
-
           closeModal('batchAdjustPriceModal');
           searchFlightsForAdmin();
         })
@@ -615,19 +612,174 @@
   }
   window.saveBatchPriceAdjustment = saveBatchPriceAdjustment;
 
+
   // ==========================================================
-  // 👉 [MỚI] API CALL VÀ HIỂN THỊ LỊCH SỬ GIÁ
+  // 👉 QUẢN LÝ DANH SÁCH CHÍNH SÁCH LỄ / KHUYẾN MÃI (CRUD)
+  // ==========================================================
+
+  function fetchPolicies() {
+    fetch('/flight/holiday-policies')
+        .then(res => res.json())
+        .then(data => {
+          if (data.code === 1000 && data.data) {
+            allPolicies = data.data;
+            renderPolicyTable(allPolicies);
+          } else {
+            allPolicies = [];
+            renderPolicyTable([]);
+          }
+        })
+        .catch(err => {
+          console.error('Lỗi khi tải chính sách:', err);
+          allPolicies = [];
+          renderPolicyTable([]);
+        });
+  }
+  window.fetchPolicies = fetchPolicies;
+
+  function renderPolicyTable(policies) {
+    const tbody = document.querySelector('#policy-table tbody');
+    if (!tbody) return;
+
+    if (!policies || policies.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 15px;">Chưa có chính sách nào.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = '';
+    policies.forEach((policy, index) => {
+      const row = document.createElement('tr');
+      const isPositive = policy.increasePercentage > 0;
+      const percentStr = isPositive ? `+${policy.increasePercentage}%` : `${policy.increasePercentage}%`;
+      const color = isPositive ? 'color: #e74c3c;' : 'color: #2ecc71;'; // Đỏ tăng, Xanh giảm
+
+      // Theo HTML mới: Loại thay đổi (Tạm thời), Tên sự kiện, Mức điều chỉnh, Thời gian
+      row.innerHTML = `
+        <td style="text-align:center;">${index + 1}</td>
+        <td><span style="background: #e8f4f8; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: #3498db; font-weight: bold;">Tạm thời (Sự kiện)</span></td>
+        <td><strong>${policy.name}</strong></td>
+        <td style="${color} font-weight: bold;">${percentStr}</td>
+        <td>Từ ${policy.startDate}<br>Đến ${policy.endDate}</td>
+        <td style="text-align:center;">
+          <button class="btn btn-edit" onclick="openUpdatePolicyModal(${policy.id})">Sửa</button>
+          <button class="btn btn-delete" onclick="deletePolicy(${policy.id})">Xóa</button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function deletePolicy(id) {
+    if (!confirm('Bạn có chắc chắn muốn xóa chính sách này? Giá các chuyến bay liên quan sẽ lập tức quay về giá gốc!')) return;
+
+    fetch(`/flight/holiday-policy/${id}`, { method: 'DELETE' })
+        .then(async res => {
+          if (!res.ok) throw new Error('Lỗi từ server');
+          return res.json();
+        })
+        .then(data => {
+          alert('Đã xóa chính sách thành công!');
+          fetchPolicies();
+          searchFlightsForAdmin();
+        })
+        .catch(err => alert("Lỗi khi xóa: " + err.message));
+  }
+  window.deletePolicy = deletePolicy;
+
+  function openUpdatePolicyModal(id) {
+    const policy = allPolicies.find(p => p.id === id);
+    if (!policy) return;
+
+    if (document.getElementById('policyId')) document.getElementById('policyId').value = policy.id;
+    if (document.getElementById('policyName')) document.getElementById('policyName').value = policy.name;
+    if (document.getElementById('policyPercentage')) document.getElementById('policyPercentage').value = policy.increasePercentage;
+    if (document.getElementById('policyStartDate')) document.getElementById('policyStartDate').value = policy.startDate;
+    if (document.getElementById('policyEndDate')) document.getElementById('policyEndDate').value = policy.endDate;
+
+    const modalHeader = document.querySelector('#holidayPolicyModal .modal-header h3');
+    if(modalHeader) modalHeader.innerHTML = `<i class="fas fa-edit" style="color: #f39c12;"></i> Cập nhật Sự kiện`;
+
+    openModal('holidayPolicyModal');
+  }
+  window.openUpdatePolicyModal = openUpdatePolicyModal;
+
+  function openHolidayPolicyModal() {
+    if (document.getElementById('policyId')) document.getElementById('policyId').value = '';
+    if (document.getElementById('policyName')) document.getElementById('policyName').value = '';
+    if (document.getElementById('policyPercentage')) document.getElementById('policyPercentage').value = '';
+    if (document.getElementById('policyStartDate')) document.getElementById('policyStartDate').value = '';
+    if (document.getElementById('policyEndDate')) document.getElementById('policyEndDate').value = '';
+
+    const modalHeader = document.querySelector('#holidayPolicyModal .modal-header h3');
+    if(modalHeader) modalHeader.innerHTML = `<i class="fas fa-calendar-plus" style="color: #e74c3c;"></i> Thêm Sự kiện Lễ/Khuyến mãi`;
+
+    openModal('holidayPolicyModal');
+  }
+  window.openHolidayPolicyModal = openHolidayPolicyModal;
+
+  function saveHolidayPolicy() {
+    const policyId = document.getElementById('policyId')?.value;
+    const policyName = document.getElementById('policyName')?.value;
+    const percentageStr = document.getElementById('policyPercentage')?.value;
+    const startDate = document.getElementById('policyStartDate')?.value;
+    const endDate = document.getElementById('policyEndDate')?.value;
+
+    if (!policyName || !percentageStr || !startDate || !endDate) {
+      alert("Vui lòng điền đầy đủ thông tin (Tên sự kiện, %, Ngày bắt đầu, Ngày kết thúc)!");
+      return;
+    }
+
+    const percentage = parseFloat(percentageStr);
+
+    if (new Date(startDate) > new Date(endDate)) {
+      alert("Lỗi: Ngày bắt đầu không được lớn hơn ngày kết thúc!");
+      return;
+    }
+
+    const requestBody = {
+      policyName: policyName,
+      percentage: percentage,
+      startDate: startDate,
+      endDate: endDate
+    };
+
+    const url = policyId ? `/flight/holiday-policy/${policyId}` : '/flight/add-holiday-policy';
+    const method = policyId ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    })
+        .then(async res => {
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Lỗi server');
+          }
+          return res.json();
+        })
+        .then(data => {
+          alert(policyId ? "Cập nhật sự kiện thành công!" : "Tạo sự kiện thành công!");
+          closeModal('holidayPolicyModal');
+          fetchPolicies();
+          searchFlightsForAdmin();
+        })
+        .catch(err => alert("Lỗi: " + err.message));
+  }
+  window.saveHolidayPolicy = saveHolidayPolicy;
+
+
+  // ==========================================================
+  // LỊCH SỬ THAY ĐỔI GIÁ (VĨNH VIỄN)
   // ==========================================================
 
   function openPriceHistoryModal(flightId) {
     const flight = allFlights.find(f => f.id === flightId);
     if (!flight) return;
 
-    // Hiển thị thông tin cơ bản của chuyến bay lên title modal
     document.getElementById('historyFlightInfo').innerText =
         `Chuyến bay ID: ${flight.id} - ${flight.airplaneName} (${flight.departureLocation} ✈️ ${flight.arrivalLocation})`;
 
-    // Gọi API lấy dữ liệu lịch sử
     fetch(`/flight/price-history/${flightId}`)
         .then(res => {
           if (!res.ok) throw new Error("Lỗi khi tải lịch sử giá");
@@ -670,7 +822,6 @@
         hour: '2-digit', minute: '2-digit'
       });
 
-      // Hiển thị mũi tên xanh tăng, mũi tên đỏ giảm
       let icon = '';
       if (history.newPrice > history.oldPrice) {
         icon = `<span style="color:#e74c3c; font-weight:bold;">Tăng ⬆️</span>`;
@@ -790,7 +941,6 @@
         .then(data => {
           if (data.code === 1000 || data.message.includes('success')) {
             alert("Đã chuyển vào thùng rác!");
-            // Nếu xoá máy bay đang được tích, ta cũng loại nó khỏi bộ nhớ
             selectedFlightIds.delete(flightId);
             fetchFlights();
           } else {
@@ -978,7 +1128,7 @@
           alert("Cập nhật hãng bay thành công!");
           closeModal('updateAirlineModal');
           fetchAirlines();
-          fetchFlights();
+          fetchFlights(); // Load lại chuyến bay lỡ có tên hãng đổi
         })
         .catch(err => alert("Lỗi: " + err.message));
   }
@@ -1026,5 +1176,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     fetchFlights();
     fetchAirlines();
+    fetchPolicies(); // 👉 Khởi chạy API lấy danh sách chính sách ngay khi load trang
   });
 })();

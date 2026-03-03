@@ -2,9 +2,12 @@ package com.java.web_travel.controller.admin;
 
 import com.java.web_travel.entity.Flight;
 import com.java.web_travel.entity.FlightPriceHistory;
+import com.java.web_travel.entity.FlightHolidayPolicy; // 👉 [MỚI]: Import entity Policy
 import com.java.web_travel.model.request.FlightDTO;
 import com.java.web_travel.model.response.ApiResponse;
 import com.java.web_travel.service.FlightService;
+import com.java.web_travel.model.request.AddPolicyToFlightsRequest;
+
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;
@@ -136,8 +139,6 @@ public class FlightController {
     }
 
     // --- 11. ĐIỀU CHỈNH GIÁ VĨNH VIỄN CHO CÁC CHUYẾN BAY ĐƯỢC CHỌN (BATCH UPDATE) ---
-
-    // Tạo Class DTO nhỏ để hứng dữ liệu từ Frontend
     @Getter
     @Setter
     public static class PriceAdjustmentRequest {
@@ -169,6 +170,62 @@ public class FlightController {
         ApiResponse<List<FlightPriceHistory>> apiResponse = new ApiResponse<>();
         apiResponse.setData(historyList);
         apiResponse.setMessage(historyList.isEmpty() ? "No history found" : "Fetched history successfully");
+        return apiResponse;
+    }
+
+    // --- 13. TẠO CHÍNH SÁCH GIÁ DỊP LỄ/KHUYẾN MÃI TẠM THỜI TOÀN CỤC ---
+    @PostMapping("/add-holiday-policy")
+    public ApiResponse<Void> addPolicyToSelectedFlights(@Valid @RequestBody AddPolicyToFlightsRequest request) {
+
+        log.info("Admin request to add global holiday policy '{}'. Percentage: {}%, Start: {}, End: {}",
+                request.getPolicyName(),
+                request.getPercentage(),
+                request.getStartDate(),
+                request.getEndDate());
+
+        flightService.addPolicyToSelectedFlights(request);
+
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Chính sách giá (Holiday Policy) toàn cục đã được tạo thành công!");
+        return apiResponse;
+    }
+
+    // --- 14. LẤY DANH SÁCH CHÍNH SÁCH LỄ/KHUYẾN MÃI ---
+    @GetMapping("/holiday-policies")
+    public ApiResponse<List<FlightHolidayPolicy>> getAllHolidayPolicies() {
+        log.info("Admin fetch all holiday policies");
+        List<FlightHolidayPolicy> policies = flightService.getAllHolidayPolicies();
+        ApiResponse<List<FlightHolidayPolicy>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(policies);
+        apiResponse.setMessage(policies.isEmpty() ? "Chưa có chính sách nào" : "Lấy danh sách thành công");
+        return apiResponse;
+    }
+
+    // --- 15. CẬP NHẬT CHÍNH SÁCH LỄ/KHUYẾN MÃI ---
+    @PutMapping("/holiday-policy/{id}")
+    public ApiResponse<FlightHolidayPolicy> updateHolidayPolicy(
+            @PathVariable Long id,
+            @Valid @RequestBody AddPolicyToFlightsRequest request) {
+        log.info("Admin request to update policy ID: {}. New name: {}, Percentage: {}",
+                id, request.getPolicyName(), request.getPercentage());
+
+        FlightHolidayPolicy updatedPolicy = flightService.updateHolidayPolicy(id, request);
+
+        ApiResponse<FlightHolidayPolicy> apiResponse = new ApiResponse<>();
+        apiResponse.setData(updatedPolicy);
+        apiResponse.setMessage("Cập nhật chính sách thành công!");
+        return apiResponse;
+    }
+
+    // --- 16. XÓA CHÍNH SÁCH LỄ/KHUYẾN MÃI ---
+    @DeleteMapping("/holiday-policy/{id}")
+    public ApiResponse<Void> deleteHolidayPolicy(@PathVariable Long id) {
+        log.info("Admin request to delete holiday policy ID: {}", id);
+
+        flightService.deleteHolidayPolicy(id);
+
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Xóa chính sách thành công!");
         return apiResponse;
     }
 }

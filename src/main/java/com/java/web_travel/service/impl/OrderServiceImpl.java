@@ -25,24 +25,36 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired private OrderRepository orderRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private HotelRepository hotelRepository;
-    @Autowired private FlightRepository flightRepository;
-    @Autowired private SearchRepository searchRepository;
-    @Autowired private HotelBedroomRepository hotelBedroomRepository;
-    @Autowired private HotelBookingRepository hotelBookingRepository;
-    @Autowired private PayRepository payRepository;
-    @Autowired private FlightSeatRepository flightSeatRepository;
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private HotelRepository hotelRepository;
+    @Autowired
+    private FlightRepository flightRepository;
+    @Autowired
+    private SearchRepository searchRepository;
+    @Autowired
+    private HotelBedroomRepository hotelBedroomRepository;
+    @Autowired
+    private HotelBookingRepository hotelBookingRepository;
+    @Autowired
+    private PayRepository payRepository;
+    @Autowired
+    private FlightSeatRepository flightSeatRepository;
 
-    @Autowired private HolidayPolicyRepository holidayPolicyRepository;
+    @Autowired
+    private HolidayPolicyRepository holidayPolicyRepository;
+
+    @Autowired
+    private FlightHolidayPolicyRepository flightHolidayPolicyRepository;
 
     // =========================================================================
     //  INTERNAL HELPERS (Hàm phụ trợ tính toán)
@@ -65,7 +77,6 @@ public class OrderServiceImpl implements OrderService {
         return calendar.getTime();
     }
 
-    // [GIỮ NGUYÊN] Hàm tìm chính sách phù hợp cho 1 ngày cụ thể
     private HolidayPolicy getPolicyForDate(List<HolidayPolicy> policies, LocalDate date) {
         if (policies == null || policies.isEmpty()) return null;
         return policies.stream()
@@ -74,19 +85,14 @@ public class OrderServiceImpl implements OrderService {
                 .orElse(null);
     }
 
-    // [ĐÃ TỐI ƯU] Hàm tính tổng tiền phòng
-    // Nhận trực tiếp Object Hotel và HotelBedroom để tránh query DB lại nhiều lần
     private Double calculateInternalRoomPrice(Hotel hotel, HotelBedroom room, LocalDate checkIn, LocalDate checkOut) {
 
-        // 1. Xác định giá gốc (Base Price)
         Double basePrice = hotel.getHotelPriceFrom();
         if (room != null && room.getPrice() != null) {
             basePrice = room.getPrice();
         }
         if (basePrice == null) basePrice = 0.0;
 
-        // 2. Lấy TOÀN BỘ chính sách liên quan (Group & Individual) trong khoảng thời gian này
-        // Sử dụng hotel.getId() trực tiếp từ object truyền vào
         List<HolidayPolicy> groupPolicies = new ArrayList<>();
         if (hotel.getHotelGroup() != null) {
             groupPolicies = holidayPolicyRepository.findByGroupIdAndDateRange(
@@ -95,16 +101,13 @@ public class OrderServiceImpl implements OrderService {
         List<HolidayPolicy> individualPolicies = holidayPolicyRepository.findByHotelIdAndDateRange(
                 hotel.getId(), checkIn, checkOut);
 
-        // 3. Vòng lặp tính tiền từng ngày
         double totalAmount = 0.0;
         for (LocalDate date = checkIn; date.isBefore(checkOut); date = date.plusDays(1)) {
             double dailyPrice = basePrice;
             double increasePercent = 0.0;
 
-            // Ưu tiên 1: Group Policy
             HolidayPolicy activePolicy = getPolicyForDate(groupPolicies, date);
 
-            // Ưu tiên 2: Hotel Policy (nếu Group không có)
             if (activePolicy == null) {
                 activePolicy = getPolicyForDate(individualPolicies, date);
             }
@@ -113,12 +116,42 @@ public class OrderServiceImpl implements OrderService {
                 increasePercent = activePolicy.getIncreasePercentage();
             }
 
-            // Tính giá ngày hôm đó = Giá gốc * (1 + % tăng)
             double priceToday = dailyPrice * (1.0 + (increasePercent / 100.0));
             totalAmount += priceToday;
         }
 
         return smartRoundPrice(totalAmount);
+    }
+
+    private Double calculateRealFlightPrice(Flight flight) {
+        if (flight.getCheckInDate() == null) return flight.getPrice();
+
+        LocalDate departureDate = flight.getCheckInDate().toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDate();
+
+        List<FlightHolidayPolicy> activePolicies = flightHolidayPolicyRepository
+                .findPoliciesCoveringDate(departureDate);
+
+        if (!activePolicies.isEmpty()) {
+            FlightHolidayPolicy maxPolicy = activePolicies.stream()
+                    .max((p1, p2) -> p1.getIncreasePercentage().compareTo(p2.getIncreasePercentage()))
+                    .orElse(activePolicies.get(0));
+
+            double rate = 1.0 + (maxPolicy.getIncreasePercentage() / 100.0);
+            double rawPrice = flight.getPrice() * rate;
+
+            return Math.round(rawPrice / 1000.0) * 1000.0;
+        }
+
+        return flight.getPrice();
+    }
+
+    // 👉 [MỚI]: Hàm này sẽ gán giá thực tế vào object Flight để hiển thị đúng
+    private void applyDynamicPriceToOrder(Order order) {
+        if (order != null && order.getFlight() != null) {
+            double realPrice = calculateRealFlightPrice(order.getFlight());
+            order.getFlight().setPrice(realPrice);
+        }
     }
 
     // =========================================================================
@@ -149,19 +182,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Order chooseHotel(Long orderId, Long hotelId, OrderHotelDTO orderHotelDTO) {
-        // Tìm Hotel 1 lần duy nhất ở đây
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // 1. Validate nội bộ ngày khách sạn
         if(orderHotelDTO.getStartHotel().after(orderHotelDTO.getEndHotel())){
             throw new AppException(ErrorCode.DATE_TIME_NOT_VALID);
         }
 
-        // 2. Validate với chuyến bay
         Flight currentFlight = order.getFlight();
         if (currentFlight != null) {
             Date flightDeparture = getStartOfDay(currentFlight.getCheckInDate());
@@ -173,7 +203,6 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        // 3. Validate số lượng phòng vs số người
         int requestedRoomsCount = orderHotelDTO.getHotelBedroomList().size();
         if (requestedRoomsCount == 0) {
             throw new RuntimeException("Bạn phải chọn ít nhất 1 phòng!");
@@ -187,7 +216,6 @@ public class OrderServiceImpl implements OrderService {
         order.setStartHotel(orderHotelDTO.getStartHotel());
         order.setEndHotel(orderHotelDTO.getEndHotel());
 
-        // --- CHUẨN BỊ DATE CHO VIỆC TÍNH TOÁN (LocalDate) ---
         LocalDate checkIn = orderHotelDTO.getStartHotel().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate checkOut = orderHotelDTO.getEndHotel().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
@@ -195,11 +223,9 @@ public class OrderServiceImpl implements OrderService {
         double totalPrice = 0;
 
         for(HotelBedroom bedroomRequest : orderHotelDTO.getHotelBedroomList()){
-            // Tìm HotelBedroom
             HotelBedroom hotelBedroom = hotelBedroomRepository.findByIdWithLock(bedroomRequest.getId())
                     .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));
 
-            // Check trùng lịch
             List<HotelBooking> hotelBookings = hotelBookingRepository.findOverLappingBookings(
                     hotelId,
                     hotelBedroom.getId(),
@@ -211,7 +237,6 @@ public class OrderServiceImpl implements OrderService {
                 throw new AppException(ErrorCode.HOTEL_BEDROOM_NOT_AVAILABLE);
             }
 
-            // Tạo Booking
             HotelBooking hotelBooking = new HotelBooking();
             hotelBooking.setHotel(hotel);
             hotelBooking.setHotelBedroom(hotelBedroom);
@@ -222,12 +247,9 @@ public class OrderServiceImpl implements OrderService {
 
             listBedrooms.append(hotelBedroom.getRoomNumber()).append(" ");
 
-            // =========================================================================
-            // [LOGIC MỚI ĐÃ UPDATE] GỌI HÀM TÍNH TOÁN (Truyền Object thay vì ID)
-            // =========================================================================
             Double roomTotalAmount = calculateInternalRoomPrice(
-                    hotel,          // Truyền object Hotel đã tìm thấy ở đầu hàm
-                    hotelBedroom,   // Truyền object Room đang lặp
+                    hotel,
+                    hotelBedroom,
                     checkIn,
                     checkOut
             );
@@ -240,10 +262,15 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
+    // 👉 [ĐÃ SỬA]: Thêm (readOnly = true) và gọi hàm applyDynamicPriceToOrder
     @Override
+    @Transactional(readOnly = true)
     public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        applyDynamicPriceToOrder(order);
+        return order;
     }
 
     @Override
@@ -265,7 +292,6 @@ public class OrderServiceImpl implements OrderService {
         Flight flight = flightRepository.findById(orderFlightDTO.getFlightId())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_EXISTS));
 
-        // Kiểm tra ngày bay so với thời điểm hiện tại
         Date now = new Date();
         if (flight.getCheckInDate().before(now)) {
             throw new RuntimeException("Chuyến bay này đã khởi hành vào " + flight.getCheckInDate() + ", vui lòng chọn chuyến bay khác!");
@@ -327,7 +353,8 @@ public class OrderServiceImpl implements OrderService {
         order.setFlight(flight);
         order.setListSeats(listSeatsStr.toString().trim());
 
-        double totalFlightPrice = requestedSeatNumbers.size() * flight.getPrice();
+        double realFlightPrice = calculateRealFlightPrice(flight);
+        double totalFlightPrice = requestedSeatNumbers.size() * realFlightPrice;
         order.setTotalPrice(order.getTotalPrice() + totalFlightPrice);
 
         if (order.getPayment() == null) {
@@ -379,7 +406,8 @@ public class OrderServiceImpl implements OrderService {
         flight.setSeatAvailable(flight.getSeatAvailable() + bookedSeats.size());
         flightRepository.save(flight);
 
-        double flightPriceTotal = bookedSeats.size() * flight.getPrice();
+        double realFlightPrice = calculateRealFlightPrice(flight);
+        double flightPriceTotal = bookedSeats.size() * realFlightPrice;
         order.setTotalPrice(order.getTotalPrice() - flightPriceTotal);
 
         for (FlightSeat seat : bookedSeats) {
@@ -392,21 +420,28 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
+    // 👉 [ĐÃ SỬA]: Thêm (readOnly = true) và áp dụng giá cho cả list
     @Override
+    @Transactional(readOnly = true)
     public PageResponse getOrdersByUserId(Long userId , int pageNo , int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTS));
         Page<Order> orders = orderRepository.findByUser(user,pageable) ;
+
+        orders.forEach(this::applyDynamicPriceToOrder);
+
         return PageResponse.builder()
                 .pageNo(pageNo)
                 .pageSize(pageSize)
                 .totalPages(orders.getTotalPages())
-                .items(orders)
+                .items(orders.getContent())
                 .build();
     }
 
+    // 👉 [ĐÃ SỬA]: Thêm (readOnly = true) và áp dụng giá cho cả list
     @Override
+    @Transactional(readOnly = true)
     public PageResponse getAllOrders(int pageNo , int pageSize,String sortBy) {
         List<Sort.Order> sorts = new ArrayList<>();
         if(StringUtils.hasLength(sortBy)) {
@@ -423,6 +458,8 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sorts));
         Page<Order> orders = orderRepository.findAll(pageable);
 
+        orders.forEach(this::applyDynamicPriceToOrder);
+
         return PageResponse.builder()
                 .pageNo(pageNo)
                 .pageSize(pageSize)
@@ -431,7 +468,9 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    // 👉 [ĐÃ SỬA]: Thêm (readOnly = true) và áp dụng giá cho cả list
     @Override
+    @Transactional(readOnly = true)
     public PageResponse getAllOrdersByMultipleColumns(int pageNo, int pageSize, String... sorts) {
         List<Sort.Order> ordersSort = new ArrayList<>();
         for (String sortBy : sorts) {
@@ -447,6 +486,8 @@ public class OrderServiceImpl implements OrderService {
         }
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(ordersSort));
         Page<Order> orders = orderRepository.findAll(pageable);
+
+        orders.forEach(this::applyDynamicPriceToOrder);
 
         return PageResponse.builder()
                 .pageNo(pageNo)

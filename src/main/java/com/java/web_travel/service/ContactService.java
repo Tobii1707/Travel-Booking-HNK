@@ -10,9 +10,6 @@ public interface ContactService {
 
     Contact sendContact(Long userId, ContactDTO contactDTO);
 
-    // --- XÓA DÒNG DƯỚI ĐÂY (Hàm cũ thiếu keyword) ---
-    // PageResponse<List<ContactResponse>> getAllContactsForAdmin(Long requesterId, int pageNo, int pageSize);
-
     // --- GIỮ LẠI DÒNG NÀY (Hàm mới có keyword) ---
     PageResponse<List<ContactResponse>> getAllContactsForAdmin(Long requesterId, String keyword, int pageNo, int pageSize);
 

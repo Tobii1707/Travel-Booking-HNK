@@ -116,7 +116,6 @@ public class UserServiceImpl implements UserService {
         if(user.getRole().equals(RoleCode.ADMIN)){
             throw new AppException(ErrorCode.NOT_CHANGE_STATUS_ADMIN) ;
         }
-        // --------------------
 
         user.setStatus(!user.isStatus());
         return userRepository.save(user);
@@ -161,11 +160,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(userCreateDTO.getEmail());
         user.setBirthday(userCreateDTO.getBirthday());
         user.setStatus(true);
-
-        // --- SỬA ĐOẠN NÀY ---
-        // Gán thẳng quyền ADMIN
         user.setRole(RoleCode.ADMIN);
-        // --------------------
 
         return userRepository.save(user);
     }

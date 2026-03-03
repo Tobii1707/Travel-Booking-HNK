@@ -10,15 +10,21 @@ import com.java.web_travel.repository.AirlineRepository;
 import com.java.web_travel.repository.FlightRepository;
 import com.java.web_travel.repository.OrderRepository;
 import com.java.web_travel.service.FlightService;
-// 👉 [MỚI]: Import thêm Entity và Repository của lịch sử giá
+
 import com.java.web_travel.entity.FlightPriceHistory;
 import com.java.web_travel.repository.FlightPriceHistoryRepository;
+
+import com.java.web_travel.entity.FlightHolidayPolicy;
+import com.java.web_travel.repository.FlightHolidayPolicyRepository;
+import com.java.web_travel.model.request.AddPolicyToFlightsRequest;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList; // 👉 [MỚI]
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,14 +41,42 @@ public class FlightServiceImpl implements FlightService {
     @Autowired
     private AirlineRepository airlineRepository;
 
-    // 👉 [MỚI]: Inject Repository Lịch sử giá
     @Autowired
     private FlightPriceHistoryRepository priceHistoryRepository;
 
-    // --- 1. TẠO CHUYẾN BAY ---
+    @Autowired
+    private FlightHolidayPolicyRepository flightHolidayPolicyRepository;
+
+
+    private Double smartRoundPrice(Double rawPrice) {
+        if (rawPrice == null) return 0.0;
+        double rounded = Math.round(rawPrice / 1000.0) * 1000.0;
+        return rounded < 0 ? 0.0 : rounded;
+    }
+
+    private void applyDynamicPriceToFlight(Flight flight) {
+        if (flight.getCheckInDate() == null) return;
+
+        LocalDate departureDate = flight.getCheckInDate().toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDate();
+
+        List<FlightHolidayPolicy> activePolicies = flightHolidayPolicyRepository
+                .findPoliciesCoveringDate(departureDate);
+
+        if (!activePolicies.isEmpty()) {
+            FlightHolidayPolicy maxPolicy = activePolicies.stream()
+                    .max((p1, p2) -> p1.getIncreasePercentage().compareTo(p2.getIncreasePercentage()))
+                    .orElse(activePolicies.get(0));
+
+            double rate = 1.0 + (maxPolicy.getIncreasePercentage() / 100.0);
+
+            flight.setPrice(smartRoundPrice(flight.getPrice() * rate));
+        }
+    }
+
+
     @Override
     public Flight createFlight(FlightDTO flightDTO) {
-        // Validation ngày (GIỮ NGUYÊN)
         if(flightDTO.getCheckInDate().before(new Date())){
             throw new AppException(ErrorCode.DATE_NOT_VALID);
         }
@@ -75,17 +109,13 @@ public class FlightServiceImpl implements FlightService {
         return flightRepository.save(flight);
     }
 
-    // --- 2. XÓA CHUYẾN BAY ---
     @Override
     @Transactional
     public void deleteFlight(Long id) {
         Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.FLIGHT_NOT_FOUND));
 
-        // 👉 [LOGIC MỚI CÁCH 1]: Chặn Admin xóa chuyến bay đã cất cánh
         if (flight.getCheckInDate().before(new Date())) {
-            // Bạn cần thêm CANNOT_DELETE_PAST_FLIGHT vào Enum ErrorCode của bạn nhé
-            // Ví dụ message: "Không thể xóa chuyến bay đã khởi hành để đảm bảo lưu trữ lịch sử."
             throw new AppException(ErrorCode.CANNOT_DELETE_PAST_FLIGHT);
         }
 
@@ -103,7 +133,6 @@ public class FlightServiceImpl implements FlightService {
         flightRepository.save(flight);
     }
 
-    // --- 3. CẬP NHẬT CHUYẾN BAY ---
     @Override
     public Flight updateFlight(Long id, FlightDTO flightDTO) {
         Flight flight = flightRepository.findById(id)
@@ -113,14 +142,10 @@ public class FlightServiceImpl implements FlightService {
             throw new AppException(ErrorCode.FLIGHT_NOT_FOUND);
         }
 
-        // 👉 [LOGIC MỚI CÁCH 1]: Chặn Admin sửa thông tin chuyến bay đã cất cánh
         if (flight.getCheckInDate().before(new Date())) {
-            // Bạn cần thêm CANNOT_UPDATE_PAST_FLIGHT vào Enum ErrorCode của bạn nhé
-            // Ví dụ message: "Không thể cập nhật thông tin của chuyến bay đã khởi hành."
             throw new AppException(ErrorCode.CANNOT_UPDATE_PAST_FLIGHT);
         }
 
-        // Validation ngày (GIỮ NGUYÊN)
         if(flightDTO.getCheckInDate().before(new Date())){
             throw new AppException(ErrorCode.DATE_NOT_VALID);
         }
@@ -161,7 +186,6 @@ public class FlightServiceImpl implements FlightService {
             }
         }
 
-        // 👉 [MỚI]: Kiểm tra xem giá vé có thay đổi không? Nếu có thì lưu vào bảng lịch sử
         double oldPrice = flight.getPrice();
         double newPrice = flightDTO.getPrice();
 
@@ -171,7 +195,7 @@ public class FlightServiceImpl implements FlightService {
             history.setOldPrice(oldPrice);
             history.setNewPrice(newPrice);
             history.setChangedAt(new Date());
-            priceHistoryRepository.save(history); // Lưu dòng lịch sử
+            priceHistoryRepository.save(history);
         }
 
         flight.setAirline(newAirline);
@@ -179,7 +203,7 @@ public class FlightServiceImpl implements FlightService {
         flight.setDepartureLocation(flightDTO.getDepartureLocation());
         flight.setArrivalLocation(flightDTO.getArrivalLocation());
         flight.setTicketClass(flightDTO.getTicketClass());
-        flight.setPrice(newPrice); // Đã dùng biến newPrice
+        flight.setPrice(newPrice);
         flight.setCheckInDate(flightDTO.getCheckInDate());
         flight.setCheckOutDate(flightDTO.getCheckOutDate());
         flight.setNumberOfChairs(flightDTO.getNumberOfChairs());
@@ -187,37 +211,37 @@ public class FlightServiceImpl implements FlightService {
         return flightRepository.save(flight);
     }
 
-    // --- 4. CÁC HÀM GET ---
-
-    // 👉 Hàm này dùng cho ADMIN: Lấy tất cả chuyến bay (kể cả đã bay) để quản lý lịch sử
     @Override
     public List<Flight> getAllFlights() {
-        return flightRepository.findByDeletedFalse();
+        List<Flight> flights = flightRepository.findByDeletedFalse();
+        flights.forEach(this::applyDynamicPriceToFlight);
+        return flights;
     }
 
-    // 👉 [LOGIC MỚI CÁCH 1] Hàm này dùng cho KHÁCH HÀNG (Người dùng end-user):
-    // Chỉ hiển thị các chuyến bay ở Tương Lai (Chưa bay)
     @Override
     public List<Flight> getUpcomingFlightsForUser() {
         Date now = new Date();
-        // Lấy danh sách chưa xóa -> Dùng Stream để lọc những chuyến có ngày cất cánh > ngày hiện tại
-        return flightRepository.findByDeletedFalse().stream()
+        List<Flight> flights = flightRepository.findByDeletedFalse().stream()
                 .filter(flight -> flight.getCheckInDate().after(now))
                 .collect(Collectors.toList());
+
+        flights.forEach(this::applyDynamicPriceToFlight);
+        return flights;
     }
 
     @Override
     public List<Flight> getSuggestedFlights(String fromLocation, String toLocation) {
-        return flightRepository.findSuggestedFlights(fromLocation, toLocation);
+        List<Flight> flights = flightRepository.findSuggestedFlights(fromLocation, toLocation);
+
+        flights.forEach(this::applyDynamicPriceToFlight);
+        return flights;
     }
 
-    // --- 5. LẤY DANH SÁCH CHUYẾN BAY TRONG THÙNG RÁC ---
     @Override
     public List<Flight> getDeletedFlights() {
         return flightRepository.findByDeletedTrue();
     }
 
-    // --- 6. KHÔI PHỤC CHUYẾN BAY ĐÃ XÓA ---
     @Override
     public Flight restoreFlight(Long id) {
         Flight flight = flightRepository.findById(id)
@@ -232,19 +256,16 @@ public class FlightServiceImpl implements FlightService {
         return flightRepository.save(flight);
     }
 
-    // --- 7. TẠO NHIỀU CHUYẾN BAY CÙNG LÚC CHO 1 HÃNG (LOGIC MỚI THÊM) ---
     @Override
     @Transactional
     public List<Flight> createMultipleFlights(Long airlineId, List<FlightDTO> flightDTOs) {
 
-        // 1. Chặn List rỗng
         if (flightDTOs == null || flightDTOs.isEmpty()) {
-            throw new AppException(ErrorCode.ARGUMENT_NOT_VALID); // Thêm ErrorCode báo list rỗng
+            throw new AppException(ErrorCode.ARGUMENT_NOT_VALID);
         }
 
-        // 2. Chặn tạo quá nhiều (Ví dụ max 50 chuyến)
         if (flightDTOs.size() > 50) {
-            throw new AppException(ErrorCode.ARGUMENT_NOT_VALID); // Báo lỗi vượt quá số lượng
+            throw new AppException(ErrorCode.ARGUMENT_NOT_VALID);
         }
 
         Airline airline = airlineRepository.findById(airlineId)
@@ -254,22 +275,17 @@ public class FlightServiceImpl implements FlightService {
             throw new AppException(ErrorCode.AIRLINE_IS_DELETED);
         }
 
-        // 3. Kiểm tra đụng giờ NGAY TRONG mảng JSON gửi lên (RAM)
-        // Sắp xếp danh sách theo tên máy bay và thời gian cất cánh để dễ kiểm tra
         flightDTOs.sort((f1, f2) -> {
             int nameCompare = f1.getAirplaneName().compareTo(f2.getAirplaneName());
             if (nameCompare != 0) return nameCompare;
             return f1.getCheckInDate().compareTo(f2.getCheckInDate());
         });
 
-        // Duyệt qua từng cặp chuyến bay liền kề
         for (int i = 0; i < flightDTOs.size() - 1; i++) {
             FlightDTO current = flightDTOs.get(i);
             FlightDTO next = flightDTOs.get(i + 1);
 
-            // Nếu cùng một máy bay...
             if (current.getAirplaneName().equalsIgnoreCase(next.getAirplaneName())) {
-                // ...mà chuyến sau lại cất cánh TRƯỚC KHI chuyến trước kịp hạ cánh -> Đụng giờ!
                 if (next.getCheckInDate().before(current.getCheckOutDate())) {
                     throw new AppException(ErrorCode.DUPLICATE_DATA);
                 }
@@ -277,9 +293,8 @@ public class FlightServiceImpl implements FlightService {
         }
 
         List<Flight> flightsToSave = flightDTOs.stream().map(dto -> {
-            // 4. Validate Điểm đi trùng Điểm đến
             if (dto.getDepartureLocation().trim().equalsIgnoreCase(dto.getArrivalLocation().trim())) {
-                throw new AppException(ErrorCode.LOCATION_NOT_VALID); // Thêm ErrorCode này
+                throw new AppException(ErrorCode.LOCATION_NOT_VALID);
             }
 
             if (dto.getCheckInDate().before(new Date())) {
@@ -289,7 +304,6 @@ public class FlightServiceImpl implements FlightService {
                 throw new IllegalArgumentException(String.valueOf(ErrorCode.DATE_TIME_NOT_VALID));
             }
 
-            // 5. Query xuống Database để kiểm tra trùng lịch bay
             boolean isOverlapping = flightRepository.existsOverlappingFlight(
                     dto.getAirplaneName(),
                     dto.getCheckInDate(),
@@ -297,7 +311,6 @@ public class FlightServiceImpl implements FlightService {
             );
 
             if (isOverlapping) {
-                // Ném lỗi nếu máy bay đã có chuyến bay khác trong khoảng thời gian này
                 throw new AppException(ErrorCode.DUPLICATE_DATA);
             }
 
@@ -320,40 +333,40 @@ public class FlightServiceImpl implements FlightService {
         return flightRepository.saveAll(flightsToSave);
     }
 
-    // --- CHỨC NĂNG: ĐIỀU CHỈNH GIÁ VĨNH VIỄN CHO CÁC CHUYẾN BAY ĐƯỢC CHỌN ---
     @Override
     @Transactional
     public void adjustPriceForSelectedFlights(List<Long> flightIds, double percentage) {
-        // 1. Chặn List rỗng
         if (flightIds == null || flightIds.isEmpty()) {
             throw new AppException(ErrorCode.ARGUMENT_NOT_VALID);
         }
 
-        // 2. Chặn Admin nhập số âm quá lớn làm giá rớt xuống dưới 0
         if (percentage <= -100) {
             throw new AppException(ErrorCode.ARGUMENT_NOT_VALID);
         }
 
         Date now = new Date();
 
-        // 3. Lấy ra TẤT CẢ các chuyến bay dựa trên danh sách ID được truyền vào
         List<Flight> selectedFlights = flightRepository.findAllById(flightIds);
 
-        // 4. Lọc bỏ các chuyến bay không hợp lệ (đã bay, hoặc đã bị xóa mềm)
-        // Đây là bước bảo vệ phụ ở Backend phòng khi Frontend gửi nhầm ID rác
-        List<Flight> validFlightsToUpdate = selectedFlights.stream()
-                .filter(flight -> !flight.isDeleted() && flight.getCheckInDate().after(now))
-                .collect(Collectors.toList());
+        List<Flight> validFlightsToUpdate = new ArrayList<>();
+        for (Flight flight : selectedFlights) {
+            if (flight.isDeleted()) {
+                throw new AppException(ErrorCode.FLIGHT_NOT_FOUND);
+            }
+
+            if (flight.getCheckInDate().before(now)) {
+                throw new AppException(ErrorCode.CANNOT_UPDATE_PAST_FLIGHT);
+            }
+
+            validFlightsToUpdate.add(flight);
+        }
 
         if (validFlightsToUpdate.isEmpty()) {
-            // Không có chuyến bay hợp lệ nào để cập nhật
             return;
         }
 
-        // 👉 [MỚI]: Tạo một danh sách để chứa các lịch sử giá cần lưu
         List<FlightPriceHistory> historyList = new ArrayList<>();
 
-        // 5. Tính toán giá mới
         for (Flight flight : validFlightsToUpdate) {
             double currentPrice = flight.getPrice();
 
@@ -363,10 +376,8 @@ public class FlightServiceImpl implements FlightService {
                 newPrice = 0;
             }
 
-            // Làm tròn đến hàng nghìn (VD: 125.600 -> 126.000)
             newPrice = Math.round(newPrice / 1000.0) * 1000.0;
 
-            // 👉 [MỚI]: Nếu giá thực sự thay đổi, thêm vào danh sách lịch sử
             if (currentPrice != newPrice) {
                 FlightPriceHistory history = new FlightPriceHistory();
                 history.setFlight(flight);
@@ -379,34 +390,122 @@ public class FlightServiceImpl implements FlightService {
             flight.setPrice(newPrice);
         }
 
-        // 6. Lưu xuống Database (Lưu hàng loạt chuyến bay và lịch sử)
         flightRepository.saveAll(validFlightsToUpdate);
-        priceHistoryRepository.saveAll(historyList); // 👉 [MỚI]: Lưu hàng loạt lịch sử
+        priceHistoryRepository.saveAll(historyList);
     }
 
-    // --- 8. TÌM KIẾM CHUYẾN BAY (CHO ADMIN) ---
+    // 👉 [ĐÃ FIX]: Bỏ việc lọc (filter) chuyến bay trong quá khứ ở hàm hiển thị
     @Override
     public List<Flight> searchFlightsForAdmin(String keyword, String departure, String arrival, Long airlineId) {
-        // Chuẩn hóa chuỗi rỗng thành null để query JPQL hoạt động chính xác
         String validKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
         String validDeparture = (departure != null && !departure.trim().isEmpty()) ? departure.trim() : null;
         String validArrival = (arrival != null && !arrival.trim().isEmpty()) ? arrival.trim() : null;
 
+        // Trả về toàn bộ dữ liệu do Database query được, KHÔNG LỌC BỎ CÁC CHUYẾN BAY CŨ NỮA
         List<Flight> searchResults = flightRepository.searchFlightsForAdmin(validKeyword, validDeparture, validArrival, airlineId);
 
-        // (Tùy chọn) Chỉ trả về các chuyến bay chưa cất cánh để Admin đổi giá
-        Date now = new Date();
-        return searchResults.stream()
-                .filter(flight -> flight.getCheckInDate().after(now))
-                .collect(Collectors.toList());
+        // Áp dụng tính giá động (nếu có chính sách nào đang chạy) cho toàn bộ danh sách hiển thị
+        searchResults.forEach(this::applyDynamicPriceToFlight);
+
+        return searchResults;
     }
 
-    // --- 9. 👉 [MỚI] XEM LỊCH SỬ THAY ĐỔI GIÁ CỦA CHUYẾN BAY ---
     @Override
     public List<FlightPriceHistory> getFlightPriceHistory(Long flightId) {
         Flight flight = flightRepository.findById(flightId)
                 .orElseThrow(() -> new AppException(ErrorCode.FLIGHT_NOT_FOUND));
 
         return priceHistoryRepository.findByFlightOrderByChangedAtDesc(flight);
+    }
+
+    // --- 10. THÊM CHÍNH SÁCH GIÁ DỊP LỄ TOÀN CỤC ---
+    @Override
+    @Transactional
+    public void addPolicyToSelectedFlights(AddPolicyToFlightsRequest request) {
+        if (request.getPercentage() == null) {
+            throw new RuntimeException("Chưa nhập phần trăm tăng/giảm!");
+        }
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+            throw new RuntimeException("Ngày bắt đầu và kết thúc không được để trống!");
+        }
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new RuntimeException("Lỗi: Ngày bắt đầu không được nằm sau ngày kết thúc!");
+        }
+
+        boolean existsOverlap = flightHolidayPolicyRepository.existsOverlappingPolicy(
+                request.getStartDate(),
+                request.getEndDate()
+        );
+
+        if (existsOverlap) {
+            throw new RuntimeException("Lỗi: Khoảng thời gian từ " + request.getStartDate() +
+                    " đến " + request.getEndDate() + " đã bị trùng lặp với một chính sách giá khác!");
+        }
+
+        FlightHolidayPolicy policy = new FlightHolidayPolicy();
+        policy.setName(request.getPolicyName());
+        policy.setStartDate(request.getStartDate());
+        policy.setEndDate(request.getEndDate());
+        policy.setIncreasePercentage(Double.valueOf(request.getPercentage()));
+
+        flightHolidayPolicyRepository.save(policy);
+    }
+
+    // =========================================================================
+    // --- 11. LẤY DANH SÁCH TẤT CẢ CHÍNH SÁCH LỄ / KHUYẾN MÃI ---
+    // =========================================================================
+    @Override
+    public List<FlightHolidayPolicy> getAllHolidayPolicies() {
+        return flightHolidayPolicyRepository.findAllByOrderByStartDateDesc();
+    }
+
+    // =========================================================================
+    // --- 12. CẬP NHẬT CHÍNH SÁCH LỄ / KHUYẾN MÃI ---
+    // =========================================================================
+    @Override
+    @Transactional
+    public FlightHolidayPolicy updateHolidayPolicy(Long id, AddPolicyToFlightsRequest request) {
+        FlightHolidayPolicy policy = flightHolidayPolicyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chính sách giá này!"));
+
+        if (request.getPercentage() == null) {
+            throw new RuntimeException("Chưa nhập phần trăm tăng/giảm!");
+        }
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+            throw new RuntimeException("Ngày bắt đầu và kết thúc không được để trống!");
+        }
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new RuntimeException("Lỗi: Ngày bắt đầu không được nằm sau ngày kết thúc!");
+        }
+
+        // Kiểm tra trùng lặp ngày, nhưng bỏ qua ID của chính sách đang được sửa (để tránh lỗi tự đá chính mình)
+        boolean existsOverlap = flightHolidayPolicyRepository.existsOverlappingPolicyExcludingId(
+                request.getStartDate(),
+                request.getEndDate(),
+                id
+        );
+
+        if (existsOverlap) {
+            throw new RuntimeException("Lỗi: Khoảng thời gian này đã bị trùng lặp với một chính sách khác!");
+        }
+
+        policy.setName(request.getPolicyName());
+        policy.setStartDate(request.getStartDate());
+        policy.setEndDate(request.getEndDate());
+        policy.setIncreasePercentage(Double.valueOf(request.getPercentage()));
+
+        return flightHolidayPolicyRepository.save(policy);
+    }
+
+    // =========================================================================
+    // --- 13. XÓA CHÍNH SÁCH LỄ / KHUYẾN MÃI ---
+    // =========================================================================
+    @Override
+    @Transactional
+    public void deleteHolidayPolicy(Long id) {
+        FlightHolidayPolicy policy = flightHolidayPolicyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chính sách giá này!"));
+
+        flightHolidayPolicyRepository.delete(policy);
     }
 }

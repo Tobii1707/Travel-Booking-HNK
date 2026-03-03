@@ -1,6 +1,7 @@
 package com.java.web_travel.repository;
 
 import com.java.web_travel.entity.Hotel;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,8 +14,6 @@ import java.util.List;
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
-    // --- CÁC CHỨC NĂNG CŨ (GIỮ NGUYÊN KHÔNG ĐỤNG CHẠM) ---
-
     @Query(value = "SELECT * FROM hotels h " +
             "WHERE LOWER(REPLACE(h.address, ' ', '')) " +
             "LIKE CONCAT('%', LOWER(REPLACE(:destination, ' ', '')), '%')",
@@ -25,14 +24,17 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     long countActiveOrdersByHotelId(@Param("hotelId") Long hotelId);
 
     // 1. Lấy danh sách khách sạn đang hoạt động (deleted = false)
+    @EntityGraph(attributePaths = {"hotelGroup"})
     List<Hotel> findAllByDeletedFalse();
 
     // 2. Lấy danh sách khách sạn đã bị xóa mềm (deleted = true) -> Để hiện trong thùng rác
+    @EntityGraph(attributePaths = {"hotelGroup"})
     List<Hotel> findAllByDeletedTrue();
 
     // --- CÁC CHỨC NĂNG MỚI PHỤC VỤ GROUP & GIÁ ---
 
     // 3. Lấy danh sách theo Group (QUAN TRỌNG: Dùng hàm này ở Service để tính toán làm tròn giá đẹp)
+    @EntityGraph(attributePaths = {"hotelGroup"})
     List<Hotel> findAllByHotelGroupIdAndDeletedFalse(Long groupId);
 
     // 5. Update giá: Nhân theo tỷ lệ % (Dự phòng)
@@ -42,16 +44,13 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             "WHERE h.hotelGroup.id = :groupId AND h.deleted = false")
     void bulkMultiplyPriceByRate(@Param("groupId") Long groupId, @Param("rate") Double rate);
 
-    // =========================================================================
-    //  [MỚI] TÌM KIẾM ĐA NĂNG (TÊN + ĐỊA ĐIỂM/ĐỊA CHỈ + GROUP)
-    // =========================================================================
     /**
      * Tìm kiếm tổng hợp:
      * 1. LEFT JOIN hotelGroup: Để tìm được cả trong tên nhóm (và không bỏ sót KS chưa có nhóm).
      * 2. LOWER + CONCAT: Tìm gần đúng không phân biệt hoa thường.
      * 3. Tìm trong: Tên KS, Địa điểm, Địa chỉ, Tên Nhóm.
      */
-    @Query("SELECT h FROM Hotel h LEFT JOIN h.hotelGroup g WHERE " +
+    @Query("SELECT h FROM Hotel h LEFT JOIN FETCH h.hotelGroup g WHERE " +
             "h.deleted = false AND " +
             "(:keyword IS NULL OR :keyword = '' OR " +
             " LOWER(h.hotelName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +

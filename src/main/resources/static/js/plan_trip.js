@@ -108,7 +108,7 @@ function renderOrders(orders) {
     // 2. Mã đơn
     const idHtml = `<td class="text-center">${order.id}</td>`;
 
-    // 3. Hành trình (CẬP NHẬT: Thêm justify-content:center để căn giữa ô)
+    // 3. Hành trình
     let startPoint = '...';
     let endPoint = '...';
 
@@ -157,10 +157,9 @@ function renderOrders(orders) {
     const priceHtml = `
         <td>
             <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                <span style="font-weight:bold;">${price} đ</span>
-                <button class="btn-icon-eye" style="color:#27ae60; background:rgba(39, 174, 96, 0.1); width:24px; height:24px; font-size:0.8em;" 
-                        onclick="showPriceDetails(${order.id})" title="Xem chi tiết hóa đơn">
-                    <i class="fas fa-search-dollar"></i>
+                <span style="font-weight:bold; color: #d35400;">${price} đ</span>
+                <button class="btn-icon-eye btn-bill" onclick="showPriceDetails(${order.id})" title="Xem chi tiết hóa đơn">
+                    <i class="fas fa-file-invoice-dollar"></i>
                 </button>
             </div>
         </td>`;
@@ -212,18 +211,21 @@ function getOrderData(orderId) {
   return JSON.parse(checkbox.closest('tr').dataset.order);
 }
 
-// Hàm format ngày tháng cơ bản
 function formatDate(dateStr) {
   return dateStr ? new Date(dateStr).toLocaleDateString('vi-VN') : 'N/A';
 }
 
-// Hàm lấy giờ (HH:mm)
+function formatDateTime(dateStr) {
+  if (!dateStr) return 'N/A';
+  const d = new Date(dateStr);
+  return `${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - ${d.toLocaleDateString('vi-VN')}`;
+}
+
 function getTime(dateStr) {
   if (!dateStr) return '--:--';
   return new Date(dateStr).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 }
 
-// Hàm lấy ngày (DD/MM/YYYY)
 function getDate(dateStr) {
   if (!dateStr) return 'N/A';
   return new Date(dateStr).toLocaleDateString('vi-VN');
@@ -234,12 +236,12 @@ function showCustomModal(title, content) {
   if(existing) existing.remove();
 
   const modalHtml = `
-        <div id="custom-detail-modal" class="modal" style="display:flex; align-items:center; justify-content:center;">
+        <div id="custom-detail-modal" class="modal" style="display:flex; align-items:center; justify-content:center; background: rgba(0,0,0,0.6);">
             <div class="modal-content detail-content bounce-in">
-                <span class="close-modal" onclick="document.getElementById('custom-detail-modal').remove()">&times;</span>
+                <span class="close-modal" style="position:absolute; right: 15px; top: 15px; font-size: 24px; cursor:pointer; color: #fff; z-index: 10;" onclick="document.getElementById('custom-detail-modal').remove()">&times;</span>
                 <div style="padding-bottom: 0;">${content}</div>
-                <div style="text-align:center; padding: 15px; background: #f8f9fa; border-top: 1px solid #eee;">
-                    <button class="btn cancel" onclick="document.getElementById('custom-detail-modal').remove()">Đóng</button>
+                <div style="text-align:center; padding: 15px; background: #f8f9fa; border-top: 1px solid #eee; border-radius: 0 0 12px 12px;">
+                    <button class="btn cancel" onclick="document.getElementById('custom-detail-modal').remove()">Đóng lại</button>
                 </div>
             </div>
         </div>
@@ -254,7 +256,6 @@ window.showHotelDetails = (orderId) => {
 
   const h = order.hotel;
 
-  // Tính toán số đêm
   const start = new Date(order.startHotel);
   const end = new Date(order.endHotel);
   const nights = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
@@ -392,21 +393,19 @@ window.showFlightDetails = (orderId) => {
   showCustomModal("Vé Máy Bay Điện Tử", html);
 };
 
-// --- POPUP: CHI TIẾT HÓA ĐƠN ---
+// =========================================================================
+// HÓA ĐƠN CHI TIẾT
+// =========================================================================
 window.showPriceDetails = (orderId) => {
   const order = getOrderData(orderId);
   if (!order) return;
 
-  // --- LOGIC MỚI: TÌM TÊN KHÁCH HÀNG THÔNG MINH ---
   let customerName = 'Khách hàng';
-
-  // 1. Ưu tiên lấy trực tiếp từ dữ liệu user của order (nếu API có trả về)
   if (order.user) {
     if (order.user.fullName) customerName = order.user.fullName;
     else if (order.user.username) customerName = order.user.username;
     else if (order.user.email) customerName = order.user.email.split('@')[0];
   }
-  // 2. Nếu không có trong order, quét các key phổ biến trong LocalStorage
   if (customerName === 'Khách hàng') {
     const lsFullName = localStorage.getItem('fullName');
     const lsUsername = localStorage.getItem('username');
@@ -417,7 +416,7 @@ window.showPriceDetails = (orderId) => {
     else if (lsEmail && lsEmail !== 'null' && lsEmail !== 'undefined') customerName = lsEmail.split('@')[0];
   }
 
-  // A. VÉ MÁY BAY
+  // 1. VÉ MÁY BAY
   let flightHtml = '';
   let flightTotal = 0;
 
@@ -426,23 +425,33 @@ window.showPriceDetails = (orderId) => {
     const ticketPrice = order.flight.price || 0;
     flightTotal = ticketPrice * paxCount;
 
-    const brand = order.flight.brand || 'Hãng bay';
+    const brand = order.flight.airline?.airlineName || order.flight.brand || 'Hãng bay';
     const route = `${order.flight.departureLocation ? order.flight.departureLocation.split(',')[0] : 'Đi'} - ${order.flight.arrivalLocation ? order.flight.arrivalLocation.split(',')[0] : 'Đến'}`;
+    const fDate = formatDateTime(order.flight.checkInDate || order.flight.startDate);
 
+    let seatClass = order.flight.ticketClass === 'BUSINESS_CLASS' ? 'Thương gia' : 'Phổ thông';
+    let seats = order.listSeats ? `(Ghế: ${order.listSeats})` : '';
+
+    // 👉 Đã cập nhật hiển thị rõ ràng giá / 1 ghế
     flightHtml = `
       <tr>
-        <td>
-            <div class="item-title">Vé máy bay (${brand})</div>
-            <div class="item-desc">${route}</div>
+        <td class="inv-service-col">
+            <div class="inv-service-title"><i class="fas fa-plane"></i> Vé máy bay ${brand}</div>
+            <div class="inv-service-sub">Chặng bay: <b>${route}</b></div>
+            <div class="inv-service-sub">Khởi hành: ${fDate}</div>
+            <div class="inv-service-sub">Hạng vé: ${seatClass} ${seats}</div>
         </td>
-        <td class="text-center">${paxCount} khách</td>
-        <td class="text-right">${ticketPrice.toLocaleString('vi-VN')} ₫</td>
-        <td class="text-right font-weight-bold">${flightTotal.toLocaleString('vi-VN')} ₫</td>
+        <td class="text-center align-middle">${paxCount} <span class="inv-unit">vé</span></td>
+        <td class="text-right align-middle" style="line-height: 1.2;">
+            <div style="font-weight: 600;">${ticketPrice.toLocaleString('vi-VN')} ₫</div>
+            <div style="font-size: 0.8em; color: #888;">/ 1 ghế</div>
+        </td>
+        <td class="text-right align-middle inv-subtotal">${flightTotal.toLocaleString('vi-VN')} ₫</td>
       </tr>
     `;
   }
 
-  // B. KHÁCH SẠN
+  // 2. KHÁCH SẠN
   let hotelHtml = '';
   let hotelTotal = 0;
 
@@ -457,86 +466,93 @@ window.showPriceDetails = (orderId) => {
     if (nights < 1) nights = 1;
 
     const pricePerNight = hotelTotal / nights;
+    const hotelName = order.hotel.hotelName || 'Khách sạn';
 
+    // 👉 Đã cập nhật hiển thị rõ ràng giá / 1 đêm
     hotelHtml = `
       <tr>
-        <td>
-            <div class="item-title">Khách sạn ${order.hotel.hotelName}</div>
-            <div class="item-desc">Phòng: ${order.listBedrooms || 'Tiêu chuẩn'}</div>
+        <td class="inv-service-col">
+            <div class="inv-service-title"><i class="fas fa-building"></i> Khách sạn ${hotelName}</div>
+            <div class="inv-service-sub">Nhận phòng: ${getDate(order.startHotel)}</div>
+            <div class="inv-service-sub">Trả phòng: ${getDate(order.endHotel)}</div>
+            <div class="inv-service-sub">Chi tiết: ${order.listBedrooms ? 'Phòng ' + order.listBedrooms : 'Phòng tiêu chuẩn'}</div>
         </td>
-        <td class="text-center">${nights} đêm</td>
-        <td class="text-right">${pricePerNight.toLocaleString('vi-VN')} ₫</td>
-        <td class="text-right font-weight-bold">${hotelTotal.toLocaleString('vi-VN')} ₫</td>
+        <td class="text-center align-middle">${nights} <span class="inv-unit">đêm</span></td>
+        <td class="text-right align-middle" style="line-height: 1.2;">
+            <div style="font-weight: 600;">${pricePerNight.toLocaleString('vi-VN')} ₫</div>
+            <div style="font-size: 0.8em; color: #888;">/ 1 đêm</div>
+        </td>
+        <td class="text-right align-middle inv-subtotal">${hotelTotal.toLocaleString('vi-VN')} ₫</td>
       </tr>
     `;
   }
 
-  // C. TỔNG CỘNG
+  // 3. TỔNG CỘNG
   const finalTotal = (order.totalPrice || (flightTotal + hotelTotal));
 
-  let paymentStatus = 'UNPAID';
-  let stampHtml = '';
+  let stampClass = 'unpaid';
+  let stampText = 'CHƯA THANH TOÁN';
   if (order.payment) {
     if (order.payment.status === 'PAID') {
-      stampHtml = '<div class="invoice-stamp paid">ĐÃ THANH TOÁN</div>';
+      stampClass = 'paid'; stampText = 'ĐÃ THANH TOÁN';
     } else if (order.payment.status === 'VERIFYING') {
-      stampHtml = '<div class="invoice-stamp verifying">ĐANG DUYỆT</div>';
-    } else {
-      stampHtml = '<div class="invoice-stamp unpaid">CHƯA THANH TOÁN</div>';
+      stampClass = 'verifying'; stampText = 'ĐANG XÁC THỰC';
+    } else if (order.payment.status === 'PAYMENT_FAILED') {
+      stampClass = 'failed'; stampText = 'LỖI THANH TOÁN';
     }
   }
 
-  // TẠO HTML GIAO DIỆN
   const html = `
-    <div class="invoice-wrapper">
-        ${stampHtml}
+    <div class="modern-inv-wrapper">
+        <div class="inv-stamp ${stampClass}">${stampText}</div>
         
-        <div class="invoice-header-top">
-            <div class="inv-brand"><i class="fas fa-receipt"></i> HÓA ĐƠN CHI TIẾT</div>
-            <div class="inv-id">Mã đơn: #${order.id}</div>
+        <div class="modern-inv-header">
+            <div class="brand-logo"><i class="fas fa-file-invoice-dollar"></i> VIVU TRAVEL</div>
+            <div class="inv-title">HÓA ĐƠN CHI TIẾT</div>
         </div>
 
-        <div class="invoice-info-row">
-            <div>
-                <span class="lbl">Khách hàng:</span> <span class="val" style="color:var(--primary); font-weight:bold;">${customerName}</span>
+        <div class="modern-inv-info">
+            <div class="info-block">
+                <p>Khách hàng: <strong>${customerName}</strong></p>
+                <p>Số lượng: <strong>${order.numberOfPeople || 1} người</strong></p>
             </div>
-            <div>
-                <span class="lbl">Ngày tạo:</span> <span class="val">${new Date().toLocaleDateString('vi-VN')}</span>
+            <div class="info-block text-right">
+                <p>Mã đơn hàng: <strong style="color:var(--primary);">#${order.id}</strong></p>
+                <p>Ngày tạo: <strong>${new Date().toLocaleDateString('vi-VN')}</strong></p>
             </div>
         </div>
 
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th style="width: 40%">Dịch vụ</th>
-                    <th style="width: 15%" class="text-center">SL</th>
-                    <th style="width: 20%" class="text-right">Đơn giá</th>
-                    <th style="width: 25%" class="text-right">Thành tiền</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${flightHtml}
-                ${hotelHtml}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="modern-inv-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%; text-align: left;">Chi tiết dịch vụ</th>
+                        <th style="width: 15%" class="text-center">Số lượng</th>
+                        <th style="width: 20%" class="text-right">Đơn giá</th>
+                        <th style="width: 20%" class="text-right">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${flightHtml}
+                    ${hotelHtml}
+                </tbody>
+            </table>
+        </div>
 
-        <div class="invoice-summary">
-            <div class="sum-row">
-                <span>Tổng tiền vé máy bay:</span>
+        <div class="modern-inv-summary">
+            <div class="summary-line">
+                <span>Cộng tiền vé máy bay:</span>
                 <span>${flightTotal.toLocaleString('vi-VN')} ₫</span>
             </div>
-            <div class="sum-row">
-                <span>Tổng tiền khách sạn:</span>
+            <div class="summary-line">
+                <span>Cộng tiền khách sạn:</span>
                 <span>${hotelTotal.toLocaleString('vi-VN')} ₫</span>
             </div>
-            <div class="sum-row final">
-                <span>TỔNG THANH TOÁN:</span>
-                <span class="amount">${finalTotal.toLocaleString('vi-VN')} ₫</span>
+            <div class="summary-line total-line">
+                <span>TỔNG CỘNG:</span>
+                <span class="grand-total">${finalTotal.toLocaleString('vi-VN')} ₫</span>
             </div>
-        </div>
-        
-        <div style="margin-top: 15px; font-size: 0.85em; color: #777; text-align: center; font-style: italic;">
-            * Giá trên đã bao gồm thuế và phí dịch vụ.
+            <div class="vat-note">* Giá trên đã bao gồm các loại thuế và phí dịch vụ.</div>
         </div>
     </div>
   `;
@@ -612,7 +628,6 @@ function initReviewUI() {
 
   if (!reviewModal) return;
 
-  // Hiệu ứng chọn Sao cho cả 3 tiêu chí
   document.querySelectorAll(".star-rating").forEach(group => {
     const stars = group.querySelectorAll("i");
     const targetInputId = group.getAttribute("data-target");
@@ -649,12 +664,10 @@ function initReviewUI() {
     });
   });
 
-  // Gắn sự kiện submit và đóng modal (Đã xóa dòng gắn sự kiện delete)
   document.getElementById('submit-review-btn')?.addEventListener('click', submitReview);
   document.getElementById('close-review-modal-btn')?.addEventListener('click', () => reviewModal.style.display = 'none');
 }
 
-// Hàm update giao diện sao
 function updateStarsMulti(hotelRate, flightRate, webRate) {
   const rates = {
     'review-hotel-rating': hotelRate || 5,
@@ -684,7 +697,6 @@ function updateStarsMulti(hotelRate, flightRate, webRate) {
   });
 }
 
-// Mở modal: Tự động check xem đã có review chưa để quyết định là "Thêm mới" hay "Cập nhật"
 window.openReviewModal = async function(orderId, hotelName) {
   if (!reviewModal) reviewModal = document.getElementById('review-modal');
 
@@ -695,7 +707,7 @@ window.openReviewModal = async function(orderId, hotelName) {
   if(orderDisplay) orderDisplay.textContent = `#${orderId} ${hotelName ? '('+hotelName+')' : ''}`;
 
   document.getElementById('review-comment').value = '';
-  updateStarsMulti(5, 5, 5); // Default 5 sao
+  updateStarsMulti(5, 5, 5);
 
   try {
     const response = await fetch(`/api/reviews/order/${orderId}`);
@@ -705,37 +717,30 @@ window.openReviewModal = async function(orderId, hotelName) {
     const reviewData = await response.json();
 
     if(reviewData && reviewData.id) {
-      // TRƯỜNG HỢP: ĐÃ CÓ REVIEW -> CHUYỂN SANG CHẾ ĐỘ SỬA (UPDATE)
       document.getElementById('review-modal-title').textContent = 'Sửa đánh giá';
       document.getElementById('review-id').value = reviewData.id;
       document.getElementById('review-comment').value = reviewData.comment || '';
-      // Đã xóa dòng gọi hiển thị nút delete
-
       updateStarsMulti(reviewData.hotelRating, reviewData.flightRating, reviewData.websiteRating);
     } else {
       throw new Error("Dữ liệu rỗng");
     }
   } catch(e) {
-    // TRƯỜNG HỢP: CHƯA CÓ REVIEW -> CHẾ ĐỘ THÊM MỚI
     document.getElementById('review-modal-title').textContent = 'Viết đánh giá';
     document.getElementById('review-id').value = '';
-    // Đã xóa dòng ẩn nút delete
   }
 
   reviewModal.style.display = 'flex';
 };
 
-// Hàm xử lý chung cho cả Tạo mới và Cập nhật
 async function submitReview() {
   const orderId = document.getElementById('review-order-id').value;
-  const reviewId = document.getElementById('review-id').value; // Sẽ rỗng nếu là thêm mới, có số nếu là update
+  const reviewId = document.getElementById('review-id').value;
 
   const hotelRating = document.getElementById('review-hotel-rating').value;
   const flightRating = document.getElementById('review-flight-rating').value;
   const websiteRating = document.getElementById('review-website-rating').value;
-  const comment = document.getElementById('review-comment').value.trim(); // Dùng trim() để loại bỏ khoảng trắng thừa
+  const comment = document.getElementById('review-comment').value.trim();
 
-  // Validate Frontend
   if(hotelRating < 1 || flightRating < 1 || websiteRating < 1) {
     return alert('Vui lòng chọn đầy đủ số sao!');
   }
@@ -743,7 +748,6 @@ async function submitReview() {
     return alert('Vui lòng nhập nội dung đánh giá!');
   }
 
-  // Quyết định URL và Method dựa vào việc reviewId có tồn tại không
   const isEdit = !!reviewId;
   const url = isEdit ? `/api/reviews/${reviewId}` : `/api/reviews/submit`;
   const method = isEdit ? 'PUT' : 'POST';
@@ -753,7 +757,7 @@ async function submitReview() {
       method: method,
       headers: {
         'Content-Type': 'application/json',
-        'userId': userId // Biến userId này giả định bạn đã có sẵn ở global JS
+        'userId': userId
       },
       body: JSON.stringify({
         orderId: parseInt(orderId),
@@ -768,9 +772,8 @@ async function submitReview() {
       const msg = await response.text();
       alert(msg || (isEdit ? 'Cập nhật đánh giá thành công!' : 'Lưu đánh giá thành công!'));
       reviewModal.style.display = 'none';
-      window.location.reload(); // Reload lại trang để thấy dữ liệu mới
+      window.location.reload();
     } else {
-      // Bắt lỗi từ Backend (ví dụ: lỗi validation, lỗi chưa thanh toán...)
       let errorMessage = 'Có lỗi xảy ra khi lưu đánh giá!';
       try {
         const errorData = await response.json();
@@ -797,7 +800,12 @@ style.innerHTML = `
         background: rgba(52, 152, 219, 0.1); color: #3498db;
     }
     .btn-icon-eye:hover { background: #3498db; color: white; transform: scale(1.1); }
+    .btn-bill { background: rgba(39, 174, 96, 0.1); color: #27ae60; }
+    .btn-bill:hover { background: #27ae60; color: white; }
+    
     .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .align-middle { vertical-align: middle !important; }
     
     .bounce-in { animation: bounceIn 0.4s; }
     @keyframes bounceIn {
@@ -805,10 +813,47 @@ style.innerHTML = `
       100% { transform: scale(1); opacity: 1; }
     }
 
-    /* Modal Specifics */
-    .modal-content.detail-content { max-width: 600px; padding: 0; border-radius: 12px; overflow: hidden; }
+    .modal-content.detail-content { max-width: 650px; padding: 0; border-radius: 12px; overflow: hidden; background: #fff;}
     
-    /* Hotel Voucher */
+    /* ========================================================= */
+    /* CSS CHO HÓA ĐƠN MỚI (MODERN INVOICE) */
+    /* ========================================================= */
+    .modern-inv-wrapper { position: relative; padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; overflow: hidden; }
+    
+    .inv-stamp { position: absolute; top: 40px; right: 20px; font-weight: bold; font-size: 1.5rem; letter-spacing: 2px; padding: 8px 15px; border: 4px solid; border-radius: 8px; transform: rotate(15deg); opacity: 0.15; pointer-events: none; z-index: 1;}
+    .inv-stamp.paid { color: #27ae60; border-color: #27ae60; }
+    .inv-stamp.unpaid { color: #c0392b; border-color: #c0392b; }
+    .inv-stamp.verifying { color: #f39c12; border-color: #f39c12; }
+    .inv-stamp.failed { color: #8e44ad; border-color: #8e44ad; transform: rotate(-10deg);}
+
+    .modern-inv-header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px; }
+    .brand-logo { font-size: 1.4rem; font-weight: 800; color: #2c3e50; display: flex; align-items: center; justify-content: center; gap: 8px;}
+    .brand-logo i { color: var(--primary, #29b862); }
+    .inv-title { font-size: 1.1rem; letter-spacing: 1px; color: #7f8c8d; margin-top: 5px; font-weight: 600; }
+
+    .modern-inv-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.95rem; }
+    .info-block p { margin: 4px 0; color: #555; }
+    
+    .modern-inv-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 0.95rem; position: relative; z-index: 2;}
+    .modern-inv-table th { background: #f8f9fa; color: #2c3e50; font-weight: 600; padding: 12px; border-bottom: 2px solid #e0e0e0; text-transform: uppercase; font-size: 0.85rem;}
+    .modern-inv-table td { padding: 15px 12px; border-bottom: 1px solid #eee; }
+    
+    .inv-service-title { font-weight: 700; color: #2c3e50; font-size: 1.05rem; margin-bottom: 5px; display:flex; align-items:center; gap:6px;}
+    .inv-service-title i { color: var(--primary, #29b862); }
+    .inv-service-sub { font-size: 0.85rem; color: #7f8c8d; margin-top: 3px;}
+    .inv-unit { font-size: 0.8rem; color: #999; }
+    .inv-subtotal { font-weight: 600; color: #2c3e50; }
+
+    .modern-inv-summary { width: 60%; margin-left: auto; border-top: 2px solid #e0e0e0; padding-top: 15px; }
+    .summary-line { display: flex; justify-content: space-between; margin-bottom: 8px; color: #555; font-size: 0.95rem;}
+    .total-line { font-size: 1.3rem; font-weight: 800; color: #d35400; border-top: 1px dashed #ccc; padding-top: 10px; margin-top: 5px; }
+    .grand-total { background: #fff5e6; padding: 2px 8px; border-radius: 4px; }
+    
+    .vat-note { text-align: right; font-size: 0.8rem; color: #95a5a6; font-style: italic; margin-top: 15px; }
+
+    /* ========================================================= */
+    /* VOUCHER & TICKET (CŨ - GIỮ NGUYÊN) */
+    /* ========================================================= */
     .hotel-header { background: #2c3e50; color: #fff; padding: 20px; text-align: center; }
     .hotel-header h3 { margin: 0; font-size: 1.4rem; color: #fff; }
     .hotel-stars { color: #f1c40f; margin-top: 5px; }
@@ -820,7 +865,6 @@ style.innerHTML = `
     .date-box .time { font-size: 0.85rem; color: #e67e22; }
     .info-list .info-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
     
-    /* Flight Ticket */
     .flight-header { background: linear-gradient(135deg, #3498db, #2980b9); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
     .flight-body { padding: 25px; background: #fff; }
     .route-visual { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
