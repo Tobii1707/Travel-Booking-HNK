@@ -57,4 +57,6 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
             " LOWER(h.address) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             " LOWER(g.groupName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Hotel> searchByKeyword(@Param("keyword") String keyword);
+
+    boolean existsByHotelNameIgnoreCaseAndAddressIgnoreCase(String hotelName, String address);
 }

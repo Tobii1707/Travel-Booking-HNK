@@ -59,4 +59,6 @@ public interface HotelService {
 
     void deleteHolidayPolicy(Long policyId);
 
+    List<HotelResponse> createMultipleHotels(List<HotelDTO> hotelDTOs);
+
 }

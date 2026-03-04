@@ -69,8 +69,12 @@
 
                 <div class="action-buttons">
                     <button class="btn btn-create" onclick="openAddHotelModal()">
-                        <i class="fas fa-plus"></i> Thêm mới
+                        <i class="fas fa-plus"></i> Thêm khách sạn
                     </button>
+                    <button class="btn btn-add-json" onclick="openAddMultipleHotelsModal()">
+                        <i class="fas fa-file-import"></i> Thêm nhiều khách sạn
+                    </button>
+
                     <button id="toggleTrashBtn" class="btn btn-danger" onclick="toggleHotelTrash()">
                         <i class="fas fa-trash"></i> Thùng rác
                     </button>
@@ -454,6 +458,45 @@
     </div>
 </div>
 
+<div id="addMultipleHotelsModal" class="modal">
+    <div class="modal-content modal-json-content">
+        <div class="modal-header">
+            <h3>Thêm khách sạn hàng loạt</h3>
+            <span class="close-btn" onclick="closeModal('addMultipleHotelsModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="alert-box info json-alert">
+                <i class="fas fa-info-circle"></i>
+                <span>Vui lòng dán dữ liệu danh sách khách sạn theo cấu trúc mẫu bên dưới. Hỗ trợ tối đa 50 khách sạn mỗi lần.</span>
+            </div>
+            <div class="form-group">
+                <label>Dữ liệu mẫu (Định dạng chuẩn) <span class="required">*</span></label>
+                <textarea id="bulkHotelJson" class="form-control json-textarea" rows="12" placeholder='[
+  {
+    "hotelName": "Khách sạn Mường Thanh",
+    "priceFrom": 1500000,
+    "address": "Đà Nẵng",
+    "numberFloor": 10,
+    "numberRoomPerFloor": 5,
+    "hotelGroupId": null
+  },
+  {
+    "hotelName": "Vinpearl Resort",
+    "priceFrom": 2500000,
+    "address": "Nha Trang",
+    "numberFloor": 15,
+    "numberRoomPerFloor": 8,
+    "hotelGroupId": null
+  }
+]'></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" onclick="closeModal('addMultipleHotelsModal')">Hủy</button>
+            <button class="btn btn-create" onclick="submitAddMultipleHotels()">Tạo dữ liệu</button>
+        </div>
+    </div>
+</div>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="/js/admin_hotel.js"></script>
 

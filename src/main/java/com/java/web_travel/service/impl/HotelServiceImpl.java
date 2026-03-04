@@ -86,9 +86,30 @@ public class HotelServiceImpl implements HotelService {
     @Override
     @Transactional
     public HotelResponse createHotel(HotelDTO hotelDTO) {
+        // --- VALIDATION BỔ SUNG ---
+        if (hotelDTO.getHotelName() == null || hotelDTO.getHotelName().trim().isEmpty() || hotelDTO.getHotelName().trim().length() < 3 || hotelDTO.getHotelName().trim().length() > 255) {
+            throw new RuntimeException("Lỗi: Tên khách sạn phải từ 3 đến 255 ký tự!");
+        }
+        if (hotelDTO.getAddress() == null || hotelDTO.getAddress().trim().isEmpty() || hotelDTO.getAddress().trim().length() < 5 || hotelDTO.getAddress().trim().length() > 255) {
+            throw new RuntimeException("Lỗi: Địa chỉ khách sạn phải từ 5 đến 255 ký tự!");
+        }
+        if (hotelDTO.getNumberFloor() <= 0 || hotelDTO.getNumberFloor() > 200) {
+            throw new RuntimeException("Lỗi: Số tầng phải từ 1 đến 200 tầng!");
+        }
+        if (hotelDTO.getNumberRoomPerFloor() <= 0 || hotelDTO.getNumberRoomPerFloor() > 200) {
+            throw new RuntimeException("Lỗi: Số phòng mỗi tầng phải từ 1 đến 200 phòng!");
+        }
+        // --------------------------
+
         if(hotelDTO.getPriceFrom() < 0){
             throw new AppException(ErrorCode.PRICE_NOT_VALID);
         }
+
+        // --- VALIDATION GIÁ TRẦN ---
+        if(hotelDTO.getPriceFrom() > 2000000000.0){
+            throw new RuntimeException("Lỗi: Giá tiền không hợp lệ (Tối đa 2 tỷ VNĐ)!");
+        }
+        // --------------------------
 
         Hotel hotel = hotelConverter.convertHotel(hotelDTO);
 
@@ -102,6 +123,101 @@ public class HotelServiceImpl implements HotelService {
 
         Hotel savedHotel = hotelRepository.save(hotel);
         return hotelConverter.toHotelResponse(savedHotel);
+    }
+
+    @Override
+    @Transactional
+    public List<HotelResponse> createMultipleHotels(List<HotelDTO> hotelDTOs) {
+        // 1. Giới hạn số lượng và payload trống
+        if (hotelDTOs == null || hotelDTOs.isEmpty()) {
+            throw new AppException(ErrorCode.ARGUMENT_NOT_VALID);
+        }
+        if (hotelDTOs.size() > 50) {
+            throw new RuntimeException("Lỗi: Chỉ hỗ trợ thêm tối đa 50 khách sạn mỗi lần để đảm bảo hiệu suất!");
+        }
+
+        List<Hotel> hotelsToSave = new ArrayList<>();
+
+        // Dùng Set để kiểm tra trùng lặp ngay bên trong mảng JSON gửi lên
+        java.util.Set<String> uniquePayloadCheck = new java.util.HashSet<>();
+
+        // 2. Xử lý và Validation từng phần tử
+        for (HotelDTO dto : hotelDTOs) {
+
+            // --- VALIDATION LOGIC THỰC TẾ ---
+            if (dto.getHotelName() == null || dto.getHotelName().trim().isEmpty()) {
+                throw new RuntimeException("Lỗi: Tên khách sạn không được để trống!");
+            }
+            if (dto.getAddress() == null || dto.getAddress().trim().isEmpty()) {
+                throw new RuntimeException("Lỗi: Địa chỉ khách sạn không được để trống!");
+            }
+
+            String cleanName = dto.getHotelName().trim();
+            String cleanAddress = dto.getAddress().trim();
+
+            // --- KIỂM TRA ĐỘ DÀI (CHỐNG LỖI DB TRUNCATION) ---
+            if (cleanName.length() < 3 || cleanName.length() > 255) {
+                throw new RuntimeException("Lỗi: Tên khách sạn '" + cleanName + "' phải từ 3 đến 255 ký tự!");
+            }
+            if (cleanAddress.length() < 5 || cleanAddress.length() > 255) {
+                throw new RuntimeException("Lỗi: Địa chỉ '" + cleanAddress + "' phải từ 5 đến 255 ký tự!");
+            }
+
+            if (dto.getPriceFrom() < 0) {
+                throw new AppException(ErrorCode.PRICE_NOT_VALID);
+            }
+            // --- KIỂM TRA GIÁ TRẦN (CHỐNG LỖI OVERFLOW) ---
+            if (dto.getPriceFrom() > 2000000000.0) {
+                throw new RuntimeException("Lỗi: Giá tiền của khách sạn '" + cleanName + "' không hợp lệ (Tối đa 2 tỷ VNĐ)!");
+            }
+
+            if (dto.getNumberFloor() <= 0 || dto.getNumberRoomPerFloor() <= 0) {
+                throw new RuntimeException("Lỗi: Số tầng và số phòng mỗi tầng của khách sạn '" + dto.getHotelName() + "' phải lớn hơn 0!");
+            }
+            // --- KIỂM TRA SỐ TẦNG/PHÒNG TỐI ĐA (CHỐNG LỖI OOM) ---
+            if (dto.getNumberFloor() > 200) {
+                throw new RuntimeException("Lỗi: Số tầng của khách sạn '" + cleanName + "' không được vượt quá 200 tầng!");
+            }
+            if (dto.getNumberRoomPerFloor() > 200) {
+                throw new RuntimeException("Lỗi: Số phòng mỗi tầng của khách sạn '" + cleanName + "' không được vượt quá 200 phòng!");
+            }
+
+            // --- CHECK TRÙNG LẶP TRONG CHÍNH PAYLOAD JSON ---
+            String uniqueKey = cleanName.toLowerCase() + "|" + cleanAddress.toLowerCase();
+            if (!uniquePayloadCheck.add(uniqueKey)) {
+                throw new RuntimeException("Lỗi dữ liệu gửi lên: Khách sạn '" + cleanName + "' tại '" + cleanAddress + "' bị lặp lại nhiều lần trong file JSON!");
+            }
+
+            // --- CHECK TRÙNG LẶP DƯỚI DATABASE ---
+            boolean isExistInDb = hotelRepository.existsByHotelNameIgnoreCaseAndAddressIgnoreCase(cleanName, cleanAddress);
+            if (isExistInDb) {
+                throw new RuntimeException("Lỗi hệ thống: Khách sạn '" + cleanName + "' tại địa chỉ '" + cleanAddress + "' đã tồn tại!");
+            }
+
+            // 3. Mapping dữ liệu
+            Hotel hotel = hotelConverter.convertHotel(dto);
+            hotel.setHotelName(cleanName);
+            hotel.setAddress(cleanAddress);
+
+            // Xử lý Group
+            if (dto.getHotelGroupId() != null) {
+                HotelGroup group = hotelGroupRepository.findById(dto.getHotelGroupId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Tập đoàn với ID: " + dto.getHotelGroupId()));
+
+                hotel.setHotelGroup(group);
+                hotel.setHotelName(appendGroupName(hotel.getHotelName(), group.getGroupName()));
+            }
+
+            hotelsToSave.add(hotel);
+        }
+
+        // 4. Lưu hàng loạt xuống DB
+        List<Hotel> savedHotels = hotelRepository.saveAll(hotelsToSave);
+
+        // 5. Trả về kết quả
+        return savedHotels.stream()
+                .map(hotelConverter::toHotelResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -138,9 +254,30 @@ public class HotelServiceImpl implements HotelService {
     @Override
     @Transactional
     public HotelResponse updateHotel(HotelDTO hotelDTO , Long hotelId){
+        // --- VALIDATION BỔ SUNG ---
+        if (hotelDTO.getHotelName() == null || hotelDTO.getHotelName().trim().isEmpty() || hotelDTO.getHotelName().trim().length() < 3 || hotelDTO.getHotelName().trim().length() > 255) {
+            throw new RuntimeException("Lỗi: Tên khách sạn phải từ 3 đến 255 ký tự!");
+        }
+        if (hotelDTO.getAddress() == null || hotelDTO.getAddress().trim().isEmpty() || hotelDTO.getAddress().trim().length() < 5 || hotelDTO.getAddress().trim().length() > 255) {
+            throw new RuntimeException("Lỗi: Địa chỉ khách sạn phải từ 5 đến 255 ký tự!");
+        }
+        if (hotelDTO.getNumberFloor() <= 0 || hotelDTO.getNumberFloor() > 200) {
+            throw new RuntimeException("Lỗi: Số tầng phải từ 1 đến 200 tầng!");
+        }
+        if (hotelDTO.getNumberRoomPerFloor() <= 0 || hotelDTO.getNumberRoomPerFloor() > 200) {
+            throw new RuntimeException("Lỗi: Số phòng mỗi tầng phải từ 1 đến 200 phòng!");
+        }
+        // --------------------------
+
         if(hotelDTO.getPriceFrom() < 0){
             throw new AppException(ErrorCode.PRICE_NOT_VALID);
         }
+
+        // --- VALIDATION GIÁ TRẦN ---
+        if(hotelDTO.getPriceFrom() > 2000000000.0){
+            throw new RuntimeException("Lỗi: Giá tiền không hợp lệ (Tối đa 2 tỷ VNĐ)!");
+        }
+        // --------------------------
 
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new AppException(ErrorCode.HOTEL_NOT_FOUND));

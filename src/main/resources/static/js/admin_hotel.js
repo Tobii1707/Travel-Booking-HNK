@@ -298,6 +298,73 @@
   };
 
   // ================================================================
+  // --- [MỚI] TẠO NHIỀU KHÁCH SẠN BẰNG JSON ---
+  // ================================================================
+
+  window.openAddMultipleHotelsModal = function () {
+    const jsonInput = document.getElementById('bulkHotelJson');
+    if (jsonInput) jsonInput.value = ''; // Reset textarea mỗi lần mở
+
+    const modal = document.getElementById('addMultipleHotelsModal');
+    if (modal) {
+      modal.style.display = 'flex';
+    } else {
+      showToast("Chưa có giao diện (HTML) cho Modal thêm nhiều khách sạn!", "warning");
+    }
+  };
+
+  window.submitAddMultipleHotels = function () {
+    const jsonStr = document.getElementById('bulkHotelJson');
+
+    if (!jsonStr || !jsonStr.value.trim()) {
+      return showToast("Vui lòng nhập dữ liệu JSON!", "warning");
+    }
+
+    let payload;
+    try {
+      // Parse dữ liệu từ Textarea thành Array Object
+      payload = JSON.parse(jsonStr.value.trim());
+    } catch (e) {
+      return showToast("Định dạng JSON không hợp lệ! Vui lòng kiểm tra lại.", "error");
+    }
+
+    // Validate phải là mảng
+    if (!Array.isArray(payload)) {
+      return showToast("Dữ liệu phải là một mảng JSON (Bắt đầu bằng [ và kết thúc bằng ])!", "error");
+    }
+
+    // Chặn theo logic Backend (tối đa 50 phần tử)
+    if (payload.length === 0 || payload.length > 50) {
+      return showToast("Số lượng khách sạn mỗi lần thêm phải từ 1 đến 50!", "warning");
+    }
+
+    // Gọi API
+    fetch(`${API_ADMIN}/createMultipleHotels`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+        .then(async res => {
+          const data = await res.json();
+          // Kiểm tra response theo format ApiResponse của bạn
+          if (res.ok && (data.code === 1000 || !data.code || data.message?.includes("thành công"))) {
+            showToast(`Tạo thành công ${payload.length} khách sạn!`);
+            window.closeModal('addMultipleHotelsModal');
+
+            // Reset trang để thấy dữ liệu mới
+            hotelPage = 0;
+            fetchHotels();
+          } else {
+            showToast(data.message || "Có lỗi xảy ra khi lưu dữ liệu", "error");
+          }
+        })
+        .catch(err => {
+          console.error("Lỗi gọi API createMultipleHotels:", err);
+          showToast("Không thể kết nối đến server!", "error");
+        });
+  };
+
+  // ================================================================
   // 3. BULK ACTIONS
   // ================================================================
 

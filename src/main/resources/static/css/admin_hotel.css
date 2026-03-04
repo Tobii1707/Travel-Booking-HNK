@@ -209,6 +209,12 @@ body.hust-admin-hotel .btn-danger { background-color: var(--danger); }
 body.hust-admin-hotel .btn-secondary { background-color: var(--secondary); }
 body.hust-admin-hotel .btn-info { background-color: var(--info); color: white; }
 
+/* --- [MỚI] Nút thêm JSON màu xanh lá cây đậm --- */
+body.hust-admin-hotel .btn-add-json {
+  background-color: #28a745;
+  color: white;
+}
+
 /* Nút Warning/Edit (Cam) */
 body.hust-admin-hotel .btn-warning,
 body.hust-admin-hotel .btn-edit {
@@ -311,6 +317,11 @@ body.hust-admin-hotel .modal-content {
 }
 @keyframes modalZoom { from {transform: scale(0.95); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
+/* --- [MỚI] Tùy chỉnh width cho Modal nhập JSON --- */
+body.hust-admin-hotel .modal-json-content {
+  width: 600px;
+}
+
 body.hust-admin-hotel .modal-header {
   padding: 15px 25px; border-bottom: 1px solid #e9ecef;
   display: flex; justify-content: space-between; align-items: center;
@@ -351,6 +362,15 @@ body.hust-admin-hotel .form-control:focus {
   border-color: #80bdff; outline: 0; box-shadow: 0 0 0 3px rgba(0,123,255,.15);
 }
 
+/* --- [MỚI] Tùy chỉnh Font cho ô nhập JSON --- */
+body.hust-admin-hotel .json-textarea {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre;
+  overflow-x: auto;
+}
+
 /* Row/Col Layout (Cho Date picker, Number inputs) */
 body.hust-admin-hotel .row { display: flex; gap: 15px; margin-bottom: 10px; }
 body.hust-admin-hotel .col-half { flex: 1; }
@@ -376,6 +396,16 @@ body.hust-admin-hotel .alert-box.info {
 }
 body.hust-admin-hotel .alert-box.warning {
   background-color: #fff3cd; color: #856404; border-left: 4px solid #ffc107;
+}
+
+/* --- [MỚI] Hộp thoại Info dành riêng cho Modal JSON --- */
+body.hust-admin-hotel .alert-box.json-alert {
+  background-color: #e3f2fd;
+  border-left-color: #2196F3;
+  color: #0d47a1;
+}
+body.hust-admin-hotel .alert-box.json-alert i {
+  color: #2196F3;
 }
 
 /* ================= UTILITIES & EXTRAS ================= */

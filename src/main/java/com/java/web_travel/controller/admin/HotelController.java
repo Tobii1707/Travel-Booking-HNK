@@ -6,9 +6,8 @@ import com.java.web_travel.model.request.AssignGroupRequest;
 import com.java.web_travel.model.request.BulkUpdatePriceByListRequest;
 import com.java.web_travel.model.request.BulkUpdatePriceRequest;
 import com.java.web_travel.model.request.HotelDTO;
-import com.java.web_travel.model.request.UpdatePolicyListHotelRequest; // <--- [MỚI] Import request update policy
+import com.java.web_travel.model.request.UpdatePolicyListHotelRequest;
 import com.java.web_travel.model.response.ApiResponse;
-import com.java.web_travel.model.response.HolidayPolicyResponse;
 import com.java.web_travel.model.response.HotelHistoryResponse;
 import com.java.web_travel.model.response.HotelResponse;
 import com.java.web_travel.repository.HotelBedroomRepository;
@@ -18,7 +17,6 @@ import com.java.web_travel.service.HotelService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -201,7 +199,7 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 13. [MỚI] API THÊM CHÍNH SÁCH GIÁ TẠM THỜI (THEO DANH SÁCH CHỌN) ---
+    // --- 13. API THÊM CHÍNH SÁCH GIÁ TẠM THỜI (THEO DANH SÁCH CHỌN) ---
     @PostMapping("/add-policy-list")
     public ApiResponse<String> addPolicyToSelectedHotels(@RequestBody AddPolicyToHotelsRequest request) {
         hotelService.addPolicyToSelectedHotels(request);
@@ -210,7 +208,7 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 14. [FIX] API LẤY LỊCH SỬ ---
+    // --- 14. API LẤY LỊCH SỬ ---
     @GetMapping("/hotels/{hotelId}/policies")
     public ApiResponse<List<HotelHistoryResponse>> getHotelPolicies(@PathVariable Long hotelId) {
         log.info("Get history/policies for hotel id: {}", hotelId);
@@ -224,7 +222,7 @@ public class HotelController {
     //  QUẢN LÝ CHÍNH SÁCH (SỬA / XÓA)
     // =========================================================================
 
-    // --- 15. [MỚI] CẬP NHẬT CHÍNH SÁCH ---
+    // --- 15. CẬP NHẬT CHÍNH SÁCH ---
     @PutMapping("/policies/{id}")
     public ApiResponse<String> updatePolicy(@PathVariable Long id, @RequestBody UpdatePolicyListHotelRequest request) {
         log.info("Update policy id: {}, content: {}", id, request);
@@ -234,13 +232,25 @@ public class HotelController {
         return apiResponse;
     }
 
-    // --- 16. [MỚI] XÓA CHÍNH SÁCH ---
+    // --- 16. XÓA CHÍNH SÁCH ---
     @DeleteMapping("/policies/{id}")
     public ApiResponse<String> deletePolicy(@PathVariable Long id) {
         log.info("Delete policy id: {}", id);
         hotelService.deleteHolidayPolicy(id);
         ApiResponse<String> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Đã xóa chính sách thành công!");
+        return apiResponse;
+    }
+
+    // --- 17. API TẠO NHIỀU KHÁCH SẠN CÙNG LÚC ---
+    @PostMapping("/createMultipleHotels")
+    public ApiResponse<List<HotelResponse>> createMultipleHotels(@Valid @RequestBody List<HotelDTO> hotelDTOs) {
+        log.info("Create multiple hotels request, total items: {}", hotelDTOs.size());
+
+        ApiResponse<List<HotelResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setData(hotelService.createMultipleHotels(hotelDTOs));
+        apiResponse.setMessage("Tạo thành công " + hotelDTOs.size() + " khách sạn mới!");
+
         return apiResponse;
     }
 }
