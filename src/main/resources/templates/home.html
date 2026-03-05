@@ -32,11 +32,18 @@
         <a href="chatbot" class="ai-assistant-link"><i class="fas fa-robot"></i> Trợ lý AI</a>
     </nav>
 
-    <div class="icons">
-        <i class="fas fa-user" id="user-icon"></i>
-        <div id="user-menu" class="dropdown-menu">
-            <a href="/profile">Hồ sơ của tôi</a>
-            <a href="/user">Đăng xuất</a>
+    <div class="icons" id="auth-container">
+        <div id="guest-actions" style="display: none;">
+            <a href="/user" class="btn-auth login-btn">Đăng nhập</a>
+            <a href="/user" class="btn-auth register-btn">Đăng ký</a>
+        </div>
+
+        <div id="user-actions" style="display: none;">
+            <i class="fas fa-user" id="user-icon"></i>
+            <div id="user-menu" class="dropdown-menu">
+                <a href="/profile">Hồ sơ của tôi</a>
+                <a href="#" id="logout-btn">Đăng xuất</a>
+            </div>
         </div>
     </div>
 </header>

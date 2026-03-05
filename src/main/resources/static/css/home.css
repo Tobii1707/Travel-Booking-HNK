@@ -31,15 +31,17 @@ body.hust-home-page header {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7); /* Làm nền đen đậm hơn một chút cho rõ chữ */
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 5%;
+  padding: 0.8rem 2%; /* Thu nhỏ padding hai bên để có thêm không gian cho menu */
+  gap: 15px; /* Khoảng cách an toàn giữa Logo - Menu - Icon User */
 }
 
 body.hust-home-page header .logo {
+  flex: 0 0 auto; /* Ngăn Logo bị bóp nhỏ lại */
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--white);
@@ -50,25 +52,17 @@ body.hust-home-page header .logo span { color: var(--primary); }
 
 /* Menu bar */
 body.hust-home-page header .bar {
+  flex: 1; /* Cho thanh menu dãn đều ra chiếm không gian giữa */
   display: flex;
-  gap: 15px;
+  justify-content: center; /* Đẩy các thẻ a vào giữa Header */
+  gap: 12px; /* Thu hẹp lại một chút khoảng cách giữa các chữ */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary) transparent;
+  scrollbar-width: none; /* Ẩn thanh scrollbar khó coi trên Firefox */
 }
 
 body.hust-home-page header .bar::-webkit-scrollbar {
-  height: 4px;
-}
-
-body.hust-home-page header .bar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-body.hust-home-page header .bar::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
+  display: none; /* Ẩn thanh scrollbar khó coi trên Chrome/Safari */
 }
 
 body.hust-home-page header .bar a {
@@ -87,7 +81,7 @@ body.hust-home-page header .bar a.indam {
 body.hust-home-page header .bar a.ai-assistant-link {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: var(--white);
-  padding: 6px 12px;
+  padding: 5px 12px; /* Thu gọn nút AI một chút */
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -97,6 +91,7 @@ body.hust-home-page header .bar a.ai-assistant-link {
 body.hust-home-page header .bar a.ai-assistant-link:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
   transform: scale(1.05);
+  color: var(--white);
 }
 
 body.hust-home-page header .icons i {
@@ -108,12 +103,64 @@ body.hust-home-page header .icons i {
 
 body.hust-home-page header .icons i:hover { color: var(--primary); }
 
+/* --- [MỚI] AUTH BUTTONS (Login/Register) --- */
+body.hust-home-page #auth-container {
+  flex: 0 0 auto; /* Ngăn nhóm nút Đăng nhập/Đăng ký bị bóp méo */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+body.hust-home-page #guest-actions,
+body.hust-home-page #user-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap; /* Cấm bẻ dòng (tránh gây vỡ layout) */
+}
+
+body.hust-home-page .btn-auth {
+  padding: 6px 14px; /* Giảm padding để 2 nút thon gọn hơn */
+  border-radius: 20px;
+  font-size: 0.85rem; /* Set font chữ bằng với các chữ trên Menu Bar */
+  font-weight: 500;
+  margin-left: 8px; /* Thu hẹp khoảng cách giữa 2 nút */
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap; /* Bắt buộc chữ bên trong nút không được xuống dòng */
+  height: 32px; /* Ép cứng chiều cao nút bằng nhau */
+}
+
+body.hust-home-page .login-btn {
+  background-color: transparent;
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.6); /* Viền mờ thanh lịch */
+}
+
+body.hust-home-page .login-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--white);
+}
+
+body.hust-home-page .register-btn {
+  background-color: var(--primary);
+  color: var(--white);
+  border: 1px solid var(--primary);
+}
+
+body.hust-home-page .register-btn:hover {
+  background-color: var(--primary-dark);
+}
+/* ------------------------------------------- */
+
 /* Dropdown */
 body.hust-home-page .dropdown-menu {
   display: none;
   position: absolute;
-  top: 60px;
-  right: 5%;
+  top: 55px; /* Kéo nhẹ dropdown lên sát viền dưới Header */
+  right: 2%;
   background-color: var(--white);
   border-radius: var(--radius);
   box-shadow: var(--shadow);

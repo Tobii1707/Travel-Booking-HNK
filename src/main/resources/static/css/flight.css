@@ -237,7 +237,7 @@ body.hust-flight-page .section-heading span { color: var(--secondary); }
 
 
 /* =========================================
-   FLIGHT LIST (ĐÃ CẬP NHẬT GIAO DIỆN MỚI 2 CỘT)
+   FLIGHT LIST
    ========================================= */
 body.hust-flight-page .flight-list {
   display: flex;
@@ -252,7 +252,7 @@ body.hust-flight-page .flight-item {
   box-shadow: 0 5px 15px rgba(0,0,0,0.05);
   padding: 20px 25px;
   display: grid;
-  grid-template-columns: 1fr auto; /* Chia 2 cột */
+  grid-template-columns: 1fr auto;
   gap: 20px;
   transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid #e1e8ed;
@@ -415,9 +415,9 @@ body.hust-flight-page .seat-modal {
 body.hust-flight-page .seat-modal-content {
   background: var(--white);
   border-radius: 8px;
-  width: 90%;
-  max-width: 700px;
-  max-height: 90vh;
+  width: 95%;
+  max-width: 800px;
+  max-height: 95vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   display: flex;
@@ -449,7 +449,10 @@ body.hust-flight-page .seat-close-btn {
   line-height: 1;
 }
 
-body.hust-flight-page .seat-modal-body { padding: 30px; }
+body.hust-flight-page .seat-modal-body {
+  padding: 30px;
+  background: #fdfdfd;
+}
 
 /* Thông tin chọn ghế */
 body.hust-flight-page .seat-selection-info {
@@ -475,65 +478,171 @@ body.hust-flight-page .seat-selection-info span {
 body.hust-flight-page .seat-legend {
   display: flex;
   gap: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 25px;
   font-size: 12px;
+  justify-content: center;
 }
 body.hust-flight-page .seat-legend .dot {
-  width: 12px; height: 12px;
+  width: 14px; height: 14px;
   display: inline-block;
   margin-right: 5px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
-body.hust-flight-page .dot.available { background: #4CAF50; border: 1px solid #ccc; }
-body.hust-flight-page .dot.selected { background: #ff9800; }
-body.hust-flight-page .dot.booked { background: var(--danger); }
+body.hust-flight-page .dot.available { background: #fff; border: 1px solid #29b862; }
+body.hust-flight-page .dot.selected { background: #ff9800; border: 1px solid #e67e22; }
+body.hust-flight-page .dot.booked { background: #dcdde1; border: 1px solid #bdc3c7; }
 
-/* Lưới ghế */
-body.hust-flight-page .seat-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-  justify-items: center;
+/* --- CẤU TRÚC LƯỚI GHẾ MÁY BAY MỚI --- */
+body.hust-flight-page .airplane-seat-map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* Thu hẹp gap dọc */
+  margin-top: 70px;
+  width: 100%;
+  padding-bottom: 40px;
+  position: relative;
 }
 
-body.hust-flight-page .seat-item {
-  width: 40px; height: 40px;
-  border-radius: 5px;
+/* MŨI MÁY BAY (Nose Cone) */
+body.hust-flight-page .airplane-seat-map::before {
+  content: 'PHÍA TRƯỚC MÁY BAY';
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 240px;
+  height: 70px;
+  background: #f1f2f6;
+  border: 2px solid #dcdde1;
+  border-radius: 120px 120px 20px 20px;
+  margin-bottom: 40px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #bdc3c7;
+  letter-spacing: 2px;
+  box-shadow: inset 0 -5px 10px rgba(0,0,0,0.02);
+}
+
+body.hust-flight-page .seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px; /* Lối đi thu hẹp nhẹ */
+  width: 100%;
+}
+
+/* VẠCH NGĂN KHOANG (Cabin Divider) */
+body.hust-flight-page .seat-row.cabin-divider {
+  margin-top: 30px;
+  margin-bottom: 30px;
+  position: relative;
+  width: 85%;
+  height: 2px;
+  background: #dcdde1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body.hust-flight-page .seat-row.cabin-divider::after {
+  content: 'HẠNG PHỔ THÔNG';
+  position: absolute;
+  background: #fdfdfd;
+  padding: 0 20px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #bdc3c7;
+  letter-spacing: 3px;
+}
+
+body.hust-flight-page .seat-group {
+  display: flex;
+  gap: 8px; /* Thu hẹp khoảng cách giữa các ghế cạnh nhau */
+}
+
+/* Lối đi & Số hàng */
+body.hust-flight-page .aisle {
+  width: 35px;
+  text-align: center;
+  font-weight: bold;
+  color: #bdc3c7;
+  font-size: 14px;
+}
+
+/* BIỂU TƯỢNG HÓA CHIẾC GHẾ */
+body.hust-flight-page .seat-item {
+  width: 44px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px 12px 4px 4px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  border: 1px solid transparent;
+  position: relative;
+  background: var(--white);
+  border: 2px solid #29b862;
+  box-shadow: 0 4px 0 rgba(41, 184, 98, 0.15);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Trạng thái ghế */
+/* Tựa đầu ghế (Headrest) */
+body.hust-flight-page .seat-item::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: rgba(41, 184, 98, 0.15); /* Làm rõ nét vạch tựa đầu */
+  border-radius: 2px;
+}
+
 body.hust-flight-page .seat-item.available {
-  background-color: #f0f0f0;
-  color: #333;
-  border-color: #ccc;
-}
-body.hust-flight-page .seat-item.available:hover {
-  background-color: #e0e0e0;
-  transform: scale(1.05);
+  color: var(--primary);
 }
 
+body.hust-flight-page .seat-item.available:hover {
+  background-color: #e8f5e9;
+  transform: scale(1.1);
+  z-index: 10;
+  box-shadow: 0 6px 12px rgba(41, 184, 98, 0.25);
+}
+
+/* Ghế đang chọn - Màu Xanh Lá đậm / Cam VIVU */
 body.hust-flight-page .seat-item.selected {
-  background-color: #ff9800;
+  background-color: #29b862; /* Chuẩn màu thương hiệu */
   color: white;
-  border-color: #f57c00;
-  transform: scale(1.05);
+  border-color: #1e8544;
+  box-shadow: 0 4px 0 #186a36;
+  transform: translateY(-2px);
+}
+
+body.hust-flight-page .seat-item.selected::after {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 body.hust-flight-page .seat-item.booked {
-  background-color: var(--danger);
-  color: white;
-  border-color: var(--danger-dark);
+  background-color: #f1f2f6;
+  color: #bdc3c7;
+  border-color: #dcdde1;
+  box-shadow: none;
   cursor: not-allowed;
-  opacity: 0.7;
+}
+
+body.hust-flight-page .seat-item.booked::after {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Tùy chỉnh thanh cuộn */
+body.hust-flight-page .seat-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+body.hust-flight-page .seat-modal-content::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 10px;
 }
 
 /* Footer Modal */
@@ -542,27 +651,28 @@ body.hust-flight-page .seat-modal-footer {
   border-top: 1px solid #eee;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px;
   margin-top: 15px;
 }
 
 body.hust-flight-page .btn-cancel-seat,
 body.hust-flight-page .btn-confirm-seat {
-  padding: 10px 25px;
-  border-radius: 5px;
+  padding: 12px 30px;
+  border-radius: 8px;
   border: none;
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
 }
 
-body.hust-flight-page .btn-cancel-seat { background-color: #6c757d; color: white; }
+body.hust-flight-page .btn-cancel-seat { background-color: #f1f2f6; color: #57606f; }
 body.hust-flight-page .btn-confirm-seat { background-color: var(--primary); color: white; }
 
 body.hust-flight-page .btn-cancel-seat:hover,
 body.hust-flight-page .btn-confirm-seat:hover {
   opacity: 0.9;
   transform: translateY(-2px);
+  box-shadow: var(--shadow);
 }
 
 /* =========================================
@@ -597,17 +707,15 @@ body.hust-flight-page .credit {
 body.hust-flight-page .credit span { color: var(--primary); }
 
 /* =========================================
-   RESPONSIVE (Đã tích hợp responsive cho giao diện vé 2 cột)
+   RESPONSIVE
    ========================================= */
 @media (max-width: 1200px) {
   body.hust-flight-page header { padding: 1rem 2rem; }
 }
 
 @media (max-width: 768px) {
-  body.hust-flight-page .seat-grid { grid-template-columns: repeat(4, 1fr); }
   body.hust-flight-page .search-box { margin-top: 20px; }
 
-  /* Chuyển layout vé thành 1 cột trên Mobile */
   body.hust-flight-page .flight-item {
     grid-template-columns: 1fr;
     gap: 15px;
@@ -625,13 +733,15 @@ body.hust-flight-page .credit span { color: var(--primary); }
     width: auto;
     margin-top: 0;
   }
+
+  body.hust-flight-page .airplane-seat-map::before { width: 220px; }
+  body.hust-flight-page .seat-row { gap: 15px; }
+  body.hust-flight-page .seat-row.cabin-divider { width: 95%; }
 }
 
 @media (max-width: 480px) {
-  body.hust-flight-page .seat-grid { grid-template-columns: repeat(3, 1fr); }
   body.hust-flight-page .seat-modal-content { width: 95%; }
 
-  /* Xử lý hiển thị giá trên màn hình siêu nhỏ */
   body.hust-flight-page .flight-action-right {
     flex-direction: column;
     align-items: flex-start;

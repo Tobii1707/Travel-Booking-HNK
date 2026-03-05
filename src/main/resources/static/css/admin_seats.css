@@ -11,7 +11,7 @@ body.hust-admin-seats {
   --danger: #e74c3c;
   --info: #3498db;
   --warning: #f39c12;
-  --seat-available: #4CAF50;
+  --seat-available: #29b862; /* Đổi cho đồng bộ User */
   --seat-booked: #f44336;
 
   margin: 0;
@@ -240,62 +240,149 @@ body.hust-admin-seats .legend-item span {
   font-weight: 500;
 }
 
-/* --- SEAT MAP --- */
+/* --- [MỚI] SEAT MAP PREMIUM CHO ADMIN --- */
 body.hust-admin-seats .seat-map-container {
   padding: 0 5%;
   margin-bottom: 50px;
 }
 
-body.hust-admin-seats .seat-map {
+/* Thân máy bay */
+body.hust-admin-seats .airplane-seat-map {
   background: white;
   padding: 40px;
-  border-radius: var(--radius);
+  border-radius: 40px 40px 20px 20px;
   box-shadow: var(--shadow);
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   max-width: 800px;
-  margin: 0 auto;
+  margin: 70px auto 0; /* Tạo khoảng trống cho mũi tàu */
+  position: relative;
 }
 
-body.hust-admin-seats .seat {
-  aspect-ratio: 1;
-  border-radius: 8px;
+/* Mũi máy bay (Nose Cone) */
+body.hust-admin-seats .airplane-seat-map::before {
+  content: 'PHÍA TRƯỚC MÁY BAY';
   display: flex;
   align-items: center;
   justify-content: center;
+  position: absolute;
+  top: -80px;
+  width: 240px;
+  height: 70px;
+  background: #f1f2f6;
+  border: 2px solid #dcdde1;
+  border-radius: 120px 120px 20px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #bdc3c7;
+  letter-spacing: 2px;
+  box-shadow: inset 0 -5px 10px rgba(0,0,0,0.02);
+}
+
+body.hust-admin-seats .seat-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px; /* Lối đi */
+  width: 100%;
+}
+
+/* Vách ngăn khoang */
+body.hust-admin-seats .seat-row.cabin-divider {
+  margin: 20px 0;
+  position: relative;
+  width: 85%;
+  height: 2px;
+  background: #dcdde1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body.hust-admin-seats .seat-row.cabin-divider::after {
+  content: 'HẠNG PHỔ THÔNG';
+  position: absolute;
+  background: white;
+  padding: 0 15px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #bdc3c7;
+  letter-spacing: 2px;
+}
+
+body.hust-admin-seats .seat-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Lối đi & Số hàng */
+body.hust-admin-seats .aisle {
+  width: 35px;
+  text-align: center;
+  font-weight: bold;
+  color: #bdc3c7;
+  font-size: 14px;
+}
+
+/* Biểu tượng ghế Iconography */
+body.hust-admin-seats .seat-item {
+  width: 44px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px 12px 4px 4px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border: 2px solid transparent;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-body.hust-admin-seats .seat.available {
-  background-color: var(--seat-available);
-  color: white;
+/* Vạch tựa đầu ghế */
+body.hust-admin-seats .seat-item::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 2px;
 }
 
-body.hust-admin-seats .seat.booked {
+/* Trạng thái Admin */
+body.hust-admin-seats .seat-item.available {
+  background-color: #fff;
+  border-color: var(--seat-available);
+  color: var(--seat-available);
+}
+
+body.hust-admin-seats .seat-item.booked {
   background-color: var(--seat-booked);
+  border-color: #d32f2f;
   color: white;
-  cursor: not-allowed;
+  box-shadow: 0 4px 0 #b71c1c;
 }
 
-body.hust-admin-seats .seat:hover:not(.booked) {
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+body.hust-admin-seats .seat-item.booked::after {
+  background: rgba(255,255,255,0.2);
+}
+
+body.hust-admin-seats .seat-item:hover {
+  transform: scale(1.1) translateY(-2px);
+  z-index: 5;
 }
 
 /* --- RESPONSIVE --- */
 @media (max-width: 991px) {
   body.hust-admin-seats .seat-info {
     flex-direction: column;
-  }
-
-  body.hust-admin-seats .seat-map {
-    grid-template-columns: repeat(4, 1fr);
-    padding: 20px;
   }
 }
 
@@ -313,7 +400,20 @@ body.hust-admin-seats .seat:hover:not(.booked) {
     max-width: 100%;
   }
 
-  body.hust-admin-seats .seat-map {
-    grid-template-columns: repeat(3, 1fr);
+  /* Responsive Airplane Map */
+  body.hust-admin-seats .airplane-seat-map {
+    padding: 20px 10px;
+  }
+  body.hust-admin-seats .airplane-seat-map::before {
+    width: 180px;
+    font-size: 9px;
+  }
+  body.hust-admin-seats .seat-row {
+    gap: 15px;
+  }
+  body.hust-admin-seats .seat-item {
+    width: 38px;
+    height: 46px;
+    font-size: 0.8rem;
   }
 }
