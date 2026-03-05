@@ -194,6 +194,20 @@ body.hust-hotel-page .section-heading h1 {
 
 body.hust-hotel-page .section-heading span { color: var(--primary); }
 
+/* [MỚI] CSS CHO THANH TÌM KIẾM */
+body.hust-hotel-page .search-container input {
+  transition: all 0.3s ease;
+}
+
+body.hust-hotel-page .search-container input:hover {
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08) !important;
+}
+
+body.hust-hotel-page .search-container input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(41, 184, 98, 0.2) !important;
+}
+
 /* Hotel list */
 body.hust-hotel-page .hotel-list {
   display: grid;

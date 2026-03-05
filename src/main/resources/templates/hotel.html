@@ -51,6 +51,11 @@
         <h1>Danh sách <span>Khách sạn</span></h1>
     </div>
 
+    <div class="search-container" style="margin-bottom: 30px; text-align: center;">
+        <input type="text" id="hotel-search"
+               placeholder="🔍 Nhập tên hoặc địa chỉ khách sạn để tìm kiếm nhanh..."
+               style="width: 100%; max-width: 600px; padding: 12px 20px; border-radius: 30px; border: 1px solid #ddd; font-size: 16px; outline: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: box-shadow 0.3s ease;">
+    </div>
     <div id="hotel-list" class="hotel-list"></div>
 </div>
 
@@ -119,6 +124,11 @@
     .chatbot-float:hover {
         transform: scale(1.1);
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+    /* Thêm style bổ trợ cho thanh tìm kiếm khi click vào */
+    #hotel-search:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
     }
     /* Thêm style bổ trợ cho modal nếu css gốc chưa có */
     .room-box {

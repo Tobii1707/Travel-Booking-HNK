@@ -11,10 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/email")
 @Slf4j
-@RequiredArgsConstructor // Sử dụng Constructor Injection
+@RequiredArgsConstructor
 public class EmailController {
 
-    // Inject Interface, không inject Class Impl
     private final EmailService emailService;
 
     @PostMapping()

@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   bindModalClose();
   bindHotelFormSubmit();
   fetchHotels();
+  bindHotelSearch(); // [MỚI] Khởi tạo chức năng tìm kiếm
 });
 
 let hotelData = [];
@@ -535,4 +536,39 @@ function updateSelectedUI() {
   }
 
   infoDiv.innerHTML = htmlContent;
+}
+
+/* ================= CHỨC NĂNG TÌM KIẾM KHÁCH SẠN (MỚI) ================= */
+
+function bindHotelSearch() {
+  const searchInput = document.getElementById("hotel-search");
+  if (!searchInput) return;
+
+  // Lắng nghe sự kiện mỗi khi người dùng gõ phím
+  searchInput.addEventListener("input", function (event) {
+    const keyword = event.target.value.toLowerCase().trim();
+
+    // Nếu ô tìm kiếm trống, hiển thị lại toàn bộ dữ liệu gốc
+    if (!keyword) {
+      renderHotels(hotelData);
+      return;
+    }
+
+    // Lọc dữ liệu: Kiểm tra xem Tên hoặc Địa chỉ có chứa từ khóa không
+    const filteredHotels = hotelData.filter(hotel => {
+      const hotelName = hotel.hotelName ? hotel.hotelName.toLowerCase() : "";
+      const address = hotel.address ? hotel.address.toLowerCase() : "";
+
+      return hotelName.includes(keyword) || address.includes(keyword);
+    });
+
+    // Render lại danh sách đã lọc
+    renderHotels(filteredHotels);
+
+    // Bổ sung thông báo nếu tìm không thấy
+    const hotelList = document.getElementById("hotel-list");
+    if (filteredHotels.length === 0 && hotelList) {
+      hotelList.innerHTML = `<p style="text-align:center; color:#888; margin-top:20px;">Không tìm thấy khách sạn nào phù hợp với từ khóa "${event.target.value}".</p>`;
+    }
+  });
 }

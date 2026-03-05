@@ -22,18 +22,16 @@ import java.util.UUID;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor // Sử dụng Constructor Injection thay cho @Autowired field
+@RequiredArgsConstructor
 public class PasswordResetServiceImpl implements PasswordResetService {
 
     private static final int EXPIRATION_HOURS = 1;
 
-    // Các dependency được khai báo final để dùng Constructor Injection
     private final PasswordResetTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService; // Sửa từ EmailServiceImpl thành EmailService (Interface)
+    private final EmailService emailService;
 
-    // @Value không dùng được với @RequiredArgsConstructor mặc định, nên để nguyên hoặc dùng setter
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
